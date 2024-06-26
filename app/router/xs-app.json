@@ -1,0 +1,12 @@
+{
+  "welcomeFile": "app/index.html",
+  "routes": [
+    {
+      "source": "^/(.*)$",
+      "target": "$1",
+      "authenticationType": "basic",
+      "destination": "srv-api",
+      "csrfProtection": true
+    }
+  ]
+}
