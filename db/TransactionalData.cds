@@ -18,7 +18,9 @@ using {com.bayer.SXTENDER.MasterDataViews} from './MasterDataViews';
 using {com.bayer.SXTENDER.BankGuaranteeData} from './BankGuaranteeData';
 using {com.bayer.SXTENDER.PriceAgreementData} from './PriceAgreementData';
 
+@cds.persistence.exists
 entity CandidatePrices as projection on PriceAgreementData.CandidatePrices;
+@cds.persistence.exists
 entity PT_TMOFRS { //Offers
         TenderID              : String(50) not null;
     key OfferID               : String(30) not null;
@@ -101,12 +103,15 @@ entity PT_TMOFRS { //Offers
                                     on Lots.OfferID = OfferID;
 }
 
+
+@cds.persistence.exists
 entity OfferView as
     select from PT_TMOFRS as offer {
         *,
         OfferStatus
     };
 
+@cds.persistence.exists
 entity PT_OFGRPUR {
         TenderID      : String(50);
     key OfferID       : String(30) not null;
@@ -125,6 +130,7 @@ entity PT_OFGRPUR {
                             on Institute.InstituteID = InstituteID;
 }
 
+@cds.persistence.exists
 entity PT_SCENARIOPLAN {
         TenderID              : String(50);
     key OfferID               : String(30) not null;
@@ -146,6 +152,7 @@ entity PT_SCENARIOPLAN {
         FOCProduct_Bundled_1  : String(30);
 }
 
+@cds.persistence.exists
 entity PT_TENDGRPPUR {
         TenderID      : String(50);
     key OfferID       : String(30);
@@ -159,6 +166,7 @@ entity PT_TENDGRPPUR {
         KeyForRestore : String(255);
 }
 
+@cds.persistence.exists
 entity PT_TMAPPRST {
         TenderID            : String(50);
     key OfferId             : String(30) not null;
@@ -190,6 +198,7 @@ entity PT_TMAPPRST {
                                   and OfferProduct.LotID = LotID
 }
 
+@cds.persistence.exists
 entity PT_TMAWRDCR {
     key TENDERID      : String(50) not null;
         COUNTRYCODE   : String;
@@ -203,6 +212,7 @@ entity PT_TMAWRDCR {
                             on Tender.TenderID = TENDERID;
 }
 
+@cds.persistence.exists
 entity Specifications : cuid, managed {
     key TenderID    : String(50) not null;
         CountryCode	: String;   
@@ -211,6 +221,7 @@ entity Specifications : cuid, managed {
 }
 //EHQUT-196575- Thailand - Change Request - INC16653808 
 //EHQUT-197393-MEA – change display in Offer Summary in Financial Offer tab
+@cds.persistence.exists
 entity PT_TMBDPR {
         TenderID              : String(50) not null;
     key OfferID               : String(30) not null;
@@ -262,6 +273,7 @@ entity PT_TMBDPR {
 }
 
 
+@cds.persistence.exists
 entity PT_TMDLVTR {
         TenderID               : String(50);
     key OfferID                : String(30) not null;
@@ -303,6 +315,7 @@ entity PT_TMDLVTR {
 }
 
 
+@cds.persistence.exists
 entity PT_TMOFPR {
         TenderID                 : String(50) not null;
     key OfferID                  : String(30) not null;
@@ -416,12 +429,22 @@ entity PT_TMOFPR {
                                         and PricingPolicy.ProductPackID = ProductCode;
         ContractInfomation       :  Association to many ContractInfomation 
                                         on ContractInfomation.OfferID = OfferID
-                                        and ContractInfomation.ProductCode = ProductCode;                                
+                                        and ContractInfomation.ProductCode = ProductCode;   
+        NLContractDurationOfferPrices : Association to TransactionalDataViews.NLContractDurationOfferPrices 
+                                            on NLContractDurationOfferPrices.OfferID = OfferID
+                                            and NLContractDurationOfferPrices.ProductCode = ProductCode;     
+        ProductActiveSKUs             : Association to MasterDataViews.ProductActiveMaterialNumbers
+                                            on ProductActiveSKUs.ProductCode = ProductCode
+                                            and ProductActiveSKUs.CountryCode = CountryCode;         
+        ProductInActiveSKUs           : Association to MasterDataViews.ProductInActiveMaterialNumbers
+                                            on ProductInActiveSKUs.ProductCode = ProductCode
+                                            and ProductInActiveSKUs.CountryCode = CountryCode;             
                                         
 }
 
 //brazil
 
+@cds.persistence.exists
 entity Lots: managed {
     key LotID: Integer;
     key OfferID: String;
@@ -430,6 +453,7 @@ entity Lots: managed {
                     and LotProducts.OfferID = OfferID
 }
 
+@cds.persistence.exists
 entity LotProduct: managed { 
     key LotID: Integer;
     key OfferID: String;
@@ -437,6 +461,7 @@ entity LotProduct: managed {
 }
 
 //italy
+@cds.persistence.exists
 entity ProductPricing: cuid, managed {
     key OfferID: String;
     key ProductCode: Integer;
@@ -454,6 +479,7 @@ entity ProductPricing: cuid, managed {
     FreeGoodsOther: Composition of many FreeGoodsOther on FreeGoodsOther.ProductPricing = $self;
 }
 
+@cds.persistence.exists
 entity FreeGoodsOther: cuid, managed {
     ProductPackId: Integer;
     FreeGoodsOther: Double;
@@ -473,6 +499,7 @@ entity FreeGoodsOther: cuid, managed {
     PriceCondition                      : Association to PriceCondition;
 }
 
+@cds.persistence.exists
 entity PriceCondition: cuid, managed {
     CountryCode                         : String;
     OfferID                             : String;
@@ -547,6 +574,23 @@ entity PriceCondition: cuid, managed {
     Settlement                          : Association to MasterData.Settlements;
     IsPricingUnlocked                   : Boolean default false;
     NLPriceConditionType                : Array of NLConditions;
+    CurrentBasePrice                    : Decimal;
+    CurrentInvoicePrice                 : Decimal;
+    CurrentGeneralDiscount              : Double;
+    CurrentGeneralDiscount_Amount       : Double;
+    CurrentSecondDiscount               : Double;
+    CurrentSecondlDiscount_Amount       : Double;
+    CurrentNetOfferPrice                : Decimal;
+    CurrentAnnualDiscount_Amount_Branch : Double;
+    CurrentAnnualDiscount_Amount_Per_Unit : Double;
+    CurrentNetPrice                     : Double;
+    CurrentNegotiationPrice             : Double;
+    CurrentTotalYearlyValueMainCustomer : Double;
+    CurrentTotalYearlyValueBranch       : Double;
+    CurrentTotalDiscountNHI             : Double;
+    CurrentTotalDiscountInvoice         : Double;
+    ConfidentialDiscount                : Double;
+    RoyalDecreePercentage_1             : Double;
     RoyalDecreePercentage               : Association to MasterData.RoyalDecree on  RoyalDecreePercentage.ProductPackID = ProductCode
                                                                                 and RoyalDecreePercentage.ValidTo = '9999-12-31 00:00:00.000000000';
     CapBrazil                           : Association to MasterDataViews.MostRecentCapView on CapBrazil.ValidTo = '9999-12-31 00:00:00.000000000';
@@ -554,6 +598,7 @@ entity PriceCondition: cuid, managed {
 }
 
 //EHQUT-INC18178128-FAST - Error decimals discounts
+@cds.persistence.exists
 entity DiscountCondition: cuid, managed {
     Volume              : Integer;
     Discount            : Double;
@@ -563,15 +608,18 @@ entity DiscountCondition: cuid, managed {
 }
 
 
+@cds.persistence.exists
 entity PriceConditionClassification: cuid {
     CountryCode     : String;
     ConditionType   : String;
     Classification  : String;
+    InstituteType   : String;
     Division        : String;
     ProductType     : String;
     isMain          : Boolean;
 }
 
+@cds.persistence.exists
 entity ProductTypeProfitability: cuid {
     CountryCode     : String;
     OfferId         : String;
@@ -583,12 +631,14 @@ entity ProductTypeProfitability: cuid {
 }
 
 
+@cds.persistence.exists
 entity PT_TMPFIOM {
     key OfferID : String(255) not null;
         PFINo   : String(255);
 }
 
 //Qoutation Submitted
+@cds.persistence.exists
 entity PT_TMQUTO {
         TenderID          : String(50);
     key OfferID           : String(30) not null;
@@ -606,7 +656,7 @@ entity PT_TMQUTO {
         I_Q_1             : String(255);
         I_Q_2             : String(255);
         I_Q_3             : String(255);
-        Comment           : String(500);
+        Comment           : String;
         UPDATED           : Integer;
         EffectiveDate     : Date;
         ExpiryDate        : Date;
@@ -622,6 +672,7 @@ entity PT_TMQUTO {
 
 //EFRCL-217931-Italy - Tender expiry date field
 //CR1
+@cds.persistence.exists
 entity PT_TMTEND: managed {
     key TenderID             : String(50) not null;
         CountryCode          : String not null;
@@ -722,6 +773,7 @@ entity PT_TMTEND: managed {
                                 on SalesType.ID = SALES_TYPE_ID;
 }
 
+@cds.persistence.exists
 entity PT_TMTNOFST {
     key TenderID    : String(50) not null;
     key OfferID     : String(30) not null;
@@ -732,7 +784,8 @@ entity PT_TMTNOFST {
         Date        : Date;
 }
 
-entity PT_TMTRRES {
+@cds.persistence.exists
+entity PT_TMTRRES: managed {
         TenderID          : String(50);
     key OfferID           : String(30) not null;
         CountryCode       : String;
@@ -776,6 +829,7 @@ entity PT_TMTRRES {
                                 and CompetitorResult.LOTID       = LotID;
 }
 
+@cds.persistence.exists
 entity PT_TMUDLTRS {
         TENDERID          : String(50);
     key OFFERID           : String(30) not null;
@@ -798,6 +852,7 @@ entity PT_TMUDLTRS {
 }
 //EHQUT modified the entity for extending the key field.
 //EHQUT-218727-Requested Volume Field for competitor result
+@cds.persistence.exists
 entity TransCompetitorResult {
     key OFFERID        : String(30) not null;
     key PRODUCTCODE    : Integer not null;
@@ -819,6 +874,7 @@ entity TransCompetitorResult {
         Custom         : Custom; // Custom attributes for templates usage
 }
 
+@cds.persistence.exists
 entity OutgoingMails : managed, cuid {
     CountryCode: String;
     TenderID: String(50);
@@ -828,8 +884,10 @@ entity OutgoingMails : managed, cuid {
     Subject: LargeString;
     MailBody: LargeString;
     Sent: Boolean;
+    RecipientCC: String;
 }
 
+@cds.persistence.exists
 entity CountrySpecificTenderInfo: managed {
     key TenderID             : String(50);
     key CountryCode          : String;
@@ -840,6 +898,7 @@ entity CountrySpecificTenderInfo: managed {
         MercadoPublicoIssuer : Integer;
 }
 
+@cds.persistence.exists
 entity DocumentsDownload: cuid, managed {
     DocID 				: Integer; // id_doc
     DocCreatedAt        : String;  // created_at
@@ -853,6 +912,7 @@ entity DocumentsDownload: cuid, managed {
     Downloaded          : Boolean default false;
 }
 
+@cds.persistence.exists
 entity SpainRappelData: cuid, managed {
     KNUMA       : String;
     BONEM       : String;
@@ -862,6 +922,7 @@ entity SpainRappelData: cuid, managed {
     MATNR       : String;
 }
 
+@cds.persistence.exists
 entity OfferProductOfferStatus {
             TenderID            : String(50) not null;
         key OfferId             : String(30) not null;
@@ -898,11 +959,13 @@ entity OfferProductOfferStatus {
                                       and ApproverTypes.ApproverType = ApproverType;
 };
 
+@cds.persistence.exists
 entity ExcelUpload:cuid {
     @Core.MediaType     : 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
     content             : LargeBinary;
 };
 
+@cds.persistence.exists
 entity NLPriceConditions: cuid {
     ContractDuration: Double;
     OfferPrice: Double;
@@ -918,16 +981,21 @@ type NLConditions {
     NetPrice: Double;
 };
 
-entity NLOfferDistributors: cuid {
+@cds.persistence.exists
+entity AwardedOfferDistributors: cuid {
     OfferID: String;
+    CountryCode: String;
     DistributorName: String;
     DistributorID: Integer;
     ProductPackName: String;
     ProductPackID: Integer;
+    AssignedProductCode: Integer;
 }
 
+@cds.persistence.exists
 entity ContractInfomation : cuid, managed {
     OfferID: String;
+    CountryCode: String;
     ProductCode: Integer;
     InstituteID: Integer;
     InstituteName: String;
@@ -938,4 +1006,44 @@ entity ContractInfomation : cuid, managed {
     OfferProduct: Association to PT_TMOFPR
         on OfferProduct.OfferID = OfferID
         and OfferProduct.ProductCode = ProductCode;
+}
+        
+@cds.persistence.exists
+entity THQuotationDelevery : cuid {
+    OfferID                   : String;
+    QuotationDeliverymethod   : String;
+    QuotationRecipientname    : String;
+    QuotationRecipientcontact : String;
+}
+
+@cds.persistence.exists
+entity CCMPriceCondition: cuid, managed{
+    CountryCode                         : String;
+    OfferID                             : String;
+    TenderID                            : String;
+    ProductCode                         : Integer;
+    MaterialNumber                      : Integer;
+    InstituteID                          : Integer;
+    CustomerID                          : Integer;
+    Currency                            : String;
+    YP00                                : Decimal; //PVL
+    YP04                                : Decimal; //Confidential Discount
+    YP10                                : Decimal; //NETPRICEWITHOUTTAXBEFOREDEDUCTIONRD
+    YD75                                : Double;  //ADDITIONALDISCOUNT
+    YD06                                : Double; //ROYALDECREE
+    YD02                                : Double; //Commercial Discount 
+    YD30                                : Double; //Special Discount (100%) 
+    SAPBaseGrossPrice                   : Decimal;  
+    SAPTAX                              : Decimal;
+    SAPPriceWithTax                     : Decimal;
+    RoyalDecree                         : String;
+    RoyalDecreeValue                    : Decimal;
+    RoyalDecreeIncl                     : Boolean default false;
+    ConfidentialPrice                   : Decimal;
+    NETPRICEWITHOUTTAXBEFOREDEDUCTIONRD : Decimal;
+    NETPRICEWITHOUTTAXAFTERDEDUCTIONRD  : Decimal;
+    NETPRICEWITHTAXAFTERDEDUCTIONRD     : Decimal;
+    NETPRICEWITHOUTTAX                  : Decimal;
+    NETPRICEWITHTAX                     : Decimal;
+    ConditionType                       : String;
 }

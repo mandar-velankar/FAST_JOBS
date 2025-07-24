@@ -15,6 +15,7 @@ using {com.bayer.SXTENDER.PriceAgreementDataViews} from './PriceAgreementDataVie
 
 
 
+@cds.persistence.exists
 entity PriceAgreements: cuid, managed {
     ExpiryDate:  DateTime;
     EffectiveDate: DateTime;
@@ -88,6 +89,7 @@ entity PriceAgreements: cuid, managed {
     User: Association to AdminData.PT_TMUSER on User.CWID = createdBy;
 }
 
+@cds.persistence.exists
 entity PriceAgreementAcknowledgementHistory: cuid, managed {
     PriceAgreementID: UUID;
     ExpiryDate:  DateTime;
@@ -95,6 +97,7 @@ entity PriceAgreementAcknowledgementHistory: cuid, managed {
     Acknowledged: Boolean;
 }
 
+@cds.persistence.exists
 entity CustomerPrices: cuid, managed {
     // @cds.api.ignore
     @assert.notNull: false
@@ -122,11 +125,13 @@ entity CustomerPrices: cuid, managed {
     ProductPack: Association to MasterData.PT_TMPRDPCK on ProductPack.PRODUCTPACKID = ProductPackId;
 }
 
+@cds.persistence.exists
 entity SettlementDates: managed {
     key PriceAgreementId: String not null;
     key FromDate: Date;
     ToDate: Date;
 }
+@cds.persistence.exists
 entity CustomerPrices_History: managed {
     ID: UUID;
     ValidFrom: Timestamp;
@@ -155,6 +160,7 @@ entity CustomerPrices_History: managed {
  * but don't have a CustomerPrices set yet
  */
  //EHQUT-396133-Italy- INC20664196 - Private customers in price agreements for regional tenders
+@cds.persistence.exists
 entity CandidatesView as select from PriceAgreements as pa 
 left outer join MasterData.Tenders_in_Regions AS tr on pa.TenderId = tr.TenderID
 inner join MasterData.PT_TMINST AS inst on pa.CountryCode = inst.CountryCode
@@ -210,6 +216,7 @@ and inst.ActiveRecord = 'Yes';
  * This view tells us if a new SKU has been added from SAP to the master data automatically through interfacing.
  * Indicated with the "isNew" field
  */
+@cds.persistence.exists
 entity NewMaterialsView as select from MasterData.PT_TMSKUPRDPCK  as sku
 
 inner join PriceAgreements as pa on pa.CountryCode = sku.CountryCode and pa.ProductPackId = sku.ProductPackID
@@ -236,6 +243,7 @@ group by sku.CountryCode, sku.ProductPackID, sku.SKUCode,pa.ID;
  * Indicated with the "isNew" field
  */
 
+@cds.persistence.exists
 entity NewFOCMaterialsView as select from MasterData.PT_TMSKUPRDPCK as sku
 inner join PriceAgreementDataViews.PaMainFOCView on PaMainFOCView.CountryCode = sku.CountryCode and PaMainFOCView.FOCproductId = sku.ProductPackID
 left outer join CustomerPrices as cp 
@@ -254,6 +262,7 @@ left outer join CustomerPrices as cp
 
 //CR2
 //EHQUT-INC20664196 - Private customers in price agreements for regional tenders
+@cds.persistence.exists
 entity CandidatePrices as select from PriceAgreements AS pa
 inner join CandidatesView AS ca on ca.PriceAgreementId = pa.ID 
 //inner join MaterialsView ma on ma.ProductPackId = pa.ProductPackId and pa.CountryCode = ma.CountryCode 
@@ -297,9 +306,10 @@ left outer join CustomerPrices AS cp on pa.ID = cp.PriceAgreementId
 //     CountryCode,
 //     Product.ProductPack.PRODUCTPACKNAME as ProductName
 // } group by ProductPackId, CountryCode, Product.ProductPack.PRODUCTPACKNAME;
+@cds.persistence.exists
 entity PriceAgreementProductNames as select from PriceAgreements as pa
 inner join MasterDataViews.CountryBrandProducts as ca on pa.ProductPackId= ca.PRODUCT_ID{
-	key pa.ProductPackId,
+    key pa.ProductPackId,
     pa.CountryCode,
     Product.ProductPack.PRODUCTPACKNAME as ProductName,
     ca.BRAND_ID,
@@ -307,6 +317,7 @@ inner join MasterDataViews.CountryBrandProducts as ca on pa.ProductPackId= ca.PR
 } group by pa.ProductPackId, pa.CountryCode, Product.ProductPack.PRODUCTPACKNAME,ca.BRAND_ID,ca.BRAND_NAME;
 
 
+@cds.persistence.exists
 entity CustomerPricesQC: cuid, managed {
     CustomerPriceId             : UUID;
     CountryCode                 : String;
@@ -359,6 +370,7 @@ entity CustomerPricesQC: cuid, managed {
     Institute                   : Association to MasterData.PT_TMINST on Institute.CustomerID = LTRIM(KUNNR, '0') and Institute.CountryCode = CountryCode;
 }
 //EJUVE-CR3 START
+@cds.persistence.exists
 entity PriceAgreement_APPRST : cuid, managed {
         CountryCode      : String;
     key PriceAgreementID : UUID;

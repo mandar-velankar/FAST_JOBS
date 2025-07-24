@@ -4,6 +4,7 @@ using { User, Country, managed } from '@sap/cds/common';
 using { com.bayer.SXTENDER.MasterData } from './MasterData';
 
 //Master Data (institutes groups tables)
+@cds.persistence.exists
 entity InstituteGroup{
 	key Id:Integer;
     CountryCode:String;
@@ -14,6 +15,7 @@ entity InstituteGroup{
     Institutes:Association[*] to InstituteGroupInstitute on Institutes.InstituteGroup = $self;
 }
 
+@cds.persistence.exists
 entity InstituteGroupInstitute{
     key InstituteGroupId:Integer;
     key InstituteId:Integer;
@@ -24,6 +26,7 @@ entity InstituteGroupInstitute{
 
 //Price Data (problem with on identified??? as on unmanaged association)
 //---Table: all data
+@cds.persistence.exists
 entity InstituteGroupPrice{
     key InstituteGroupId:Integer;
     key ProductPackId:Integer;
@@ -37,6 +40,7 @@ entity InstituteGroupPrice{
     ProductPack:Association[1] to MasterData.PT_TMPRDPCK on ProductPack.PRODUCTPACKID = ProductPackId;
 }
 
+@cds.persistence.exists
 entity ApprovalStatus {
     key CountryCode         : String;
     key InstituteGroupId    : Integer;
@@ -61,6 +65,7 @@ entity ApprovalStatus {
                                   and CountryApprover.Division = Division;
 }
 
+@cds.persistence.exists
 entity CountryApprovers{
 	key CountryCode         : String;
 	key ApproverType        : String(200);
@@ -71,12 +76,14 @@ entity CountryApprovers{
 
 
 //---Views: latest data
+@cds.persistence.exists
 entity MostRecentInstituteGroupPrice as select from InstituteGroupPrice as igp{
     igp.InstituteGroupId,
     igp.ProductPackId,
     max(igp.EffectiveDate) as MaxEffectiveDate:DateTime
 }group by igp.InstituteGroupId, igp.ProductPackId;
 
+@cds.persistence.exists
 entity InstituteGroupPriceLatest as select from InstituteGroupPrice as igp
 inner join MostRecentInstituteGroupPrice as l
     on igp.InstituteGroupId = l.InstituteGroupId
@@ -96,6 +103,7 @@ inner join MostRecentInstituteGroupPrice as l
 
 
 // Latest Approvals 
+@cds.persistence.exists
 entity LatestApprovalRequests as select from ApprovalStatus as approvals{
     key approvals.CountryCode,
     key approvals.InstituteGroupId,
@@ -112,6 +120,7 @@ group by approvals.CountryCode,
     approvals.ApproverType,
     approvals.Division;
 
+@cds.persistence.exists
 entity ApprovalRequests as select from ApprovalStatus as approvals
 inner join LatestApprovalRequests as latestApprovals
     on approvals.CountryCode = latestApprovals.CountryCode 

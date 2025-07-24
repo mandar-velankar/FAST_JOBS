@@ -9,6 +9,7 @@ using { com.bayer.SXTENDER.MasterDataLatestValues } from './MasterDataLatestValu
 using { com.bayer.SXTENDER.PricingAppData } from './PricingAppData';
 
 //converting the Offers
+@cds.persistence.exists
 entity PT_TMOFRS as select from TransactionalData.PT_TMOFRS as offer {
         //key fields must stay the same for projected ()
         offer.Active as Active,
@@ -41,12 +42,14 @@ entity PT_TMOFRS as select from TransactionalData.PT_TMOFRS as offer {
 }where offer.Active = 1;
 
 //converting the Products 
+@cds.persistence.exists
 entity PT_TMOFPR as select from TransactionalData.PT_TMOFPR as product {
     *,
     case when product.Active = 1 then true else false end as Enabled:Boolean
 };
 
 //converting the deliveries
+@cds.persistence.exists
 entity PT_TMDLVTR as select from TransactionalData.PT_TMDLVTR as delivery {
         *,
         delivery.SubmittedOn as CreatedAt,
@@ -84,6 +87,7 @@ entity PT_TMDLVTR as select from TransactionalData.PT_TMDLVTR as delivery {
 }excluding {SKUCode,InstituteID,RequestedQuantity};
 
 //converting letters
+@cds.persistence.exists
 entity PT_TMUDLTRS as select from TransactionalData.PT_TMUDLTRS as letter {
         *,
         letter.COUNTRYCODE as CountryCode,

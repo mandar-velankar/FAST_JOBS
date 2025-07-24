@@ -4,6 +4,7 @@ namespace com.bayer.SXTENDER.IntegrationDataConversion;
 using { User, Country, cuid, managed } from '@sap/cds/common';
 using { com.bayer.SXTENDER.IntegrationData } from './IntegrationData';
 
+@cds.persistence.exists
 entity PublicMarketTenders as projection on IntegrationData.MercadoPublicoLicitacione {
   key   CodigoExterno                    as CodigoExterno,
         Nombre                           as Name,
@@ -78,6 +79,7 @@ entity PublicMarketTenders as projection on IntegrationData.MercadoPublicoLicita
         Items                            : redirected to PublicMarketProducts
 };
 
+@cds.persistence.exists
 entity PublicMarketBuyers as projection on IntegrationData.MercadoPublicoComprador {
     key ID                            as ID,
     CodigoOrganismo                   as OrganismCode,
@@ -94,6 +96,7 @@ entity PublicMarketBuyers as projection on IntegrationData.MercadoPublicoComprad
     CargoUsuario                      as UserTitle
 };
 
+@cds.persistence.exists
 entity PublicMarketProducts as projection on IntegrationData.MercadoPublicoProducto {
     key ID                          as ID,
     Correlativo                     as Correlative,

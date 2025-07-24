@@ -7,6 +7,7 @@ using { com.bayer.SXTENDER.AdminData } from './AdminData';
 
 //Country
 //EITOG-215125-MEA - budgeted profitability for 2023 to be maintained at the product pack level
+@cds.persistence.exists
 entity PT_TMCTRY{
 	key CountryCode:String not null;
 	CountryName:String(50);
@@ -43,6 +44,7 @@ entity PT_TMCTRY{
 }
 
 //Country Currency
+@cds.persistence.exists
 entity CountryCurrency : managed {
 	key CountryCode:String not null;
 	key Currency:String(3) not null;
@@ -52,6 +54,7 @@ entity CountryCurrency : managed {
 }
 
 //Institute
+@cds.persistence.exists
 entity PT_TMINST{
 	key CountryCode:String not null;//remove from key
 	key InstituteID:Integer not null;
@@ -69,13 +72,13 @@ entity PT_TMINST{
 	State:String;
 	MercadoPublicoIssuer:String;
 	RegionID:String;
-    ProvinceID:String;
-    CifCode:String(50);
-    RegionalHealthSystem: String(50);
+	ProvinceID:String;
+	CifCode:String(50);
+	RegionalHealthSystem: String(50);
 	VatCode:String(50);
 	TaxCode:String(50);
-    CustomerGroup:String;
-    ApplicableTaxRate:String(2);
+	CustomerGroup:String;
+	ApplicableTaxRate:String(2);
 	INCOTerms:String(500);
 	PaymentTerms:String(500);
 	ForAllBrands:Boolean;
@@ -83,9 +86,10 @@ entity PT_TMINST{
 	ContactEmail:String(100);
 	CNPJ:String;
 	Shortname:String;
-	KAM_Territory: String(12);
+	KAM_Territory: String;
 	External_InstituteId: String(50);
 	Class: Integer;
+	SAPGroupId: String;
 	//Associations
 	InstituteDistributorBrands:Association to many PT_TMINDSBR on InstituteDistributorBrands.Institute = $self;
 	InstituteBrandTerms:Association to many PT_TMINSBRTR on InstituteBrandTerms.Institute = $self;
@@ -94,12 +98,13 @@ entity PT_TMINST{
 	Terms:Association to many PT_TMINSBRTR on Terms.Institute = $self;
 	Hierarchy:Association to MASTER_INSTITUTE_HIERARCHY on Hierarchy.ID = INSTITUTE_HIERARCHY_ID;
 	Region:Association to CountryRegions on Region.ID = RegionID;
-    Province: Association to CountryProvinces on Province.ID = ProvinceID;
+	Province: Association to CountryProvinces on Province.ID = ProvinceID;
 	InstituteDivision: Association to many InstituteDivision on InstituteDivision.InstituteID = InstituteID;
 	InstituteTerritory: Association to many InstituteTerritory on InstituteTerritory.InstituteID = InstituteID;
 }
 
 //Institute Hierarchy Level
+@cds.persistence.exists
 entity MASTER_INSTITUTE_HIERARCHY {
 	key ID:Integer not null;
 	NAME:String(50);
@@ -108,6 +113,7 @@ entity MASTER_INSTITUTE_HIERARCHY {
 }
 
 //Distributor
+@cds.persistence.exists
 entity PT_TMDIST{
 	key CountryCode:String not null;//remove from key
 	key DistributorID:Integer not null;
@@ -128,6 +134,7 @@ entity PT_TMDIST{
 	INCOTerms:String(500);
 	PaymentTerms:String(500);
 	ForAllBrands:Boolean;
+	ClaimEligible: String;
 	//Associations
 	Country:Association to PT_TMCTRY on Country.CountryCode = CountryCode;
 	DistributorBrands:Association to many PT_TMDISBRD on DistributorBrands.Distributor = $self;
@@ -139,6 +146,7 @@ entity PT_TMDIST{
 //EITOG-119446-Adding new Field Nucleus
 //EITOG-167492-Adding new Field Product Generic Name
 //EITOG-215125-MEA - budgeted profitability for 2023 to be maintained at the product pack level
+@cds.persistence.exists
 entity PT_TMPRDPCK{
 	key PRODUCTPACKID:Integer not null;
 	PRODUCTPACKNAME:String(100);
@@ -156,8 +164,11 @@ entity PT_TMPRDPCK{
 	ProductClass: String(10);
 	ProductDescription: LargeString;
 	ProductFullDescription: LargeString;
-    Nucleus: String(100);
-    ProductGenericName: String(500);
+	Nucleus: String(100);
+	ProductGenericName: String(500);
+	Bundle: Integer;
+	OuterCarton: Integer;
+	CalculationFactorIRP: Double;
 	//Associations
 	COGS:Association to many PT_TMCOGS on COGS.ProductPack = $self;
 	CountryPacks:Association to many PT_TMCTPRDPCK on CountryPacks.ProductPack = $self;
@@ -169,6 +180,7 @@ entity PT_TMPRDPCK{
 //EITOG-119446-Adding new Field Nucleus
 //Legal Entities (Selling Company)
  //EITOG-SCTASK0100482/REQ11565210-Increase the size of Letterhead
+@cds.persistence.exists
 entity PT_TMLE{
 	LegalEntityID:Integer; //TODO: to be discussed if still needed -> still used for association
 	key LegalEntityCode:String(3) not null;
@@ -190,6 +202,7 @@ entity PT_TMLE{
 }
 
 //Legal Entity Signatories
+@cds.persistence.exists
 entity COUNTRY_LEGAL_ENTITY_SIGNATORIES {
 	key LEGAL_ENTITY_CODE:String(3) not null;
 	key COUNTRY_CODE:String not null;
@@ -205,8 +218,9 @@ entity COUNTRY_LEGAL_ENTITY_SIGNATORIES {
 }
 
 //Registered Prices
+@cds.persistence.exists
 entity PT_TMREGPR{
-	RegisteredPriceID:Integer;//TODO: check if needed?
+	key RegisteredPriceID:Integer;//TODO: check if needed?
 	key CountryCode:String not null;
 	key ProductPackID:Integer not null;
 	key EffDate:Date not null;
@@ -223,6 +237,7 @@ entity PT_TMREGPR{
 }
 
 //COGS
+@cds.persistence.exists
 entity PT_TMCOGS{
 	key COGSID:Integer not null;//delete and change key
 	CountryCode:String not null;
@@ -240,23 +255,25 @@ entity PT_TMCOGS{
 }
 
 //FX Rates
+@cds.persistence.exists
 entity PT_TMFXRTS{
 	FxID:Integer;
 	key CurrencyFrom:String(3);
-    key CurrencyTo:String(3);
-    key ExchangeType:String(50);
-    key EffDate:Date;
-    key EndDate:Date;
-    ExchangeRate:Double;
+	key CurrencyTo:String(3);
+	key ExchangeType:String(50);
+	key EffDate:Date;
+	key EndDate:Date;
+	ExchangeRate:Double;
 	key ActiveRecord:String(10);
 	FXKey:String(6);//delete
-    CountryCode:String;
+	CountryCode:String;
 	//Associations
 	RegisteredPrices:Association to many PT_TMREGPR on RegisteredPrices.CurrencyRate = $self;
 }
 
 //@cds.autoexpose
 //Country Approvers
+@cds.persistence.exists
 entity CountryApprovers : managed {
 	key CountryCode:String not null;
 	key ApproverType:String(200) not null;
@@ -273,18 +290,20 @@ entity CountryApprovers : managed {
 
 
 //ApproverTypes (type of approvers & there corresponding values)
+@cds.persistence.exists
 entity ApproverTypes: managed {
-    key ApproverType        : String(200);
-    key CountryCode         : String;
-    Hierarchy				: Integer;
+	key ApproverType        : String(200);
+	key CountryCode         : String;
+	Hierarchy				: Integer;
 	ValidationType			: Integer; //filled in node.js layer based upon other fields (1: Optional 2: Mandatory Notification 3: Mandatory Approval)
 	ValidationType2			: Integer; //filled in node.js layer based upon other fields (1: Optional 2: Mandatory Notification 3: Mandatory Approval)
 	Enabled                 : Boolean; //TODO Boolean not null;
-    CountryApprovers        : Association to many CountryApprovers on CountryApprovers.ApproverType = ApproverType;
+	CountryApprovers        : Association to many CountryApprovers on CountryApprovers.ApproverType = ApproverType;
 }
 
 
 //Country legal entity
+@cds.persistence.exists
 entity PT_TMCTLE{
 	CountryLegalEntityID:Integer;//TODO: discuss with Jonathan
 	key CountryCode:String  not null;
@@ -299,6 +318,7 @@ entity PT_TMCTLE{
 
 }
 //Country Legal Entity Brand
+@cds.persistence.exists
 entity PT_TMCTLEBR{
 	CountryLegalEntityBrandID:Integer; //TODO: discuss with Jonathan
 	key CountryCode:String not null;
@@ -313,6 +333,7 @@ entity PT_TMCTLEBR{
 
 //Country Product Pack
 //EHQUT-198144-MEA - Master data template file to be updated 
+@cds.persistence.exists
 entity PT_TMCTPRDPCK{
 	COUNTRYPRODUCTPACKID:Integer;//TODO: discuss with Jonathan
 	key COUNTRYCODE:String not null;
@@ -328,21 +349,21 @@ entity PT_TMCTPRDPCK{
 	GOV_CODE:String(255);
 	CODE1:String(255);
 	CODE2:String(255);
-    CODE3:String(255);    
+	CODE3:String(255);    
 	QTY_THRESHOLD:Integer; 
 	BU: String(255);   
-    GPP_GOVERNED : String(10);
-    LAP_CURRENCY : String(5);
-    LAP : Double;
-    LAP_UNIT : String(15);
-    PRAF_ID: String(50);
-    PRAF_COMMENTS : String(255);
+	GPP_GOVERNED : String(10);
+	LAP_CURRENCY : String(5);
+	LAP : Double;
+	LAP_UNIT : String(15);
+	PRAF_ID: String(50);
+	PRAF_COMMENTS : String(255);
 	RegistrationDate : Date;
 	RegistrationValidUntil : Date; 
 	ProductScope: String(100);
 	ProductGroup: String;
 	OutSourcedStatus: String;
- 	//Associations
+	//Associations
 	Country:Association to PT_TMCTRY on Country.CountryCode = COUNTRYCODE;
 	Origin:Association to PT_TMCTRY on Origin.CountryCode = COUNTRYOFORIGIN;
 	ProductPack:Association to PT_TMPRDPCK on ProductPack.PRODUCTPACKID = PRODUCTPACKID;
@@ -350,6 +371,7 @@ entity PT_TMCTPRDPCK{
 	ProductPackSKU:Association to many PT_TMSKUPRDPCK on ProductPackSKU.CountryProductPack = $self;
 }
 //Brand
+@cds.persistence.exists
 entity PT_TMPRDHIER{
 	HLEVEL1_NAME:String(100);
 	HLEVEL1_CODE:String(50);
@@ -373,6 +395,7 @@ entity PT_TMPRDHIER{
 }
 
 //Distributor Brand
+@cds.persistence.exists
 entity PT_TMDISBRD{
 	DistributorBrandID:Integer;//TODO: to be discussed if still needed
 	key CountryCode:String not null;
@@ -389,30 +412,32 @@ entity PT_TMDISBRD{
 }
 
 //InstituteDistributorBrand
+@cds.persistence.exists
 entity PT_TMINDSBR{
 	InstituteDistBrandRelationID:Integer;//TODO: discuss if still needed
-    key CountryCode:String not null;
-    Commissionrate:Double;
+	key CountryCode:String not null;
+	Commissionrate:Double;
 	key ActiveRecord:String(10) not null;
-    key InstituteID:Integer not null;
-    key DistributorID:Integer not null;
-    key HLevel4_Code:String(50) not null;
-    //Associations
-    Country:Association to PT_TMCTRY on Country.CountryCode = CountryCode;
-    Institute:Association to PT_TMINST on Institute.InstituteID = InstituteID;
-    Distributor:Association to PT_TMDIST on Distributor.DistributorID = DistributorID;
-    Product:Association to many PT_TMPRDHIER on Product.HLEVEL4_CODE = HLevel4_Code;
+	key InstituteID:Integer not null;
+	key DistributorID:Integer not null;
+	key HLevel4_Code:String(50) not null;
+	//Associations
+	Country:Association to PT_TMCTRY on Country.CountryCode = CountryCode;
+	Institute:Association to PT_TMINST on Institute.InstituteID = InstituteID;
+	Distributor:Association to PT_TMDIST on Distributor.DistributorID = DistributorID;
+	Product:Association to many PT_TMPRDHIER on Product.HLEVEL4_CODE = HLevel4_Code;
 }
 
 //Institute Brand Terms
+@cds.persistence.exists
 entity PT_TMINSBRTR{
 	InstituteBrandTermsID:Integer;//TODO: discuss if needed
-    key CountryCode:String not null;
-    INCOTerms:String(500);
+	key CountryCode:String not null;
+	INCOTerms:String(500);
 	PaymentTerms:String(500);
 	key ActiveRecord:String(10) not null;
-    key InstituteID:Integer not null;
-    key HLevel4_Code:String(50) not null;
+	key InstituteID:Integer not null;
+	key HLevel4_Code:String(50) not null;
 	//Associations
 	Country:Association to PT_TMCTRY on Country.CountryCode = CountryCode;
 	Institute:Association to PT_TMINST on Institute.InstituteID = InstituteID;
@@ -420,31 +445,34 @@ entity PT_TMINSBRTR{
 }
 
 //Institute Hierarchy
+@cds.persistence.exists
 entity PT_TMINSHIER{
 	InstituteRelationID:Integer;//TODO: Check if needed?
 	ActiveRecord:String(10) not null;
-    key ParentInstituteID:Integer not null;
-    key InstituteID:Integer not null;
+	key ParentInstituteID:Integer not null;
+	key InstituteID:Integer not null;
 	//Associations
-    Parent:Association to PT_TMINST on Parent.InstituteID = ParentInstituteID;
-    Institute: Association to PT_TMINST on Institute.InstituteID = InstituteID;
+	Parent:Association to PT_TMINST on Parent.InstituteID = ParentInstituteID;
+	Institute: Association to PT_TMINST on Institute.InstituteID = InstituteID;
 }
 
 //Product Pack SKU
+@cds.persistence.exists
 entity PT_TMSKUPRDPCK{
-    CountrySKUID:Integer;//TODO: check if needed?
-    key CountryCode:String not null;
-    key ActiveRecord:String(10) not null;
-    key ProductPackID:Integer not null;
-    key SKUCode:Integer not null;
+	CountrySKUID:Integer;//TODO: check if needed?
+	key CountryCode:String not null;
+	key ActiveRecord:String(10) not null;
+	key ProductPackID:Integer not null;
+	key SKUCode:Integer not null;
 	//Associations
-    Country:Association to PT_TMCTRY on Country.CountryCode = CountryCode;
+	Country:Association to PT_TMCTRY on Country.CountryCode = CountryCode;
 	ProductPack:Association to PT_TMPRDPCK on ProductPack.PRODUCTPACKID = ProductPackID;
 	CountryProductPack: Association to PT_TMCTPRDPCK on CountryProductPack.COUNTRYCODE = CountryCode 
 										and CountryProductPack.PRODUCTPACKID = ProductPackID;
 }
 
 //Approved prices
+@cds.persistence.exists
 entity MASTER_APPROVED_PRICE{
 	key COUNTRY_CODE:String not null;
 	key PRODUCT_ID:Integer not null;
@@ -457,6 +485,7 @@ entity MASTER_APPROVED_PRICE{
 	ProductPack:Association to PT_TMPRDPCK on ProductPack.PRODUCTPACKID = PRODUCT_ID;
 }
 
+@cds.persistence.exists
 entity MASTER_COMMERCIAL_AGREEMENT{
 	key COUNTRY_CODE:String not null;
 	key TENDER_TYPE_ID:Integer not null;
@@ -466,6 +495,7 @@ entity MASTER_COMMERCIAL_AGREEMENT{
 	TenderType:Association to MASTER_TENDER_TYPE on TenderType.ID = TENDER_TYPE_ID;
 }
 
+@cds.persistence.exists
 entity MASTER_CONTRACT_TYPE{
 	key ID:Integer not null;
 	NAME:String(50);
@@ -473,6 +503,7 @@ entity MASTER_CONTRACT_TYPE{
 	CountryCountractType: Association to many MASTER_COUNTRY_CONTRACT_TYPE on CountryCountractType.ContractType = $self;
 }
 
+@cds.persistence.exists
 entity MASTER_COUNTRY_CONTRACT_TYPE{
 	key COUNTRY_CODE:String not null;
 	key CONTRACT_TYPE_ID:Integer not null;
@@ -481,6 +512,7 @@ entity MASTER_COUNTRY_CONTRACT_TYPE{
 	ContractType:Association to MASTER_CONTRACT_TYPE on ContractType.ID = CONTRACT_TYPE_ID;
 }
 
+@cds.persistence.exists
 entity MASTER_COUNTRY_PROCUREMENT_METHOD{
 	key COUNTRY_CODE:String not null;
 	key PROCUREMENT_METHOD_ID:String not null;
@@ -489,6 +521,7 @@ entity MASTER_COUNTRY_PROCUREMENT_METHOD{
 	Country:Association to PT_TMCTRY on Country.CountryCode = COUNTRY_CODE;
 }
 
+@cds.persistence.exists
 entity MASTER_COUNTRY_SALES_TYPE{
 	key COUNTRY_CODE:String not null;
 	key SALES_TYPE_ID:Integer not null;
@@ -497,6 +530,7 @@ entity MASTER_COUNTRY_SALES_TYPE{
 	SalesType:Association to MASTER_SALES_TYPE on SalesType.ID = SALES_TYPE_ID;
 }
 
+@cds.persistence.exists
 entity MASTER_COUNTRY_TENDER_ORIGIN{
 	key COUNTRY_CODE:String not null;
 	key TENDER_ORIGIN_ID:Integer not null;
@@ -505,6 +539,7 @@ entity MASTER_COUNTRY_TENDER_ORIGIN{
 	TenderOrigin:Association to MASTER_TENDER_ORIGIN on TenderOrigin.ID = TENDER_ORIGIN_ID;
 }
 
+@cds.persistence.exists
 entity MASTER_COUNTRY_TENDER_TYPE{
 	key COUNTRY_CODE:String not null;
 	key TENDER_TYPE_ID:Integer not null;
@@ -513,6 +548,7 @@ entity MASTER_COUNTRY_TENDER_TYPE{
 	TenderType:Association to MASTER_TENDER_TYPE on TenderType.ID = TENDER_TYPE_ID;
 }
 
+@cds.persistence.exists
 entity MASTER_COUNTRY_TENDER_TYPE2{
 	key COUNTRY_CODE:String not null;
 	key TENDER_TYPE_ID:Integer not null;
@@ -521,6 +557,7 @@ entity MASTER_COUNTRY_TENDER_TYPE2{
 	TenderType:Association to MASTER_TENDER_TYPE on TenderType.ID = TENDER_TYPE_ID;
 }
 
+@cds.persistence.exists
 entity MASTER_SALES_TYPE{
 	key ID:Integer not null;
 	NAME:String(50);
@@ -528,6 +565,7 @@ entity MASTER_SALES_TYPE{
 	CountrySalesType:Association to many MASTER_COUNTRY_SALES_TYPE on CountrySalesType.SalesType = $self;
 }
 
+@cds.persistence.exists
 entity MASTER_TENDER_ORIGIN{
 	key ID:Integer not null;
 	NAME:String(50);
@@ -537,6 +575,7 @@ entity MASTER_TENDER_ORIGIN{
 }
 
 
+@cds.persistence.exists
 entity MASTER_TENDER_TYPE{
 	key ID:Integer not null;
 	NAME:String(50);
@@ -545,6 +584,7 @@ entity MASTER_TENDER_TYPE{
 	CommercialAgreement:Association to many MASTER_COMMERCIAL_AGREEMENT on CommercialAgreement.TenderType = $self;
 }
 
+@cds.persistence.exists
 entity MASTER_COUNTRY_STATUS{
 	key CountryCode:String;
 	key Status:String(60);
@@ -552,6 +592,7 @@ entity MASTER_COUNTRY_STATUS{
 	Country:Association to PT_TMCTRY on Country.CountryCode = CountryCode;
 }
 
+@cds.persistence.exists
 entity MASTER_COUNTRY_OUTCOMES {
 	key CountryCode:String;
 	key Outcome:String(60);
@@ -559,15 +600,18 @@ entity MASTER_COUNTRY_OUTCOMES {
 	Country:Association to PT_TMCTRY on Country.CountryCode = CountryCode;
 }
 
+@cds.persistence.exists
 entity PT_TMOUTRS{
 	key TenderOutcomeReasons:String(255) not null;
 	key Outcome:String(4) not null;
 }
 
+@cds.persistence.exists
 entity PT_TMPNLTYRS{
 	key PenaltyReasons:String(255) not null;
 }
 
+@cds.persistence.exists
 entity PT_TMRCM{
 	key CountryCode:String not null;
 	SubRegion:String(50) not null;
@@ -575,6 +619,7 @@ entity PT_TMRCM{
 	Country:Association to PT_TMCTRY on Country.CountryCode = CountryCode;
 }
 
+@cds.persistence.exists
 entity PT_TMREGIONSTRUC{
 	Region:String(50);
 	key RegionCode:String(2);
@@ -584,6 +629,7 @@ entity PT_TMREGIONSTRUC{
 	CountryLink:Association to PT_TMCTRY on CountryLink.CountryCode = CountryCode;
 }
 
+@cds.persistence.exists
 entity PT_TMTABRMP{
 	TABrandID:Integer;
 	TA:String(50);
@@ -593,6 +639,7 @@ entity PT_TMTABRMP{
 	Product:Association to many PT_TMPRDHIER on Product.HLEVEL4_CODE = HLevel4_Code;
 }
 //EITOG-215125-MEA - budgeted profitability for 2023 to be maintained at the product pack level
+@cds.persistence.exists
 entity BUDGETEDPROFITABILITY{
 	key COUNTRYCODE:String;
 	key HLEVEL4_CODE:String(255);
@@ -605,18 +652,21 @@ entity BUDGETEDPROFITABILITY{
 	ProductPack:Association to PT_TMPRDPCK on ProductPack.PRODUCTPACKID = PRODUCTPACKID;
 }
 
+@cds.persistence.exists
 entity MASTER_COUNTRY_CLASSIFICATION : cuid {
 	COUNTRY_CODE:String not null;
 	CLASSIFICATION:String(50);
 	Country:Association to PT_TMCTRY on Country.CountryCode = COUNTRY_CODE;
 }
 
+@cds.persistence.exists
 entity MASTER_COUNTRY_CHANNELS: cuid, managed {
-    ChannelName : String(30);
-    ChannelCountry : String;
+	ChannelName : String(30);
+	ChannelCountry : String;
 	Country:Association to PT_TMCTRY on Country.CountryCode = ChannelCountry;
 }
 
+@cds.persistence.exists
 entity MasterCountryBiddingTypeLevel1: cuid, managed {
 	CountryCode			: String;
 	ClassificationID	: UUID not null;
@@ -625,6 +675,7 @@ entity MasterCountryBiddingTypeLevel1: cuid, managed {
 	BiddingTypeLevel2	: Association to many MasterCountryBiddingTypeLevel2 on BiddingTypeLevel2.BiddingTypeLevel1 = $self;
 }
 
+@cds.persistence.exists
 entity MasterCountryBiddingTypeLevel2: cuid, managed {
 	CountryCode			: String;
 	BiddingTypeLevel1ID	: UUID not null;
@@ -634,6 +685,7 @@ entity MasterCountryBiddingTypeLevel2: cuid, managed {
 	BiddingTypeLevel3	: Association to many MasterCountryBiddingTypeLevel3 on BiddingTypeLevel3.BiddingTypeLevel2 = $self;
 }
 
+@cds.persistence.exists
 entity MasterCountryBiddingTypeLevel3: cuid, managed {
 	CountryCode			: String;
 	BiddingTypeLevel2ID	: UUID not null;
@@ -642,6 +694,7 @@ entity MasterCountryBiddingTypeLevel3: cuid, managed {
 	BiddingTypeLevel2	: Association to MasterCountryBiddingTypeLevel2 on BiddingTypeLevel2.ID = BiddingTypeLevel2ID;
 }
 
+@cds.persistence.exists
 entity MasterCountrySpecifications: cuid, managed {
 	CountryCode			: String;
 	ClassificationID	: UUID not null;
@@ -649,6 +702,7 @@ entity MasterCountrySpecifications: cuid, managed {
 	Country				: Association to PT_TMCTRY on Country.CountryCode = CountryCode;
 }
 
+@cds.persistence.exists
 entity AccountPreApprovedPrices: cuid, managed {
 	COUNTRY_CODE		: String;
 	INSTITUTE_ID		: Integer;
@@ -660,6 +714,7 @@ entity AccountPreApprovedPrices: cuid, managed {
 	MIN_UNIT_NET_PRICE	: Double;
 }
 
+@cds.persistence.exists
 entity CountryPreApprovedPrices: cuid, managed {
 	COUNTRY_CODE		: String;
 	PRODUCT_ID			: Integer;
@@ -668,6 +723,7 @@ entity CountryPreApprovedPrices: cuid, managed {
 	MIN_UNIT_PRICE		: Double;
 }
 
+@cds.persistence.exists
 entity MasterCompetitors: cuid, managed {
 	CountryCode			: String; //Bayer
 	ProductCode			: Integer;  //Bayer
@@ -676,53 +732,60 @@ entity MasterCompetitors: cuid, managed {
 }
 
 //Brand specific Policy settings
+@cds.persistence.exists
 entity BrandPolicies: cuid, managed {
-    ValidFrom       	: Timestamp; //temphttps://cap.cloud.sap/docs/guides/temporal-data#serving-temporal-data
-    ValidTo         	: Timestamp;
-    CountryCode     	: String;
-    BrandId         	: String(50);
+	ValidFrom       	: Timestamp; //temphttps://cap.cloud.sap/docs/guides/temporal-data#serving-temporal-data
+	ValidTo         	: Timestamp;
+	CountryCode     	: String;
+	BrandId         	: String(50);
 	StandardDiscount 	: Double;
 }; 
 
 //Distributor specific Policy
+@cds.persistence.exists
 entity DistributorBrandPolicies: cuid, managed {
 	ValidFrom       	: Timestamp; //temphttps://cap.cloud.sap/docs/guides/temporal-data#serving-temporal-data
-    ValidTo         	: Timestamp;
-    CountryCode     	: String;
-    BrandId         	: String(50);
+	ValidTo         	: Timestamp;
+	CountryCode     	: String;
+	BrandId         	: String(50);
 	DistributorId   	: Integer not null;
 	StandardDiscount 	: Double;
 }; 
 
 //Channel/Product specific Policy
+@cds.persistence.exists
 entity ChannelProductPolicies: cuid, managed {
 	ValidFrom       	: Timestamp; //temphttps://cap.cloud.sap/docs/guides/temporal-data#serving-temporal-data
-    ValidTo         	: Timestamp;
-    CountryCode     	: String;
-    ChannelName 		: String(30);
+	ValidTo         	: Timestamp;
+	CountryCode     	: String;
+	ChannelName 		: String(30);
 	ProductPackID		:Integer not null;
 	StandardDiscount 	: Double;	
 };
 
 
+@cds.persistence.exists
 entity CountryProvinces: cuid {
 	CountryCode     	: String;
 	RegionID            : UUID;
 	Name				: String;
 }
 
+@cds.persistence.exists
 entity CountryRegions: cuid {
 	CountryCode     	: String;
 	Name				: String;
 	Tenders				: Composition of many Tenders_in_Regions on Tenders.Region = $self;
 }
 
+@cds.persistence.exists
 entity TenderRegions {
 	key TenderID 	    : String;
 	Regions				: Composition of many Tenders_in_Regions on Regions.Tender = $self;
 }
 
 // link table to reflect many-to-many relationship between CountryRegions and TenderRegions
+@cds.persistence.exists
 entity Tenders_in_Regions {
 	key TenderID        : String;
 	key RegionID        : UUID;
@@ -731,6 +794,7 @@ entity Tenders_in_Regions {
 }
 //EHQUT-CR8
 //italy
+@cds.persistence.exists
 entity ConsumerPrices: cuid, managed {
 	CountryCode: String;
 	ProductPackId: String;
@@ -756,54 +820,61 @@ entity ConsumerPrices: cuid, managed {
 	CurrencyRate:Association to many PT_TMFXRTS on CurrencyRate.CurrencyFrom = Currency;
 }
 
+@cds.persistence.exists
 entity RoyalDecree {
-    key ProductPackID           : Integer;
-    key CustomerGroup           : String;
-        Percentage              : Decimal;
-    key ValidFrom               : Date;
-        ValidTo                 : Date;
+	key ProductPackID           : Integer;
+	key CustomerGroup           : String;
+		Percentage              : Decimal;
+	key ValidFrom               : Date;
+		ValidTo                 : Date;
 }
 
+@cds.persistence.exists
 entity MasterPrices: cuid, managed {
 	CountryCode: String;
 	ProductPackId: String;
 	Currency: String;
-    UoM: String;
-    YLLP: Double;
-    YLAP: Double;
-    //PRAF: Double; 
+	UoM: String;
+	YLLP: Double;
+	YLAP: Double;
+	//PRAF: Double; 
 	PRAF_Public: Double;
 	PRAF_Private: Double;
-    RentalPrice: Double;   
-    ValidFrom: Timestamp;
+	RentalPrice: Double;   
+	ValidFrom: Timestamp;
 	ValidTo: Timestamp;  
-    TaxES: Double;
-    TaxE1: Double;
+	TaxES: Double;
+	TaxE1: Double;
+	TaxE2: Double;
 
 }
 
+@cds.persistence.exists
 entity Settlements {
 	key ID: String(10);
 	Description: localized String(50);
 }
 
+@cds.persistence.exists
 entity BrazilCap: cuid, managed {
-    CAP: Decimal;
-    ValidFrom: Timestamp;
+	CAP: Decimal;
+	ValidFrom: Timestamp;
 	ValidTo: Timestamp;
 }
 
+@cds.persistence.exists
 entity BrazilMasterPrices: cuid, managed {
 	CustomerID	: String;
 	ProductID 	: Integer;
 	ValidFrom   : Date;
-    ValidTo     : Date;
+	ValidTo     : Date;
 	Type		: String(6) enum {ZWP0; ZWD4; IBRX};
 	Value		: Double;
 	Currency	: String(3);
 	UOM			: String;
 }
 
+@cds.persistence.exists
 entity DistributorDivision: managed {
 	key DistributorID: Integer; 
 	key DivisionCode: String(50); // setor_ativ
@@ -814,6 +885,7 @@ entity DistributorDivision: managed {
 	DistributorType: String(50);
 }
 
+@cds.persistence.exists
 entity InstituteDivision: managed {
 	key InstituteID: Integer; 
 	key DivisionCode: String(50); // setor_ativ
@@ -824,6 +896,7 @@ entity InstituteDivision: managed {
 	InstituteType: String(50);
 }
 
+@cds.persistence.exists
 entity BrazilPricingPolicy: cuid, managed {
 	BrandID			: String;
 	ProductPackID	: Integer;
@@ -837,6 +910,7 @@ entity BrazilPricingPolicy: cuid, managed {
 	ValidTo			: Date;
 }
 
+@cds.persistence.exists
 entity AwardCriteriaValueHelp: cuid, managed {
 	CountryCode		: String not null;
 	Criteria		: String;
@@ -849,18 +923,21 @@ entity NucleusHeads : managed {
 	key NucleusHeadsEmailID : String(200);
 }
 
+@cds.persistence.exists
 entity TenderChannel: cuid {
 	CountryCode		: String not null;
 	ChannelName		: String;
 	DirectTender	: Boolean;
 }
 
+@cds.persistence.exists
 entity StandardDivisions: cuid{
 	CountryCode		: String not null;
 	DivisionCode	: String(40);
 	DivisionName    : String(40);
 }
 
+@cds.persistence.exists
 entity PricingPolicy: cuid, managed {
 	CountryCode		: String;
 	DivisionCode	: String;
@@ -878,6 +955,7 @@ entity PricingPolicy: cuid, managed {
 	Currency		: String;
 }
 
+@cds.persistence.exists
 entity DistributorAssignment: cuid, managed {
 	Comment 		: String(500);
 	InstituteID		: Integer;
@@ -885,6 +963,7 @@ entity DistributorAssignment: cuid, managed {
 	DistributorID	: Integer;
 }
 
+@cds.persistence.exists
 entity SalesData: cuid, managed {
 	SYEAR			: String(4);
 	SMONTH			: String(2);
@@ -902,12 +981,14 @@ entity SalesData: cuid, managed {
 	SYMD			: String(8);
 }
 
+@cds.persistence.exists
 entity InstituteTerritory {
 	InstituteID		: Integer not null;
 	Territory		: String;
 	IsKAM			: Boolean;
 }
 
+@cds.persistence.exists
 entity UserTerritory {
 	UserID			: String(50) not null;
 	Territory		: String;
@@ -915,7 +996,159 @@ entity UserTerritory {
 }
 
 
+@cds.persistence.exists
 entity PaymentTerms {
-    E1KNVVM_ZTERM : String(6) not null;
-    Description : String;
+	E1KNVVM_ZTERM : String(6) not null;
+	Description : String;
+}
+
+@cds.persistence.exists
+entity NLPPP: cuid, managed{
+	CountryCode: String;
+	PRODUCTPACKID:Integer;
+	MaterialNumbers: Integer;
+	StartDate: Date;
+	EndDate: Date;
+	Comment: String;
+	Status: String;
+	Type: String;
+	ApprovalsCount: Integer;
+	MaxPrice: Double;
+	PPP: Double;
+	PowerApproverCWID: String;
+	PowerApprovalDate: DateTime;
+	GovPPP: Double;
+	TemporaryMeasure: Boolean;
+	CurrentStartDate: Date;
+	CurrentEndDate: Date;
+	CurrentTemporaryMeasure: Boolean;
+	CurrentPPP: Double;
+	CurrentGovPPP: Double;
+	NLPPPApprovals: Association to many NLPPPApprovals on NLPPPApprovals.NLPPP = $self
+}
+
+@cds.persistence.exists
+entity DistributionAgreements: cuid, managed {
+	CountryCode: String;
+	PRODUCTPACKID: Integer;
+	DistributorID: Integer;
+	MaterialNumbers: String;
+	StartDate: Date;
+	EndDate: Date;
+	Type: String;
+	Value: Double;
+	CurrentStartDate: Date;
+	CurrentEndDate: Date;
+	CurrentType: String;
+	CurrentValue: Double;
+}
+
+@cds.persistence.exists
+entity NLPPPApproverTypes: cuid, managed{
+	NLPPPApproverTypes: String;
+	NLPPPApprovers: Association to NLPPPApprovers;
+}
+@cds.persistence.exists
+entity NLPPPApprovers: cuid, managed{
+	NLPPPApproverCWID: String;
+	NLPPPApproverName: String;
+	NLPPPApproverEmailID: String;
+	NLPPPApproverTypes: Association to many NLPPPApproverTypes on NLPPPApproverTypes.NLPPPApprovers = $self;
+}
+@cds.persistence.exists
+entity NLPPPApprovals  : cuid, managed {
+	ApproverRole: String;
+	ApprovalStatus: String;
+	ApproverComment: String;
+	ApproverName: String;
+	ApproverCWID: String;
+	ApprovalDate: Date;
+	SenderComment: String;
+	NLPPP: Association to NLPPP
+}
+
+@cds.persistence.exists
+entity WholesalePurchasePrice: cuid, managed {
+	CountryCode: String;
+	PRODUCTPACKID: Integer;
+	DistributorID: Integer;
+	MaterialNumbers: Integer;
+	Type: String;
+	CurrentType: String;
+	Margin: Double;
+	CurrentMargin: Double;
+	WPPWithoutTax: Decimal;
+	CurrentWPPWithoutTax: Decimal;
+	CurrentStartDate: Date;
+	StartDate: Date;
+	EndDate: Date;
+	CurrentEndDate: Date;
+	Comment: String;
+	Status: String;
+	ApprovalsCount: Integer;
+	PowerApproverCWID: String;
+	PowerApprovalDate: DateTime;
+	NLPPP_ID: UUID;
+	WholesalePurchasePriceApprovals: Association to many WholesalePurchasePriceApprovals on WholesalePurchasePriceApprovals.WholesalePurchasePrice = $self;
+}
+
+@cds.persistence.exists
+entity WholesalePurchasePriceApprovals: cuid, managed {
+	ApproverRole: String;
+	ApprovalStatus: String;
+	ApproverComment: String;
+	ApproverName: String;
+	ApproverCWID: String;
+	ApprovalDate: Date;
+	SenderComment: String;
+	WholesalePurchasePrice: Association to WholesalePurchasePrice;
+}
+
+@cds.persistence.exists
+entity WholesalePurchasePriceApproverTypes: cuid, managed{
+	WholesalePurchasePriceApproverTypes: String;
+	WholesalePurchasePriceApprovers: Association to WholesalePurchasePriceApprovers;
+}
+
+@cds.persistence.exists
+entity WholesalePurchasePriceApprovers: cuid, managed{ 
+	WholesalePurchasePriceApproverName: String;
+	WholesalePurchasePriceApproverCWID: String;
+	WholesalePurchasePriceApproverEmailID: String;
+	WholesalePurchasePriceApproverTypes: Association to many WholesalePurchasePriceApproverTypes on WholesalePurchasePriceApproverTypes.WholesalePurchasePriceApprovers = $self;
+}
+
+type NLPPPApproversType {
+	NLPPPApproverCWID: String;
+	NLPPPApproverName: String;
+	NLPPPApproverEmailID: String;
+}
+
+@cds.persistence.exists
+entity NLPPPApprovalsNotification {
+	key NLPPPApproverType: String not null;
+	CountryCode: String;
+	Send: String;
+	SenderComment: String;
+	NLPPPApprovers: Array of NLPPPApproversType;
+	SelectedNLPPPApprover: NLPPPApproversType;
+	NLPPPApprovalPageLink: String;
+}
+
+
+type WPPApprovers {
+	WholesalePurchasePriceApproverName: String;
+	WholesalePurchasePriceApproverCWID: String;
+	WholesalePurchasePriceApproverEmailID: String;
+}
+
+@cds.persistence.exists
+entity WholesalePurchasePriceApprovalsNotification {
+	key WholesalePurchasePriceApproverType: String not null;
+	CountryCode: String;
+	Send: String;
+	SenderComment: String;
+	WPPApprovers: Array of WPPApprovers;
+	SelectedWppApprover: WPPApprovers;
+	WholesalePurchasePriceApprovalPageLink: String;
 }

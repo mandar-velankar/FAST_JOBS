@@ -8,6 +8,7 @@ using { com.bayer.SXTENDER.TransactionalDataViews } from './TransactionalDataVie
 using { com.bayer.SXTENDER.MasterDataLatestValues } from './MasterDataLatestValues';
 using { com.bayer.SXTENDER.PriceAgreementData } from './PriceAgreementData';
 
+@cds.persistence.exists
 entity DeliveryForProduct as select from TransactionalData.PT_TMDLVTR as delivery {
     key delivery.OfferID as OFFERID,
     key delivery.ProductCode as PRODUCTID,
@@ -41,6 +42,7 @@ entity DeliveryForProduct as select from TransactionalData.PT_TMDLVTR as deliver
 group by delivery.OfferID, delivery.ProductCode;
 
 //EHQUT-195987-Adding NetOffer Price to MEA Tender data extract.
+@cds.persistence.exists
 entity Dashboard as select from TransactionalDataViews.OfferProductPlus as offerProduct
 inner join MasterData.PT_TMTABRMP as ta on offerProduct.HLEVEL4_CODE = ta.HLevel4_Code
 inner join MasterData.PT_TMRCM as region on offerProduct.CountryCode = region.CountryCode
@@ -141,6 +143,7 @@ left outer join DeliveryForProduct as delivery on offerProduct.OfferID = deliver
 and offerProduct.Offer.Active = 1
 and offerProduct.Active = 1;
 
+@cds.persistence.exists
 entity TENDER_DATA as select from TransactionalDataViews.OfferProductPlus as offerProduct
 inner join AdminData.PT_TMUSERCTRYN as ctryCWID on offerProduct.CountryCode = ctryCWID.CountryCode
 inner join AdminData.CONDITIONAL_ACCESS as access on access.Id = access.Id
@@ -339,6 +342,7 @@ select from MASSNET_TENDER_DATA as massnet {
     massnet.CWIDs_Country    
 };
 
+@cds.persistence.exists
 entity VW_TENDER_MANAGER_DASHBOARD as select from TransactionalData.PT_TMOFPR as offerProduct
 left outer join TransactionalData.PT_TMQUTO as quotation on offerProduct.OfferID = quotation.OfferID
 left outer join AdminData.PT_TMUSER as user on quotation.SubmittedBy = user.CWID{
@@ -436,6 +440,7 @@ and offerProduct.Offer.Active = 1
 and offerProduct.Active = 1
 and offerProduct.Offer.Tender.Country.Region = 'MEA';
 
+@cds.persistence.exists
 entity TENDER_PRICING as select from TransactionalDataViews.OfferProductPlus as offerProduct{
     offerProduct.CountryCode as COUNTRY_CODE,
     offerProduct.Offer.Tender.Country.CountryName as COUNTRY_NAME,
@@ -494,6 +499,7 @@ and year(ifnull(offerProduct.Offer.SubmissionDate, offerProduct.Offer.Tender.Pub
 and offerProduct.Offer.Tender.Country.Region = 'MEA';
 
 //EHQUT-410209-Master date refresh issue
+@cds.persistence.exists
 entity MasterApproverBrandMap as select from MasterData.CountryApprovers as MasterApproverBrandMap {
     key MasterApproverBrandMap.CountryCode,
 	key MasterApproverBrandMap.ApproverType,
@@ -503,6 +509,7 @@ entity MasterApproverBrandMap as select from MasterData.CountryApprovers as Mast
 	MasterApproverBrandMap.Enabled
 }where MasterApproverBrandMap.Enabled = true ;
 
+@cds.persistence.exists
 entity MasterCountries as select from MasterData.PT_TMCTRY as MasterCountries {
 	key CountryID,
 	MasterCountries.Region,
@@ -512,6 +519,7 @@ entity MasterCountries as select from MasterData.PT_TMCTRY as MasterCountries {
 	MasterCountries.COMMENT
 };
 
+@cds.persistence.exists
 entity MasterAuthorizedSignatories as select from MasterData.COUNTRY_LEGAL_ENTITY_SIGNATORIES as MasterAuthorizedSignatories {
 	key MasterAuthorizedSignatories.LEGAL_ENTITY_CODE,
 	key MasterAuthorizedSignatories.AUTHORIZED_SIGNATORY,
@@ -527,6 +535,7 @@ entity MasterAuthorizedSignatories as select from MasterData.COUNTRY_LEGAL_ENTIT
 		   MasterAuthorizedSignatories.COUNTRY_CODE,
 		   MasterAuthorizedSignatories.SORTER;
 
+@cds.persistence.exists
 entity MasterCountryLegalEntityBrandMap as select from MasterData.PT_TMCTLEBR as MasterCountryLegalEntityBrandMap {
 	MasterCountryLegalEntityBrandMap.CountryLegalEntityBrandID,
 	key MasterCountryLegalEntityBrandMap.LegalEntityID,
@@ -543,6 +552,7 @@ entity MasterCountryLegalEntityBrandMap as select from MasterData.PT_TMCTLEBR as
   		   MasterCountryLegalEntityBrandMap.Entity.LegalEntityName,
 		   min(MasterCountryLegalEntityBrandMap.Brand.HLEVEL4_NAME);
 
+@cds.persistence.exists
 entity MasterCountryLegalEntityMap as select from MasterData.PT_TMCTLE as MasterCountryLegalEntityMap {
 	MasterCountryLegalEntityMap.CountryLegalEntityID,
 	key MasterCountryLegalEntityMap.LegalEntityID,
@@ -552,6 +562,7 @@ entity MasterCountryLegalEntityMap as select from MasterData.PT_TMCTLE as Master
 } order by MasterCountryLegalEntityMap.CountryCode,
 		   MasterCountryLegalEntityMap.LegalEntity.LegalEntityName;
 
+@cds.persistence.exists
 entity MasterDistributorBrandMap as select from MasterData.PT_TMDISBRD as MasterDistributorBrandMap {
 	key MasterDistributorBrandMap.DistributorBrandID,
 	MasterDistributorBrandMap.DistributorID,
@@ -575,6 +586,7 @@ entity MasterDistributorBrandMap as select from MasterData.PT_TMDISBRD as Master
    			MasterDistributorBrandMap.Distributor.DistributorName,
 			min(MasterDistributorBrandMap.Product.HLEVEL4_NAME);
 
+@cds.persistence.exists
 entity MasterDistributors as select from MasterData.PT_TMDIST as MasterDistributors {
 	key MasterDistributors.DistributorID,
 	MasterDistributors.CountryCode,
@@ -587,6 +599,7 @@ entity MasterDistributors as select from MasterData.PT_TMDIST as MasterDistribut
 } where MasterDistributors.ActiveRecord = 'Yes'
 order by MasterDistributors.CountryCode, MasterDistributors.DistributorName;
 
+@cds.persistence.exists
 entity MasterInstituteBrandTerms as select from MasterData.PT_TMINSBRTR as MasterInstituteBrandTerms {
 	key MasterInstituteBrandTerms.InstituteBrandTermsID,
 	MasterInstituteBrandTerms.InstituteID,
@@ -609,6 +622,7 @@ entity MasterInstituteBrandTerms as select from MasterData.PT_TMINSBRTR as Maste
 		   MasterInstituteBrandTerms.Institute.InstituteName,
   		   min(MasterInstituteBrandTerms.Product.HLEVEL4_NAME);
 
+@cds.persistence.exists
 entity MasterInstituteDistBrandMap as select from MasterData.PT_TMINDSBR as MasterInstituteDistBrandMap {
 	key MasterInstituteDistBrandMap.InstituteDistBrandRelationID,
 	MasterInstituteDistBrandMap.InstituteID,
@@ -631,6 +645,7 @@ entity MasterInstituteDistBrandMap as select from MasterData.PT_TMINDSBR as Mast
 		   MasterInstituteDistBrandMap.Distributor.DistributorName,
 		   MasterInstituteDistBrandMap.Commissionrate;
 
+@cds.persistence.exists
 entity MasterInstitutes as select from MasterData.PT_TMINST as i
 left outer join MasterData.MASTER_INSTITUTE_HIERARCHY as ih on i.INSTITUTE_HIERARCHY_ID = ih.ID
 left outer join MasterData.PT_TMINSHIER as h on (i.InstituteID = h.InstituteID  or i.InstituteID =h.ParentInstituteID) and h.ActiveRecord ='Yes' 
@@ -680,6 +695,8 @@ left outer join MasterData.PT_TMINSBRTR as br on i.InstituteID=br.InstituteID  {
   order by i.CountryCode,
            i2.InstituteName;
 
+
+@cds.persistence.exists
 entity MasterLegalEntities as select from MasterData.PT_TMLE as MasterLegalEntities {
 	key MasterLegalEntities.LegalEntityID,
 	MasterLegalEntities.LegalEntityCode,
@@ -693,6 +710,7 @@ entity MasterLegalEntities as select from MasterData.PT_TMLE as MasterLegalEntit
 
 //EHQUT-119446-Adding Nucleus field in Template
 //EHQUT-198144-MEA - Master data template file to be updated 
+@cds.persistence.exists
 entity MasterProductPacks as select from MasterData.PT_TMCTRY as MasterProductPacks
 inner join MasterData.PT_TMCTPRDPCK as CP on MasterProductPacks.CountryCode = CP.COUNTRYCODE
 inner join MasterData.PT_TMPRDPCK as P on CP.PRODUCTPACKID = P.PRODUCTPACKID 
@@ -742,6 +760,7 @@ left outer join MasterDataLatestValues.VWBUDGETEDPROFITABILITY as MasterBudgeted
     max(MasterBudgetedProfitability.PROFITABILITY) as PROFITABILITY:Double,
 	sku.SKUCode as MaterialNumbers:Integer,
 	CP.QTY_THRESHOLD,
+    CP.OutSourcedStatus,
 	P.ACTIVERECORD as ACTIVE_PRODUCT,
 	CP.ACTIVERECORD as ACTIVE_COUNTRY_PRODUCT
 } group by P.PRODUCTPACKID,
@@ -775,11 +794,13 @@ left outer join MasterDataLatestValues.VWBUDGETEDPROFITABILITY as MasterBudgeted
 	cogs.COGS,
 	sku.SKUCode,
 	CP.QTY_THRESHOLD,
+    CP.OutSourcedStatus,
 	P.ACTIVERECORD,
 	CP.ACTIVERECORD
   order by CP.COUNTRYCODE,
   		   P.PRODUCTPACKNAME;
 
+@cds.persistence.exists
 entity MasterTABrandMap as select from MasterData.PT_TMTABRMP as MasterTABrandMap {
 	key MasterTABrandMap.TABrandID,
 	MasterTABrandMap.HLevel4_Code,
@@ -796,6 +817,7 @@ order by MasterTABrandMap.TA,
 		 min(MasterTABrandMap.Product.HLEVEL4_NAME);
 
 ////EITOG-215125-MEA - budgeted profitability for 2023 to be maintained at the product pack level
+@cds.persistence.exists
 entity MasterBudgetedProfitability as select from MasterDataLatestValues.VWBUDGETEDPROFITABILITY as MasterBudgetedProfitability
 inner join MasterData.PT_TMPRDHIER as h on MasterBudgetedProfitability.HLEVEL4_CODE = h.HLEVEL4_CODE {
 	key MasterBudgetedProfitability.HLEVEL4_CODE,
@@ -812,6 +834,7 @@ inner join MasterData.PT_TMPRDHIER as h on MasterBudgetedProfitability.HLEVEL4_C
   order by MasterBudgetedProfitability.COUNTRYCODE,
 		   min(h.HLEVEL4_NAME);
 
+@cds.persistence.exists
 entity Offers as select from TransactionalData.PT_TMOFRS as offer {
     offer.OfferID,
     case when offer.PfiNumber.PFINo is null 
@@ -830,6 +853,7 @@ entity Offers as select from TransactionalData.PT_TMOFRS as offer {
     offer.TenderID || '_' || offer.TenderOfferNo || '_Active:' || offer.ActiveOffer as CheckId
 };
 
+@cds.persistence.exists
 entity OfferInfo as select from Offers as o1 
 left outer join Offers as o2 on o1.RootId = o2.RootId and o2.ActiveOffer = 1
 {
@@ -851,6 +875,7 @@ left outer join Offers as o2 on o1.RootId = o2.RootId and o2.ActiveOffer = 1
     end as ActiveForRoot:String
 }; // WITH READ ONLY => check this with Jonathan
 
+@cds.persistence.exists
 entity OfferProductInfo as select from TransactionalData.PT_TMOFPR as offerProduct {
     offerProduct.OfferID || '_' || offerProduct.ProductCode as ID:String(50),
     offerProduct.TenderID,
@@ -864,7 +889,7 @@ entity OfferProductInfo as select from TransactionalData.PT_TMOFPR as offerProdu
     offerProduct.OfferID || '_' || upper(left(offerProduct.SKU.PRODUCTPACKNAME,3)) as ID_Prod:String
 };
 
-
+@cds.persistence.exists
 entity ProductInfo as select from MasterData.PT_TMPRDPCK as product {
     key product.PRODUCTPACKID,
     product.PRODUCTPACKNAME,
@@ -878,6 +903,7 @@ entity ProductInfo as select from MasterData.PT_TMPRDPCK as product {
 };
 
 //Chile Massnet Tenders Data
+@cds.persistence.exists
 entity MassnetTenders: cuid, managed {
 	TenderID : String(500);
     Line : Integer;
@@ -907,6 +933,7 @@ entity MassnetTenders: cuid, managed {
     ContractDuration : String(500);
 };
 
+@cds.persistence.exists
 entity MASSNET_TENDER_DATA as select from MassnetTenders as massnet
 inner join MasterData.PT_TMCTRY  as country on country.CountryCode='CL'
 inner join AdminData.PT_TMUSERCTRYN  as ctryCWID on ctryCWID.CountryCode = 'CL'
@@ -1000,6 +1027,7 @@ left outer join MasterData.PT_TMRCM as region on region.CountryCode = 'CL'
     ifnull(ctryCWID.CWIDs, '') as CWIDs_Country:String
 };
 
+@cds.persistence.exists
 entity OfferExhangeRateDates as select from TransactionalData.PT_TMOFRS as offer
 inner join MasterData.PT_TMCTRY as country on offer.CountryCode = country.CountryCode
 left outer join MasterData.PT_TMFXRTS as xRate_Local
@@ -1039,6 +1067,7 @@ group by
     country.LocalCurrency,
     offer.SubmittedOn;
 
+@cds.persistence.exists
 entity OfferExhangeRates as select from OfferExhangeRateDates as xRate0
 left outer join MasterData.PT_TMFXRTS as xRate_Local
 	on xRate0.OfferCurrency = xRate_Local.CurrencyFrom and xRate0.LocalCurrency = xRate_Local.CurrencyTo
@@ -1084,6 +1113,7 @@ left outer join MasterData.PT_TMFXRTS as xRate_USDDefault
 };
 
 
+@cds.persistence.exists
 entity RawOfferPriceVolumeInfo as select from TransactionalData.PT_TMOFPR as offerProducts
 {
     key offerProducts.OfferID,
@@ -1116,6 +1146,7 @@ where
     offerProducts.Active = 1 and
     offerProducts.Price.Active = 1;
 
+@cds.persistence.exists
 entity OfferPriceVolumeInfo as select from RawOfferPriceVolumeInfo as info
 {
     info.OfferID,
@@ -1136,6 +1167,7 @@ entity OfferPriceVolumeInfo as select from RawOfferPriceVolumeInfo as info
     info.NetPricePack
 };
 //EHQUT-Tableau Dashboard refresh issue
+@cds.persistence.exists
 entity FastReportingData as select from TransactionalData.PT_TMOFPR as offerProducts
 inner join OfferExhangeRates as xRates on offerProducts.OfferID = xRates.OfferID
 inner join OfferPriceVolumeInfo as price_volume_info on offerProducts.OfferID = price_volume_info.OfferID and offerProducts.ProductCode = price_volume_info.ProductCode
@@ -1380,7 +1412,8 @@ where
 	(offerProducts.OfferType is null or offerProducts.OfferType = 'Selling') and
 	offerProducts.Price.Active = 1;
 
-				
+
+@cds.persistence.exists				
 entity SpainEspartaDoc as select from PriceAgreementData.PriceAgreements as pa left outer join
 AdminData.PT_TMUSER as uM on pa.modifiedBy = uM.CWID left outer join
 AdminData.PT_TMUSER as uC on pa.createdBy = uC.CWID
@@ -1427,6 +1460,8 @@ group By
 	pa.OfferProduct.ApprovalStatus.ApproverName,
     pa.OfferProduct.ApprovalStatus.ApprovalStatus;
 
+
+@cds.persistence.exists
 entity SpainEspartaLines as select from PriceAgreementData.CustomerPrices as cp inner join
 MasterData.PT_TMSKUPRDPCK as sku on cp.MaterialNumber=sku.SKUCode and cp.CountryCode=sku.CountryCode and sku.ActiveRecord='Yes' inner join
 PriceAgreementData.PriceAgreements as pa on cp.PriceAgreementId=pa.ID inner join
@@ -1486,6 +1521,8 @@ AdminData.PT_TMUSER as uM on cp.createdBy = uM.CWID
 }
 where cp.CountryCode = 'ES';
 
+
+@cds.persistence.exists
 entity SpainTenderDoc as select from TransactionalData.PT_TMTEND as t
 {
     key t.TenderID as FastTenderId:String,
@@ -1523,6 +1560,7 @@ group by
 	t.Offer.Product.ApprovalStatus.ApproverName,
     t.Offer.Product.ApprovalStatus.ApprovalStatus;
 
+@cds.persistence.exists
 entity SpainTenderLines as select from TransactionalData.PT_TMTEND as t left outer join
 AdminData.PT_TMUSER as uC on t.createdBy = uC.CWID left outer join
 AdminData.PT_TMUSER as uM on t.createdBy = uM.CWID
@@ -1566,6 +1604,7 @@ AdminData.PT_TMUSER as uM on t.createdBy = uM.CWID
 }
 where t.CountryCode = 'ES';
 
+@cds.persistence.exists
 entity SpainRiskAnalysis as select from TransactionalData.PT_TMTEND as t
 {
     key t.TenderID:String,
@@ -1581,6 +1620,7 @@ entity SpainRiskAnalysis as select from TransactionalData.PT_TMTEND as t
 where t.CountryCode = 'ES';
 
 //EITOG-271486-SCTASK14171577 RITM12871584 - Change request
+@cds.persistence.exists
 entity MasterNucleusHeads as select from MasterData.NucleusHeads as MasterNucleusHeads {
 key MasterNucleusHeads.Nucleus:String,
 MasterNucleusHeads.NucleusHeadsName:String,

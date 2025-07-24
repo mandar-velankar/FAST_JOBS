@@ -11,6 +11,7 @@ using {com.bayer.SXTENDER.MasterDataViews} from './MasterDataViews';
 using {com.bayer.SXTENDER.MasterDataLatestValues} from './MasterDataLatestValues';
 
 
+@cds.persistence.exists
 entity CountryBrandProducts as select from MasterData.PT_TMCTPRDPCK as Product 
 left outer join MasterDataLatestValues.CountryRegisteredPrice as RegisteredPrice on 
     Product.COUNTRYCODE = RegisteredPrice.COUNTRY_CODE and 
@@ -30,6 +31,7 @@ and Product.ProductPack.ACTIVERECORD = 'Yes'
 order by Product.COUNTRYCODE, Product.ProductPack.Product.HLEVEL4_NAME, Product.ProductPack.PRODUCTPACKNAME;
 
 
+@cds.persistence.exists
 entity BrandPolicies: cuid, managed {
     ValidFrom       : Timestamp; //EffectiveDate
     ValidTo         : Timestamp;
@@ -42,6 +44,7 @@ entity BrandPolicies: cuid, managed {
 }; 
 
 
+@cds.persistence.exists
 entity LatestApprovedBrandPoliciesSegregate as select from PricingPolicyData.BrandPolicies {
     key BrandId,
     Status,
@@ -50,8 +53,10 @@ entity LatestApprovedBrandPoliciesSegregate as select from PricingPolicyData.Bra
     group by BrandId, Status;
 
 //only the active (is not the same as approved) BrandPolicies
+@cds.persistence.exists
 entity ActiveBrandPolicies as select from BrandPolicies where ValidTo = '9999-12-31 00:00:00.000000000'; //only the lastest effective date will be visible
 
+@cds.persistence.exists
 entity Brands as select from CountryBrandProducts as Brand 
     left outer join ActiveBrandPolicies as Policies on 
         Brand.COUNTRY_CODE = Policies.CountryCode and
@@ -73,6 +78,7 @@ group by
     Policies.Status; 
 
 
+@cds.persistence.exists
 entity BrandProducts as select from CountryBrandProducts as Product {
         key Product.COUNTRY_CODE as CountryCode,
         Product.BRAND_ID     as BrandId,
@@ -83,8 +89,10 @@ entity BrandProducts as select from CountryBrandProducts as Product {
         Product.CURRENCY as Currency : String(3)
 }order by ProductPackId;
 
+@cds.persistence.exists
 entity ActiveProductPolicies as select from ProductPolicies where BrandPolicy.ValidTo = '9999-12-31 00:00:00.000000000'; //only the lastest effective date will be visible
 
+@cds.persistence.exists
 entity ProductPolicies: cuid, managed {
     CountryCode  : String;
     Division : String(200);
@@ -97,6 +105,7 @@ entity ProductPolicies: cuid, managed {
     PolicyPrices : Composition of many PolicyPrices on PolicyPrices.ProductPolicy = $self;
 }
 
+@cds.persistence.exists
 entity PolicyPrices: cuid, managed {
     PricingPolicyName : String(3);
     Role : String(50);
@@ -106,8 +115,10 @@ entity PolicyPrices: cuid, managed {
 }
 
 @cds.autoexpose
+@cds.persistence.exists
 entity Channels as projection on MasterData.MASTER_COUNTRY_CHANNELS; //as select from MasterData.MASTER_COUNTRY_CHANNELS;
 
+@cds.persistence.exists
 entity Approvals: cuid, managed {
         CountryCode         : String;
         BrandId             : String(50);
@@ -125,11 +136,13 @@ entity Approvals: cuid, managed {
 }
 
 
+@cds.persistence.exists
 entity OverallApprovalStatus as select from Approvals {
     key BrandId,
     ApprovalStatus
 };
 @cds.autoexpose
+@cds.persistence.exists
 entity CountryApprovers: cuid, managed{
 	    CountryCode         : String;
 	    Division            : String(200);
@@ -139,6 +152,7 @@ entity CountryApprovers: cuid, managed{
 }
 
 @cds.autoexpose
+@cds.persistence.exists
 entity ApproverTypes: cuid, managed {
     ApproverType            : String(200);
     CountryCode             : String;

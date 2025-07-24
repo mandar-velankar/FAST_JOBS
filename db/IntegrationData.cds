@@ -3,6 +3,7 @@ namespace com.bayer.SXTENDER.IntegrationData;
 using { User, Country, cuid, managed } from '@sap/cds/common';
 
 //Product & matching keywords (Mercado Publico - Chile)
+@cds.persistence.exists
 entity MercadoPublicoClassificationProducts: managed {
     key ProductID                       : Integer;
         ProductName                     : String;
@@ -10,12 +11,14 @@ entity MercadoPublicoClassificationProducts: managed {
 }
 
 //Key words (Mercado Publico - Chile)
+@cds.persistence.exists
 entity MercadoPublicoClassificationKeywords: managed {
         Keyword                         : String;
         Product                         : Association to MercadoPublicoClassificationProducts;
 }
 
 // Sales opportunities (MercadoPublico - Chile)
+@cds.persistence.exists
 entity MercadoPublicoLicitacione : managed {
     key CodigoExterno                   : String;
         Nombre                          : String;
@@ -92,6 +95,7 @@ entity MercadoPublicoLicitacione : managed {
 };
 
 //Buyers (MercadoPublico - Chile)
+@cds.persistence.exists
 entity MercadoPublicoComprador: cuid {
         CodigoOrganismo                 : String;
         NombreOrganismo                 : String;
@@ -109,6 +113,7 @@ entity MercadoPublicoComprador: cuid {
 
 
 // Products (MercadoPublico - Chile)
+@cds.persistence.exists
 entity MercadoPublicoProducto: cuid {
         Correlativo                     : Integer;
         CodigoProducto                  : Integer;
@@ -129,6 +134,7 @@ entity MercadoPublicoProducto: cuid {
 
 
 //Purchase Orders (Mercado Publico - Chile)
+@cds.persistence.exists
 entity MercadoPublicoOrdenesDeCompra: managed {
     key Codigo                          : String;
         Nombre                          : String;
@@ -165,6 +171,7 @@ entity MercadoPublicoOrdenesDeCompra: managed {
 }
 
 // Buyers Purchase Orders (Mercado Publico - Chile)
+@cds.persistence.exists
 entity MercadoPublicoOrdenesDeCompraComprador: cuid {
         CodigoOrganismo                 : String;
         NombreOrganismo                 : String;
@@ -183,6 +190,7 @@ entity MercadoPublicoOrdenesDeCompraComprador: cuid {
 };
 
 //Vendor Purchase Orders (Mercado Publico - Chile)
+@cds.persistence.exists
 entity MercadoPublicoOrdenesDeCompraProveedor: cuid {
         Codigo                          : String;
         Nombre                          : String;
@@ -201,6 +209,7 @@ entity MercadoPublicoOrdenesDeCompraProveedor: cuid {
 };
 
 //Product Purchase Orders (Mercado Publico - Chile)
+@cds.persistence.exists
 entity MercadoPublicoOrdenesDeCompraProducto: cuid {
         Correlativo                     : Integer;
         CodigoCategoria                 : Integer;

@@ -29,12 +29,14 @@ entity TenderContracts as select from TransactionalDataConversion.PT_TMOFRS offe
         offers.Tender.GroupPurchasing as GroupPurchasing,
 }where offers.Active = 1;
 */
- 
+
+@cds.persistence.exists
 @cds.autoexpose
 entity Channels : cuid {
     ChannelName                 : String(50);
 }
 //EHQUT-215577-Thailand - I can't create a new record in "Contract Management" application
+@cds.persistence.exists
 entity Contracts : managed, cuid {
         CountryCode             : String not null;
         ContractName            : String(1000);
@@ -64,6 +66,7 @@ entity Contracts : managed, cuid {
                                     on SellingCompany.LegalEntityCode = SellingCompanyCode;
 }
 
+@cds.persistence.exists
 entity ContractInstitutes {
         key CountryCode         : String;
 	key InstituteID         : Integer;    
@@ -76,6 +79,7 @@ entity ContractInstitutes {
 };
 
 
+@cds.persistence.exists
 entity Products : managed, cuid {
         ProductPackId           : Integer;
         //ProductName             : String(255); assoc to product

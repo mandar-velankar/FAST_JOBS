@@ -35,6 +35,8 @@ entity PT_TMUSER {
         Role            : String(100);
         ContactNumber   : String(20);
         BU              : String;
+        UserSignatureImg: LargeBinary @Core.MediaType: mediaType;
+        mediaType       : String @Core.IsMediaType;
         //Associations
         Countries       : Association to many PT_TMUSERCTRY
                               on Countries.User = $self;
@@ -43,7 +45,6 @@ entity PT_TMUSER {
         UserTerritory   : Association to many MasterData.UserTerritory
                               on UserTerritory.UserID = UserID;
 }
-
 @cds.persistence.exists
 entity PT_TMUSERCTRY {
     key CWID         : String(5);
@@ -55,7 +56,6 @@ entity PT_TMUSERCTRY {
         Country      : Association to MasterData.PT_TMCTRY
                            on Country.CountryCode = CountryCode; //This can be found in OData
 }
-
 @cds.persistence.exists
 entity PT_TMUSERCTRYN {
     key CountryCode : String;
@@ -70,7 +70,6 @@ entity TemplateCountry {
     key Classification : String(50); //Added Classification (db#2)
         TemplateId     : Integer;
 }
-
 @cds.persistence.exists
 entity Template {
     key TemplateId     : Integer;
@@ -90,7 +89,6 @@ entity Template {
     key CountryCode    : String(2);
     key TemplateId     : Integer;
 }*/
-
 @cds.persistence.exists
 entity MailTemplate {
     key CountryCode    : String;
@@ -99,7 +97,6 @@ entity MailTemplate {
         MailTemplateFile      : Association to MailTemplateFile
                             on MailTemplateFile.templateId = TemplateId; //This can be found in OData
 }
-
 @cds.persistence.exists
 entity MailTemplateFile {
     key templateId     : String(100);
@@ -191,8 +188,8 @@ entity SchedulerApiConfigOAuth : cuid {
     GrantType     : String;
     ClientID      : String;
     ClientSecret  : String;
+    Scope         : String;
 }
-
 @cds.persistence.exists
 entity SchedulerJobConfig: cuid , managed{
     JobName : String;
@@ -205,7 +202,6 @@ entity SchedulerJobConfig: cuid , managed{
 //     FinishedAt       : Timestamp;
 //     Status           : String;
 // }
-
 @cds.persistence.exists
 entity SchedulerErrorLog: cuid {
     JobName          : String;
@@ -232,16 +228,13 @@ entity NextDateSettings {
 //     mediaType:String @Core.IsMediaType;
 // }
 
-// @cds.persistence.exists
-//@cds.persistence.exists
-//entity WordAttachment {
+// entity WordAttachment {
 //     key template : String(100);
 //     key OfferId : String(50);
 //     key CountryCode    : String;
 //     content   : LargeBinary @Core.MediaType: mediaType;//'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
 //     mediaType:String @Core.IsMediaType;
 // }
-
 @cds.persistence.exists
 entity WordTemplateCountry {
     key countryCode    : String;
@@ -249,7 +242,6 @@ entity WordTemplateCountry {
         WordTemplates      : Association to WordTemplate
                             on WordTemplates.templateId = templateId; //This can be found in OData
 }
-
 @cds.persistence.exists
 entity WordTemplate {
     key templateId     : Integer;
@@ -258,7 +250,6 @@ entity WordTemplate {
     content   : LargeBinary @Core.MediaType: mediaType;//'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
     mediaType:String @Core.IsMediaType;
 }
-
 @cds.persistence.exists
 entity ExcelTemplateCountry {
     key countryCode    : String;
@@ -266,7 +257,6 @@ entity ExcelTemplateCountry {
         ExcelTemplates      : Association to ExcelTemplate
                             on ExcelTemplates.templateId = templateId; //This can be found in OData
 }
-
 @cds.persistence.exists
 entity ExcelTemplate {
     key templateId     : Integer;
@@ -275,12 +265,10 @@ entity ExcelTemplate {
     content   : LargeBinary @Core.MediaType: mediaType;//'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
     mediaType:String @Core.IsMediaType;
 }
-
 @cds.persistence.exists
 entity ContractStatus: cuid {
     Status: String(200);
 }
-
 @cds.persistence.exists
 entity SalesOrderStatus: cuid {
     Status: String(200);

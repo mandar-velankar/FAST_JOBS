@@ -6,6 +6,7 @@ using {
 } from './SAPTypes';
 
 
+@cds.persistence.exists
 entity BrazilMaterials: cuid, managed {
 	COD					: String(18);			// SAP product code - key
 	NOME				: String(40);			// Product description
@@ -24,6 +25,7 @@ entity BrazilMaterials: cuid, managed {
 	BRAND               : String;               // not in spec? String ok?
 }
 
+@cds.persistence.exists
 entity BrazilCustomers: cuid, managed {
 	CODIGO			    : String(10);			// Customer code in SAP - key
 	REPRES				: String(3);			// Flag if the customer is a Distributor or Institute ( X = Distributor)
@@ -50,6 +52,7 @@ entity BrazilCustomers: cuid, managed {
 	STATUS				: String(1); 			// Customer status - A = Insert / Change, D = Deletion
 }
 
+@cds.persistence.exists
 entity BrazilPrices : cuid, managed {
 	CODIGO			    : String(18);			// Material code - key
 	NOME				: String(40);			// Material description
@@ -69,6 +72,7 @@ entity BrazilPrices : cuid, managed {
     TYPE                : String(4);            // Price List Type
 }
 
+@cds.persistence.exists
 entity BrazilEmpenho : cuid, managed {
 	NOTA_FISCAL			: String(9);			// Legal number
 	LICITACAO			: String(10);			// SAP contract number
@@ -83,6 +87,7 @@ entity BrazilEmpenho : cuid, managed {
 	TOTAL_UNITARIO		: Double;				// Total item value in "Nota Fiscal"
 }
 
+@cds.persistence.exists
 entity BrazilTaxes: cuid, managed {
 	SHIPFROM			: String;
 	SHIPTO				: String;
@@ -92,6 +97,7 @@ entity BrazilTaxes: cuid, managed {
 	BASE				: String;
 }
 
+@cds.persistence.exists
 entity BrazilDeliveriesHeader: cuid, managed {
 	SALES_DOCUMENT			: String(10); 			// Sales Document number
 	DISTR_CHAN				: String(2);			// Canal de distribuição
@@ -115,6 +121,7 @@ entity BrazilDeliveriesHeader: cuid, managed {
 	ITEMS					: Association to many BrazilDeliveriesItems on ITEMS.HEADER = $self; 
 }
 
+@cds.persistence.exists
 entity BrazilDeliveriesItems: cuid, managed {
 	SALES_DOCUMENT			: String(10); 			// Sales Document number reference to header
 	SALES_ITEM				: Integer;				// Sales Document Item
@@ -136,6 +143,7 @@ entity BrazilDeliveriesItems: cuid, managed {
 	HEADER					: Association to BrazilDeliveriesHeader;
 }
 
+@cds.persistence.exists
 entity BrazilExemptions: cuid, managed {
 	SHIP_TO 			: String(3);			// Ship from location (tax region) - Bayer location
 	SHIP_FROM			: String(3);			// Ship to location (tax region)
@@ -145,6 +153,7 @@ entity BrazilExemptions: cuid, managed {
 	BASE				: String(6);			// Base uses for exemption process
 }
 
+@cds.persistence.exists
 entity IbizQps: cuid, managed {
 	ID_QP 								: Integer; 		//ID QP (workflow)
 	ID_PRE_QP 							: Integer; 		//ID Pre QP (pre-workflow)
@@ -181,6 +190,7 @@ entity IbizQps: cuid, managed {
 	DOCS								: Composition of many IbizDocs on DOCS.Qps = $self;	//List of opportunities documents
 }
 
+@cds.persistence.exists
 entity IbizCcsQpsItems: cuid {
 	ID_CC_QP  						: Integer; 		//ID QP item
 	ID_QP 							: Integer; 		//ID QP (workflow)
@@ -205,6 +215,7 @@ entity IbizCcsQpsItems: cuid {
 	parent							: Association to IbizQps;
 }
 
+@cds.persistence.exists
 entity IbizDocs: cuid {
 	ID_DOC 				: Integer; 				//ID Document
 	CREATED_AT 			: String;  				//Doc's criation date
@@ -217,6 +228,7 @@ entity IbizDocs: cuid {
 	Resultados			: Association to IbizResultados;	
 }
 
+@cds.persistence.exists
 entity IbizResultados: cuid, managed {
 	ID_CC_QP 					: Integer; 		// ID QP Item
 	ID_QP 						: Integer; 		// ID QP (workflow)
@@ -234,6 +246,7 @@ entity IbizResultados: cuid, managed {
 	DOCS						: Composition of many IbizDocs on DOCS.Resultados = $self;	//List of opportunities documents
 }
 
+@cds.persistence.exists
 entity IbizResultadosItems: cuid {
 	NU_POSICAO					: Integer;		// Position
 	NM_PARTICIPANTE				: String;		// Position's participant
@@ -246,6 +259,7 @@ entity IbizResultadosItems: cuid {
 	parent						: Association to IbizResultados;
 }
 
+@cds.persistence.exists
 entity IbizContratos: cuid, managed {
 	ID_QP						: Integer;		// 
 	ID_QP_CONTRATO				: String;		// 
@@ -268,6 +282,7 @@ entity IbizContratos: cuid, managed {
 	DOCS						: Composition of many IbizDocs on DOCS.Contratos = $self;		// List of contracts documents
 }
 
+@cds.persistence.exists
 entity IbizContratosItems: cuid {
 	ID_CC_CONTRATO				: Integer; 		// ID Contract Item
 	ID_CC_QP					: Integer; 		// ID QP Item
@@ -286,6 +301,7 @@ entity IbizContratosItems: cuid {
 }
 
 
+@cds.persistence.exists
 entity IbizEmpenhos: cuid, managed {
 	ID_QP_EMPENHO	 : String;				//ID Opportunity and Commitment	
 	ID_EMPENHO 		 : Integer;             //ID Commitment
@@ -307,6 +323,7 @@ entity IbizEmpenhos: cuid, managed {
 	DOCS			 : Composition of many IbizDocs on DOCS.Empenhos = $self; //List of commiments docuemnts
 }
 
+@cds.persistence.exists
 entity IbizCcsEmpenhosItems: cuid {
 	ID_CC_QP			: Integer;				//ID QP Item
 	ID_CC_EMPENHO 		: Integer; 				//ID Commitment Item
@@ -322,6 +339,7 @@ entity IbizCcsEmpenhosItems: cuid {
 }
 
 
+@cds.persistence.exists
 entity ItalyMaterials: cuid, managed {
 	MATNR  				: String(18);			// Material Number
 	HLEVEL1_NAME    	: String(40);			// Description
@@ -339,6 +357,7 @@ entity ItalyMaterials: cuid, managed {
 	EAN11    			: String(18); 			// EAN number
 }
 
+@cds.persistence.exists
 entity ItalyCustomers: cuid, managed {
 	E1KNA1M				: E1KNA1M;				// Master customer master basic data (KNA1 - SAP table)
 	E1KNA11				: E1KNA11;				// Customer Master: Additional General Fields  (KNA1 - SAP table)
@@ -348,6 +367,7 @@ entity ItalyCustomers: cuid, managed {
 	E1KNKKM				: E1KNKKM;				// Master customer master credit mgmt control area data (KNKK - SAP table name)
 }
 
+@cds.persistence.exists
 entity ItalyDeliveries: cuid, managed {
 	VBELN				: String(10); 			// Delivery
 	POSNR				: Integer; 			// Delivery Item
@@ -400,6 +420,7 @@ entity ItalyDeliveries: cuid, managed {
 //     E1MTXLM				: E1MTXLM;				// Master material long text line item
 // }
 
+@cds.persistence.exists
 entity SpainMaterials: cuid, managed {
 	MATNR  				: String(18);			// Material Number
 	HLEVEL1_NAME    	: String(40);			// Description
@@ -417,6 +438,7 @@ entity SpainMaterials: cuid, managed {
 	EAN11    			: String(18); 			// EAN number
 }
 
+@cds.persistence.exists
 entity SpainCustomers: cuid, managed {
 	E1KNA1M				: E1KNA1M;				// Master customer master basic data (KNA1 - SAP table)
     E1KNA11				: E1KNA11;				// Customer Master: Additional General Fields  (KNA1 - SAP table)
@@ -424,6 +446,7 @@ entity SpainCustomers: cuid, managed {
 }
 
 
+@cds.persistence.exists
 entity SpainDeliveries: cuid, managed {
 	VBELN				: String(10); 			// Delivery
 	POSNR				: Integer; 			// Delivery Item
@@ -460,6 +483,7 @@ entity SpainDeliveries: cuid, managed {
 }
 
 
+@cds.persistence.exists
 entity PARTNER_ADDR : cuid {
 	TYPE0				: String(1);			// Single-Character Indicator
 	ADRNR				: String(10);			// Address
@@ -474,6 +498,7 @@ entity PARTNER_ADDR : cuid {
 	XEGLD				: String(1);			// Indicator: European Union Member?
 }
 
+@cds.persistence.exists
 entity PLANT_ADDR : cuid{
 	WERKS				: String(4);			// Plant
 	NAME1				: String(30);			// Name
@@ -484,6 +509,7 @@ entity PLANT_ADDR : cuid{
 	REGIO				: String(3);			// Region (State, Province, County)
 }
 
+@cds.persistence.exists
 entity SpainRappel : cuid {
 	KNUMA 				: String;	
 	BONEM 				: String;	
@@ -494,6 +520,7 @@ entity SpainRappel : cuid {
 	MATNR 				: String(18);			// Material number
 }
 
+@cds.persistence.exists
 entity FASTCoreProduct: cuid, managed {
     ProductInternalID: String;
     UnformattedProductInternalID: String;
@@ -602,16 +629,19 @@ entity FASTCoreProduct: cuid, managed {
 	Warehouse:Composition of many Warehouse on Warehouse.parent = $self;
 }
 
+@cds.persistence.exists
 entity Description: cuid{
     Description: String;
     parent: Association to FASTCoreProduct;
 }
 
+@cds.persistence.exists
 entity TextCollection: cuid{
     TextExistsIndicator:  Boolean;
     parent: Association to FASTCoreProduct;
 }
 
+@cds.persistence.exists
 entity StorageSpecification: cuid{
     ProductStorageRequirementsCode: String;  
     ProductStorageTemperatureRangeCode: String;  
@@ -629,6 +659,7 @@ entity StorageSpecification: cuid{
     parent: Association to FASTCoreProduct;
 }
 
+@cds.persistence.exists
 entity DistributionChainIndependentSalesSpecification: cuid{
     TransportProductGroupCode: String;
     ProductSalesProcessUsabilityProfileCode: String;
@@ -649,6 +680,7 @@ entity DistributionChainIndependentSalesSpecification: cuid{
     parent: Association to FASTCoreProduct;
 }
 
+@cds.persistence.exists
 entity PlantIndependentProcurementSpecification: cuid{
     ManufacturerID: String;
     ProductManufacturerID: String;
@@ -658,12 +690,14 @@ entity PlantIndependentProcurementSpecification: cuid{
     parent: Association to FASTCoreProduct;
 }
 
+@cds.persistence.exists
 entity ProductSCMAdvancedPlanning: cuid{
     RequiredMaximumShelfLife:Integer;
     MaturationTime:String;
     parent: Association to FASTCoreProduct;
 }
 
+@cds.persistence.exists
 entity SalesSpecification: cuid{
     AccountDeterminationProductGroupCode: String; // Nullable field
     MinimumOrderQuantity: Decimal;
@@ -731,6 +765,7 @@ entity SalesSpecification: cuid{
     parent: Association to FASTCoreProduct;
 }
 
+@cds.persistence.exists
 entity SubscriptionProductSalesData: cuid{
 	DefaultContractTerm: Integer; // Nullable field
     AltContractTerm1: Integer; // Nullable field
@@ -743,6 +778,7 @@ entity SubscriptionProductSalesData: cuid{
     parentSalesSpecification: Association to SalesSpecification;
 }
 
+@cds.persistence.exists
 entity SalesSpecificTaxClassification: cuid{
     CountryCode: String;
     TaxTypeCode: String;
@@ -750,6 +786,7 @@ entity SalesSpecificTaxClassification: cuid{
     parent: Association to FASTCoreProduct;
 }
 
+@cds.persistence.exists
 entity SubscriptionProduct: cuid{
     BillingCycle                        : String; // nullable
     BillingCycleDeterminationRuleId     : String; // nullable
@@ -757,6 +794,7 @@ entity SubscriptionProduct: cuid{
     parent: Association to FASTCoreProduct;
 }
 
+@cds.persistence.exists
 entity eSPPProduct: cuid{
     ProductIsForKitToOrder                     : Boolean;
     ProductIsForProcureToOrder                 : Boolean;
@@ -771,6 +809,7 @@ entity eSPPProduct: cuid{
     parent: Association to FASTCoreProduct;
 }
 
+@cds.persistence.exists
 entity RetailArticleGeneral: cuid{
 	ServiceAgreementTypeCode: String;
     ProductRequirementsPlanningABCClassificationCode: String;
@@ -799,12 +838,14 @@ entity RetailArticleGeneral: cuid{
     parent: Association to FASTCoreProduct;
 }
 
+@cds.persistence.exists
 entity QuantityConversion: cuid {
 	Quantity: Double;
 	CorrespondingQuantity: Double;
 	parent: Association to FASTCoreProduct;
 }
 
+@cds.persistence.exists
 entity QuantityCharacteristic: cuid{
 	Quantity: Double;
 	CharacteristicQuantity: Double;
@@ -812,6 +853,7 @@ entity QuantityCharacteristic: cuid{
 	parent: Association to FASTCoreProduct;
 }
 
+@cds.persistence.exists
 entity Warehouse: cuid {
     CapacityConsumptionUnitCode                             : String; // nullable
     ProductBulkStorageMethod                                : String; // nullable
@@ -840,6 +882,7 @@ entity Warehouse: cuid {
 	parent: Association to FASTCoreProduct;
 }
 
+@cds.persistence.exists
 entity ValuationArea: cuid {
     ValuationAreaID                          : String;
     InventoryValuationTypeCode               : String; // nullable
@@ -868,6 +911,7 @@ entity ValuationArea: cuid {
 	parent: Association to FASTCoreProduct;
 }
 
+@cds.persistence.exists
 entity ValuationAccount: cuid{
     CommercialLawLevelOneEvaluatedAmountValue  : String; // nullable
 	CommercialLawLevelTwoEvaluatedAmountValue  : String; // nullable
@@ -882,6 +926,7 @@ entity ValuationAccount: cuid{
     parentValuationArea : Association to ValuationArea;
 }
 
+@cds.persistence.exists
 entity LedgerAccount: cuid{
     CurrencyRoleCode                        : String;
 	CurrencyCode                            : String;
@@ -891,6 +936,7 @@ entity LedgerAccount: cuid{
     parentValuationArea : Association to ValuationArea;
 }
 
+@cds.persistence.exists
 entity FuturePrice: cuid{
     CurrencyRoleCode                        : String;
 	FuturePriceAmountValue                  : String; // nullable
@@ -898,6 +944,7 @@ entity FuturePrice: cuid{
     parentValuationArea : Association to ValuationArea;
 }
 
+@cds.persistence.exists
 entity ValuationCosting: cuid{
     MaterialCostedWithQuantityStructureIndicator: Boolean;
 	MaterialRelatedOriginIndicator          : Boolean;
@@ -907,6 +954,7 @@ entity ValuationCosting: cuid{
     parentValuationArea : Association to ValuationArea;
 }
 
+@cds.persistence.exists
 entity Plant: cuid {
     PlantID                     : String; 
     ProfileCode                 : String; // nullable
@@ -951,6 +999,7 @@ entity Plant: cuid {
 	parent: Association to FASTCoreProduct;
 }
 
+@cds.persistence.exists
 entity Costing: cuid{
     CoProductIndicator                          : String; // CoProductIndicator
     ProductBillOfMaterialUsageCategoryCode       : String; // nullable
@@ -967,6 +1016,7 @@ entity Costing: cuid{
 	parentPlant: Association to Plant;
 }
 
+@cds.persistence.exists
 entity SupplyPlanning: cuid {
     ProductRequirementsPlanningTypeCode                : String; // ProductRequirementsPlanningTypeCode
     ProductRequirementsPlanningResponsibleCode         : String; // ProductRequirementsPlanningResponsibleCode
@@ -1030,6 +1080,7 @@ entity SupplyPlanning: cuid {
 	parentPlant: Association to Plant;
 }
 
+@cds.persistence.exists
 entity Sales: cuid {
     LoadingGroupCode                          : String; // LoadingGroupCode
     ReplacementPartTypeCode                   : String; // nullable
@@ -1039,6 +1090,7 @@ entity Sales: cuid {
 	parentPlant: Association to Plant;
 }
 
+@cds.persistence.exists
 entity QualityManagement: cuid {
     InspectionStockIndicator                        : String; // InspectionStockIndicator
     QualityManagementControlKeyCode                 : String; // nullable
@@ -1050,6 +1102,7 @@ entity QualityManagement: cuid {
 	parentPlant: Association to Plant;
 }
 
+@cds.persistence.exists
 entity Forecasting: cuid {
     ConsumptionReferenceUsageEndDate                : String; // nullable
     ConsumptionReferenceProductQuantityMultiplier   : String; // nullable
@@ -1062,6 +1115,7 @@ entity Forecasting: cuid {
 	parentPlant: Association to Plant;
 }
 
+@cds.persistence.exists
 entity InternationalTrade: cuid {
     ProductOriginCountryCode                        : String; // nullable
     ProductOriginRegionCode                         : String; // nullable
@@ -1072,6 +1126,7 @@ entity InternationalTrade: cuid {
 	parentPlant: Association to Plant;
 }
 
+@cds.persistence.exists
 entity Storage: cuid {
     PhysicalInventoryCycleCountingProfileCode      : String; // nullable
     WarehouseManagementPutawayAndStockRemovalStrategyCode : String; // nullable
@@ -1082,6 +1137,7 @@ entity Storage: cuid {
 	parentPlant: Association to Plant;
 }
 
+@cds.persistence.exists
 entity StorageLocation: cuid {
     StorageLocationID                       : String; // StorageLocationID
     StorageBinID                            : String; // nullable
@@ -1090,6 +1146,7 @@ entity StorageLocation: cuid {
 	parentPlant: Association to Plant;
 }
 
+@cds.persistence.exists
 entity Purchasing: cuid {
     AutomaticPurchaseOrderAllowedIndicator        : String; // AutomaticPurchaseOrderAllowedIndicator
     SourceListRequirementIndicator                : String; // SourceListRequirementIndicator
@@ -1101,6 +1158,7 @@ entity Purchasing: cuid {
 	parentPlant: Association to Plant;
 }
 
+@cds.persistence.exists
 entity WorkScheduling: cuid {
     ProductBaseQuantity                               : String; // nullable
     OverDeliveryToleranceLimit                        : String; // nullable
@@ -1121,6 +1179,7 @@ entity WorkScheduling: cuid {
 	parentPlant: Association to Plant;
 }
 
+@cds.persistence.exists
 entity PlantSCMAdvancedPlanning: cuid {
     ConsumptionOfStorageCapacity                : String; // ConsumptionOfStorageCapacity
     GoodsIssueHandlingCost                      : String; // GoodsIssueHandlingCost
@@ -1172,6 +1231,7 @@ entity PlantSCMAdvancedPlanning: cuid {
 	parentPlant: Association to Plant;
 }
 
+@cds.persistence.exists
 entity Planning: cuid {
     PlanningMaterialID                              : String; // nullable
     PlanningPlantID                                 : String; // nullable
@@ -1179,6 +1239,7 @@ entity Planning: cuid {
 	parentPlant: Association to Plant;
 }
 
+@cds.persistence.exists
 entity ForecastParameters: cuid {
     ForecastBasicValueAlphaFactor                    : String; // nullable
     NumberOfForecastPeriod                          : String; // nullable
@@ -1201,6 +1262,7 @@ entity ForecastParameters: cuid {
 	parentPlant: Association to Plant;
 }
 
+@cds.persistence.exists
 entity ProductionResourceTool: cuid {
     ControlProfileCode                                    : String; // nullable
     ControlProfileReferencedIndicator                    : Boolean;
@@ -1224,6 +1286,7 @@ entity ProductionResourceTool: cuid {
 	parentPlant: Association to Plant;
 }
 
+@cds.persistence.exists
 entity PlantSCMDemandPenalty: cuid {
     DemandType                    : String;
     DelayPenaltyAmount                : Double;
@@ -1232,6 +1295,7 @@ entity PlantSCMDemandPenalty: cuid {
 	parentPlant: Association to Plant;
 }
 
+@cds.persistence.exists
 entity PlanteSPPProduct: cuid {
     ESPPIsUsed                              : String; // nullable
     ProductAlertRelevanceCode               : String; // nullable
@@ -1253,6 +1317,7 @@ entity PlanteSPPProduct: cuid {
 	parentPlant: Association to Plant;
 }
 
+@cds.persistence.exists
 entity eSPPLocProd: cuid {
     ReplenishmentStatusCode                 : String; // nullable
     SrvcPartsProductProcureToOrder          : String; // nullable
@@ -1374,6 +1439,7 @@ entity eSPPLocProd: cuid {
 	parentPlant: Association to Plant;
 }
 
+@cds.persistence.exists
 entity FASTCoreBusinessPartner: cuid, managed{
 	UUID: UUID;
 	InternalID                                                    : String; // Adjust length if necessary
@@ -1391,6 +1457,7 @@ entity FASTCoreBusinessPartner: cuid, managed{
 	CreditManagementCreditWorthiness: Association to CreditManagementCreditWorthiness on CreditManagementCreditWorthiness.parent = $self;
 }
 
+@cds.persistence.exists
 entity Customer: cuid {  
     InternalID                                     : String;
     MaintenanceProfileCode                         : String;
@@ -1433,6 +1500,7 @@ entity Customer: cuid {
     parent: Association to FASTCoreBusinessPartner;
 }
 
+@cds.persistence.exists
 entity Supplier: cuid {  
     InternalID                              : String;
     CreditorInformationNumber                   : String;
@@ -1487,6 +1555,7 @@ entity Supplier: cuid {
     parent: Association to FASTCoreBusinessPartner;
 }
 
+@cds.persistence.exists
 entity ProcurementArrangement: cuid {
     PurchasingOrganisationID                : String;
     PurchasingGroupID                           : String;
@@ -1504,6 +1573,7 @@ entity ProcurementArrangement: cuid {
     parentSupplier: Association to Supplier;
 }
 
+@cds.persistence.exists
 entity PurchasingTerms: cuid {
     CustomsOfficeInternalID                     : String;
     BuyerPartySellerID                          : String;
@@ -1547,6 +1617,7 @@ entity PurchasingTerms: cuid {
 }
 
 
+@cds.persistence.exists
 entity TaxClassification: cuid{
     TaxCountryCode                           : String;
     TaxTypeCode                              : String;
@@ -1554,6 +1625,7 @@ entity TaxClassification: cuid{
     parentCustomer: Association to Customer;
 }
 
+@cds.persistence.exists
 entity SaleSalesAndDistributionBlocks: cuid{
     OrderBlockingReasonCode                        : String; 
     BillingBlockingReasonCode                      : String; 
@@ -1562,6 +1634,7 @@ entity SaleSalesAndDistributionBlocks: cuid{
     parent: Association to Customer;
 }
 
+@cds.persistence.exists
 entity IndustrySector: cuid{
     IndustrialSectorCode                           : String; 
     FirstAdditionalIndustrialSectorCode            : String; 
@@ -1571,6 +1644,7 @@ entity IndustrySector: cuid{
     parent: Association to Customer;
 }
 
+@cds.persistence.exists
 entity MarketingAttributes: cuid{
     CustomerGroupCode                              : String; 
     CustomerNielsenRegionCode                      : String; 
@@ -1582,6 +1656,7 @@ entity MarketingAttributes: cuid{
     parent: Association to Customer; 
 }
 
+@cds.persistence.exists
 entity LegalControlIndicators: cuid{
     BiochemicalWarfareIndicator                    : Boolean;
     NuclearNonproliferationIndicator               : Boolean;
@@ -1590,6 +1665,7 @@ entity LegalControlIndicators: cuid{
     parent: Association to Customer; 
 }
 
+@cds.persistence.exists
 entity PriceSpecifications: cuid{
     CustomerConditionGroupCode                     : String; 
     FirstAdditionalCustomerConditionGroupCode      : String; 
@@ -1599,6 +1675,7 @@ entity PriceSpecifications: cuid{
     parent: Association to Customer; 
 }
 
+@cds.persistence.exists
 entity AccountingInformation: cuid {
     CompanyID                              : String;
     EmployeeID                                 : String;
@@ -1686,6 +1763,7 @@ entity AccountingInformation: cuid {
     parentSupplier: Association to Supplier;
 }
 
+@cds.persistence.exists
 entity WithholdingTax: cuid {
     WithholdingTaxTypeCode                     : String;
     SubjectToWithholdingTaxIndicator           : Boolean;
@@ -1698,6 +1776,7 @@ entity WithholdingTax: cuid {
     parentAccountingInformation: Association to AccountingInformation;
 }
 
+@cds.persistence.exists
 entity WithholdingTaxExemptionValidityPeriod: cuid{
     StartDate                                 : Date;
     EndDate                                   : Date;
@@ -1705,6 +1784,7 @@ entity WithholdingTaxExemptionValidityPeriod: cuid{
 }
 
 
+@cds.persistence.exists
 entity SalesArrangement: cuid {
     SalesOrganisationID                   : String;
     DistributionChannelCode                   : String;
@@ -1774,6 +1854,7 @@ entity SalesArrangement: cuid {
     parentCustomer: Association to Customer;
 }
 
+@cds.persistence.exists
 entity PartnerFunctions: cuid {
     PartyRoleCode                        : String;
     PartyInternalID                          : String;
@@ -1783,6 +1864,7 @@ entity PartnerFunctions: cuid {
     parentProcurementArrangement: Association to ProcurementArrangement;
 }
 
+@cds.persistence.exists
 entity DeliveryTerms: cuid{
     DeliveryPriorityCode                      : String;
     Incoterms: Association to Incoterms on Incoterms.parentDeliveryTerms = $self;
@@ -1794,6 +1876,7 @@ entity DeliveryTerms: cuid{
     parentSalesArrangement: Association to SalesArrangement;
 }
 
+@cds.persistence.exists
 entity Incoterms: cuid{
     ClassificationCode                      : String;
     TransferLocationName                    : String;
@@ -1808,6 +1891,7 @@ entity Incoterms: cuid{
 
 }
 
+@cds.persistence.exists
 entity QuantityTolerance: cuid{
     OverPercent                              : Double;
     OverPercentUnlimitedIndicator            : Boolean;
@@ -1815,6 +1899,7 @@ entity QuantityTolerance: cuid{
     parent: Association to DeliveryTerms;
 }
 
+@cds.persistence.exists
 entity AddressInformation: cuid {
     UUID                                       : String;
     MoveDestinationAddressUUID                     : String;
@@ -1825,6 +1910,7 @@ entity AddressInformation: cuid {
     parent: Association to FASTCoreBusinessPartner;
 }
 
+@cds.persistence.exists
 entity ValidityPeriod : cuid {
     StartDate                                  : Date;
     EndDate                                    : Date;
@@ -1833,6 +1919,7 @@ entity ValidityPeriod : cuid {
     parentRole: Association to Role;
 }
 
+@cds.persistence.exists
 entity AddressUsage : cuid {
     AddressUsageCode: String;
     ValidityPeriod : Association to ValidityPeriod on ValidityPeriod.parentAddressUsage = $self;
@@ -1840,18 +1927,21 @@ entity AddressUsage : cuid {
     parentAddressInformation: Association to AddressInformation;
 }
 
+@cds.persistence.exists
 entity Address : cuid {
     CommunicationPreference : Association to CommunicationPreference on CommunicationPreference.parentAddress = $self;
     PostalAddress : Association to PostalAddress on PostalAddress.parentAddress = $self;
     parentAddressInformation: Association to AddressInformation;
 }
 
+@cds.persistence.exists
 entity CommunicationPreference: cuid{
     CorrespondenceLanguageCode                : String;
     PreferredCommunicationMediumTypeCode      : String;
     parentAddress: Association to Address;
 }
 
+@cds.persistence.exists
 entity PostalAddress: cuid{
     CountryCode                                : String;
     RegionCode                                 : String;
@@ -1901,11 +1991,13 @@ entity PostalAddress: cuid{
     parentAddress: Association to Address;
 }
 
+@cds.persistence.exists
 entity AddressIndependentCommInfo: cuid{
     CommunicationPreference: String;
     parent: Association to FASTCoreBusinessPartner;
 }
 
+@cds.persistence.exists
 entity Common: cuid{
     LocationStandardID                             : String;
     BusinessPartnerGroupCode                       : String;
@@ -1929,6 +2021,7 @@ entity Common: cuid{
     parent: Association to FASTCoreBusinessPartner;
 }
 
+@cds.persistence.exists
 entity Person: cuid{
     Name: Association to Name on Name.parentPerson = $self;
     GenderCode                                 : String;
@@ -1946,6 +2039,7 @@ entity Person: cuid{
     parentCommon: Association to Common;
 }
 
+@cds.persistence.exists
 entity Organisation: cuid{
     Name: Association to Name on Name.parentOrganisation = $self;
     CompanyLegalFormCode                       : String;
@@ -1955,6 +2049,7 @@ entity Organisation: cuid{
     parentCommon: Association to Common;
 }
 
+@cds.persistence.exists
 entity Group: cuid{
     FormOfAddressCode: String;
     Name:String;
@@ -1963,6 +2058,7 @@ entity Group: cuid{
     parentCommon: Association to Common;
 }
 
+@cds.persistence.exists
 entity Name: cuid{
     FormOfAddressCode                      : String;
     FirstLineName                          : String;
@@ -1988,12 +2084,14 @@ entity Name: cuid{
     parentOrganisation: Association to Organisation;
 }
 
+@cds.persistence.exists
 entity Role: cuid{
     RoleCode: String;
     ValidityPeriod : Association to ValidityPeriod on ValidityPeriod.parentRole = $self;
     parent: Association to FASTCoreBusinessPartner;
 }
 
+@cds.persistence.exists
 entity TaxNumber: cuid {
     CountryCode                                : String;
     TaxIdentificationNumberTypeCode                : Integer;
@@ -2003,6 +2101,7 @@ entity TaxNumber: cuid {
     parent: Association to FASTCoreBusinessPartner;
 }
 
+@cds.persistence.exists
 entity CreditManagementProfile: cuid {
     CreditLimitAndScoreCalculatingRuleCode : String;
     Score                                  : Integer;
@@ -2012,6 +2111,7 @@ entity CreditManagementProfile: cuid {
     parent: Association to FASTCoreBusinessPartner;
 }
 
+@cds.persistence.exists
 entity CreditManagementCreditWorthiness: cuid {
     AffidavitForAssetsMadeIndicator           : Boolean;
     AffidavitForAssetsMadeDate                : Date;
@@ -2022,6 +2122,7 @@ entity CreditManagementCreditWorthiness: cuid {
     parent: Association to FASTCoreBusinessPartner;
 }
 
+@cds.persistence.exists
 entity FinancialServicesCommon: cuid {
     SalutationCode                         : String;
     VIPIndicator                           : Boolean;
@@ -2039,6 +2140,7 @@ entity FinancialServicesCommon: cuid {
     parent: Association to FASTCoreBusinessPartner;
 }
 
+@cds.persistence.exists
 entity FinancialServicesCommonPerson: cuid {
     PrimaryCitizenshipCountryCode          : String;
     MaritalPropertyRegimeCode              : String;
@@ -2059,6 +2161,7 @@ entity FinancialServicesCommonPerson: cuid {
     parentFinancialServicesCommon: Association to FinancialServicesCommon;
 }
 
+@cds.persistence.exists
 entity FinancialServicesCommonOrganisation {
     CompanyWorkingDayCalendarCode          : String;
     RegisteredOfficeCountryCode            : String;

@@ -3,6 +3,7 @@ namespace com.bayer.SXTENDER.MasterDataLatestValues;
 using { User, Country, managed } from '@sap/cds/common';
 using { com.bayer.SXTENDER.MasterData } from './MasterData';
 
+@cds.persistence.exists
 entity MostRecentRegisteredPrice as SELECT from MasterData.PT_TMREGPR as RegisteredPrice
 {
     key RegisteredPrice.CountryCode,
@@ -11,6 +12,7 @@ entity MostRecentRegisteredPrice as SELECT from MasterData.PT_TMREGPR as Registe
 }where RegisteredPrice.ActiveRecord = 'Yes'
 group by RegisteredPrice.CountryCode, RegisteredPrice.ProductPackID;
 
+@cds.persistence.exists
 entity CountryRegisteredPrice as SELECT from MasterData.PT_TMREGPR as RegisteredPrice
 INNER JOIN MostRecentRegisteredPrice as l on RegisteredPrice.CountryCode=l.CountryCode and RegisteredPrice.ProductPackID=l.ProductPackID and RegisteredPrice.EffDate=l.MaxEffectiveDate
 {
@@ -26,6 +28,7 @@ INNER JOIN MostRecentRegisteredPrice as l on RegisteredPrice.CountryCode=l.Count
     RegisteredPrice.RegisteredPriceID
 }where RegisteredPrice.ActiveRecord = 'Yes';
 
+@cds.persistence.exists
 entity MostRecentCogs as SELECT from MasterData.PT_TMCOGS as Cogs
 {
     key Cogs.CountryCode,
@@ -34,6 +37,7 @@ entity MostRecentCogs as SELECT from MasterData.PT_TMCOGS as Cogs
 }where Cogs.ActiveRecord = 'Yes'
 group by Cogs.CountryCode, Cogs.ProductPackID;
 
+@cds.persistence.exists
 entity CountryCogs as SELECT from MasterData.PT_TMCOGS as Cogs
 INNER JOIN MostRecentCogs as l on Cogs.CountryCode=l.CountryCode and Cogs.ProductPackID=l.ProductPackID and Cogs.EffectiveDate=l.MaxEffectiveDate
 {
@@ -50,6 +54,7 @@ INNER JOIN MostRecentCogs as l on Cogs.CountryCode=l.CountryCode and Cogs.Produc
     Cogs.ActiveRecord
 }where Cogs.ActiveRecord = 'Yes';
 
+@cds.persistence.exists
 entity MostRecentExchangeRates as SELECT from MasterData.PT_TMFXRTS as XRates
 {
     key XRates.CurrencyFrom,
@@ -59,6 +64,7 @@ entity MostRecentExchangeRates as SELECT from MasterData.PT_TMFXRTS as XRates
 }where XRates.ActiveRecord = 'Yes'
 group by XRates.CurrencyFrom, XRates.CurrencyTo, XRates.ExchangeType;
 
+@cds.persistence.exists
 entity ExchangeRates as SELECT from MasterData.PT_TMFXRTS as XRates
 INNER JOIN MostRecentExchangeRates as l on XRates.CurrencyFrom=l.CurrencyFrom and XRates.CurrencyTo=l.CurrencyTo and XRates.ExchangeType=l.ExchangeType and XRates.EffDate=l.MaxEffectiveDate
 {
@@ -68,6 +74,7 @@ INNER JOIN MostRecentExchangeRates as l on XRates.CurrencyFrom=l.CurrencyFrom an
     XRates.ExchangeRate as X_RATE
 }where XRates.ActiveRecord = 'Yes';
 
+@cds.persistence.exists
 entity MostRecentApprovedPrice as SELECT from MasterData.MASTER_APPROVED_PRICE as ApprovedPrice
 {
     key ApprovedPrice.COUNTRY_CODE,
@@ -76,6 +83,7 @@ entity MostRecentApprovedPrice as SELECT from MasterData.MASTER_APPROVED_PRICE a
 }
 group by ApprovedPrice.COUNTRY_CODE, ApprovedPrice.PRODUCT_ID;
 
+@cds.persistence.exists
 entity VW_MASTER_APPROVED_PRICE as SELECT from MasterData.MASTER_APPROVED_PRICE as ApprovedPrice
 INNER JOIN MostRecentApprovedPrice as l on ApprovedPrice.COUNTRY_CODE=l.COUNTRY_CODE and ApprovedPrice.PRODUCT_ID=l.PRODUCT_ID and ApprovedPrice.EFFECTIVE_DATE=l.MaxEffectiveDate
 {
@@ -86,6 +94,7 @@ INNER JOIN MostRecentApprovedPrice as l on ApprovedPrice.COUNTRY_CODE=l.COUNTRY_
     ApprovedPrice.APPROVED_PRICE
 };
 //EITOG-215125-MEA - budgeted profitability for 2023 to be maintained at the product pack level
+@cds.persistence.exists
 entity MostRecentBudgetedProfitability as SELECT from MasterData.BUDGETEDPROFITABILITY as BudgetedProfitability
 {
     key BudgetedProfitability.COUNTRYCODE,
@@ -96,6 +105,7 @@ entity MostRecentBudgetedProfitability as SELECT from MasterData.BUDGETEDPROFITA
 }group by BudgetedProfitability.COUNTRYCODE, BudgetedProfitability.HLEVEL4_CODE,BudgetedProfitability.PRODUCTPACKID,BudgetedProfitability.PRODUCTPACKNAME;
 
 //EITOG-215125-MEA - budgeted profitability for 2023 to be maintained at the product pack level
+@cds.persistence.exists
 entity VWBUDGETEDPROFITABILITY AS SELECT from MasterData.BUDGETEDPROFITABILITY as BudgetedProfitability
 INNER JOIN MostRecentBudgetedProfitability as l on BudgetedProfitability.COUNTRYCODE = l.COUNTRYCODE and BudgetedProfitability.HLEVEL4_CODE = l.HLEVEL4_CODE and BudgetedProfitability.EFFECTIVEDATE = l.MaxEffectiveDate  and BudgetedProfitability.PRODUCTPACKID= l.PRODUCTPACKID
 {
@@ -107,12 +117,15 @@ INNER JOIN MostRecentBudgetedProfitability as l on BudgetedProfitability.COUNTRY
 };
 
 //only the active (is not the same as approved) BrandPolicies
+@cds.persistence.exists
 entity ActiveBrandPolicies as select from MasterData.BrandPolicies where ValidTo = '9999-12-31 00:00:00.000000000'; 
 
 //only the active ChannelProductPolicies
+@cds.persistence.exists
 entity ActiveChannelProductPolicies as select from MasterData.ChannelProductPolicies where ValidTo = '9999-12-31 00:00:00.000000000'; 
 
 //What is the most recent BrandPolicy
+@cds.persistence.exists
 entity MostRecentBrandPolicies as SELECT from ActiveBrandPolicies as BrandPolicies
 {
     key BrandPolicies.CountryCode,
@@ -120,6 +133,7 @@ entity MostRecentBrandPolicies as SELECT from ActiveBrandPolicies as BrandPolici
     max(BrandPolicies.ValidFrom) as MaxValidFrom:Date
 }group by BrandPolicies.CountryCode, BrandPolicies.BrandId;
 
+@cds.persistence.exists
 entity LatestBrandPolicies as SELECT from MasterData.BrandPolicies as BrandPolicies
 inner join MostRecentBrandPolicies  
     on BrandPolicies.CountryCode = MostRecentBrandPolicies.CountryCode 
@@ -131,8 +145,10 @@ inner join MostRecentBrandPolicies
 };
 
 //only the active (is not the same as approved) BrandPolicies
+@cds.persistence.exists
 entity ActiveDistributorBrandPolicies as select from MasterData.DistributorBrandPolicies where ValidTo = '9999-12-31 00:00:00.000000000'; 
 
+@cds.persistence.exists
 entity MostRecentDistributorBrandPolicies as SELECT from ActiveDistributorBrandPolicies as DistributorBrandPolicies
 {
     key DistributorBrandPolicies.CountryCode,
@@ -141,6 +157,7 @@ entity MostRecentDistributorBrandPolicies as SELECT from ActiveDistributorBrandP
     max(DistributorBrandPolicies.ValidFrom) as MaxValidFrom:Date
 }group by DistributorBrandPolicies.CountryCode, DistributorBrandPolicies.BrandId, DistributorBrandPolicies.DistributorId;
 
+@cds.persistence.exists
 entity LatestDistributorBrandPolicies as SELECT from MasterData.DistributorBrandPolicies as DistributorBrandPolicies
 inner join MostRecentDistributorBrandPolicies  
     on DistributorBrandPolicies.CountryCode = MostRecentDistributorBrandPolicies.CountryCode

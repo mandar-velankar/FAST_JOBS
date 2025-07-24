@@ -8,11 +8,15 @@ using { com.bayer.SXTENDER.TransactionalDataViews } from '../db/TransactionalDat
 using { com.bayer.SXTENDER.TransactionalDataConversion} from '../db/TransactionalDataConversion';
 using { com.bayer.SXTENDER.IntegrationDataConversion } from './IntegrationDataConversion';
 
+@cds.persistence.exists
 entity PublicMarketTenders as projection on IntegrationDataConversion.PublicMarketTenders;
+@cds.persistence.exists
 entity PublicMarketBuyers as projection on IntegrationDataConversion.PublicMarketBuyers;
+@cds.persistence.exists
 entity PublicMarketProducts as projection on IntegrationDataConversion.PublicMarketProducts;
 //entity CountryCurrency @readonly as projection on MasterDataViews.CountryCurrency;
 
+@cds.persistence.exists
 entity SalesOpportunities: cuid, managed {
     CountryCode: String;
     TenderReference: String;
@@ -34,6 +38,7 @@ entity SalesOpportunities: cuid, managed {
     Products: Composition of many SalesOpportunityProducts on Products.Opportunity = $self;
 }
 
+@cds.persistence.exists
 entity SalesOpportunityProducts: cuid, managed {
     BrandID: Integer;
     BrandName: String;

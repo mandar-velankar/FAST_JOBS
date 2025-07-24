@@ -10,12 +10,14 @@ using {com.bayer.SXTENDER.AdminData} from './AdminData';
 
 
 
+@cds.persistence.exists
 entity PriceAgreementExpiryDate as select from PriceAgreementData.PriceAgreements as PriceAgreements {
     key PriceAgreements.TenderId,
     max(PriceAgreements.ExpiryDate) as ExpiryDate:DateTime
 }group by PriceAgreements.TenderId, PriceAgreements.ExpiryDate;
 
 
+@cds.persistence.exists
 entity PriceAgreementFOC as select from TransactionalData.ProductPricing as ProductPricing
 left outer join  TransactionalData.PT_TMBDPR as PT_TMBDPR 
     on ProductPricing.CountryCode = PT_TMBDPR.CountryCode
@@ -62,6 +64,7 @@ select from TransactionalData.ProductPricing
 // } ;
 
 //EHTWQ-369968-Italy-Issue with doubled values in FAST dashboards
+@cds.persistence.exists
 entity DistinctCustomerPrice as select from PriceAgreementData.CustomerPrices as materials{
 key materials.InstituteId,
 key materials.MaterialNumber,
@@ -74,6 +77,7 @@ materials.EffectiveDate;
 
 //EHQUT-202495-Italy - fix for mapping of SAP Italy deliveries
 //EHTWQ-369968-Italy-Issue with doubled values in FAST dashboards
+@cds.persistence.exists
 entity Deliveries as select from DistinctCustomerPrice as materials
 inner join MasterData.PT_TMINST as institutes
   on materials.InstituteId=institutes.InstituteID
@@ -94,6 +98,7 @@ inner join SAP.ItalyDeliveries as italydeliveries
 
 } ;
 //EHQUT-202495-Italy - fix for mapping of SAP Italy deliveries
+@cds.persistence.exists
 entity PaMainFOCView as select from PriceAgreementFOC as FOC
 inner join PriceAgreementData.PriceAgreements as pa on pa.CountryCode = FOC.CountryCode
                                                                         and pa.OfferId = FOC.OfferID
@@ -110,6 +115,7 @@ key FOC.ProductPackId as FOCproductId:String
 } group by pa.ID,FOC.CountryCode,FOC.OfferID,FOC.ProductCode,FOC.ProductPackId ;
 
 
+@cds.persistence.exists
 entity MaterialsConcatList as select from MasterData.PT_TMSKUPRDPCK as materials{
   key materials.ProductPackID,
   key materials.CountryCode,
@@ -120,6 +126,7 @@ entity MaterialsConcatList as select from MasterData.PT_TMSKUPRDPCK as materials
            materials.ActiveRecord;
 
 
+@cds.persistence.exists
 entity PriceAgreementPriceConditionNotificationMailJobView as select from PriceAgreementData.CustomerPrices as CP 
 inner join PriceAgreementData.PriceAgreements as PA 
   on CP.PriceAgreementId = PA.ID

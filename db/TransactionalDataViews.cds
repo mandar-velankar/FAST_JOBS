@@ -9,6 +9,7 @@ using { com.bayer.SXTENDER.MasterDataLatestValues } from './MasterDataLatestValu
 using { com.bayer.SXTENDER.PricingAppData } from './PricingAppData';
 using { com.bayer.SXTENDER.BrazilContractingData } from './BrazilContractingData';
 
+@cds.persistence.exists
 entity LatestApprovalRequests as select from TransactionalData.PT_TMAPPRST as approvals{
     key approvals.OfferId,
     key approvals.ApproverEmailID,
@@ -19,6 +20,7 @@ group by approvals.OfferId,
     approvals.ApproverEmailID,
     approvals.ApproverType;
 
+@cds.persistence.exists
 entity ApprovalRequests as select from TransactionalData.PT_TMAPPRST as approvals
 inner join LatestApprovalRequests as latestApprovals
     on approvals.OfferId = latestApprovals.OfferId 
@@ -63,6 +65,7 @@ entity TenderOffers as select from TransactionalData.PT_TMTEND as tender{
 }group by tender.TenderID;
 */
 
+@cds.persistence.exists
 entity TenderOffers as select from TransactionalData.PT_TMTEND as tender 
 inner join TransactionalData.PT_TMOFRS as ActiveInactiveOffers
     on ActiveInactiveOffers.TenderID = tender.TenderID {
@@ -70,6 +73,7 @@ inner join TransactionalData.PT_TMOFRS as ActiveInactiveOffers
     max(ActiveInactiveOffers.TenderOfferNo) + 1 as NEXTOFFERID:Integer
 }group by tender.TenderID;
 
+@cds.persistence.exists
 entity OfferRevisions as select from TransactionalData.PT_TMOFRS as offer{
     key offer.TenderID as TENDERID,
     key offer.TenderOfferNo as TENDEROFFERNO,
@@ -77,6 +81,7 @@ entity OfferRevisions as select from TransactionalData.PT_TMOFRS as offer{
     max(offer.ContinuationOfferNo) + 1 as NEXTCONTINUEDOFFERNO:Integer
 }group by offer.TenderID, offer.TenderOfferNo;
 
+@cds.persistence.exists
 entity CountryTenderBrands as select from TransactionalData.PT_TMTEND as tender{
     key tender.CountryCode as COUNTRYCODE,
     key tender.Offer.Product.SKU.Product.HLEVEL4_CODE as BRANDID,
@@ -96,6 +101,7 @@ select from MasterData.PT_TMCTRY as country{
     ' All' as BRANDNAME
 };
 
+@cds.persistence.exists
 entity CountryTenderNo as select from MasterData.PT_TMCTRY as country
 left outer join TransactionalData.PT_TMTEND as tender on country.CountryCode = tender.CountryCode and (SUBSTRING(tender.TenderID, INSTR(tender.TenderID, '-', -1, 2) + 1, 2) = SUBSTRING(CURRENT_DATE, 3, 2)){
     key country.CountryCode as COUNTRY_CODE,
@@ -104,6 +110,7 @@ left outer join TransactionalData.PT_TMTEND as tender on country.CountryCode = t
 group by country.CountryCode;
 
 //EFRCL- 289937- MEA-Kindly exclude Patient Access Programs and Bonus letters from the offer history section at the bottom of the Financial Offer Tab
+@cds.persistence.exists
 entity TenderResults as select from TransactionalData.PT_TMTEND as tender{
     tender.CountryCode as COUNTRY_CODE,
     tender.TenderID as TENDER_ID,
@@ -176,6 +183,7 @@ and (tender.Offer.OfferStatusTable.STATUS = 'Quotation Submitted' or tender.Offe
 and tender.Offer.OfferStatus.STATUS in ('Offer Declined','Wholesale Offer') ));
 
 //EHQUT-Restrict the Zero Min Price for sending Notification to Controlling
+@cds.persistence.exists
 entity CountryMinPrice as select from TenderResults as results{
     key results.COUNTRY_CODE,
     results.BRAND_ID,
@@ -193,6 +201,7 @@ group by results.COUNTRY_CODE,
     results.PRODUCT_NAME,
     results.CURRENCY;
 //EHQUT-Restrict the Zero Min Price for sending Notification to Controlling
+@cds.persistence.exists
 entity AccountMinPrice as select from MasterData.AccountPreApprovedPrices as a full outer join
 TenderResults as results on results.COUNTRY_CODE = a.COUNTRY_CODE and results.INSTITUTE_ID = a.INSTITUTE_ID and results.PRODUCT_ID = a.PRODUCT_ID and results.CURRENCY = a.CURRENCY {
     key ifnull(results.COUNTRY_CODE, a.COUNTRY_CODE) as COUNTRY_CODE:String,
@@ -234,6 +243,7 @@ TenderResults as results on results.COUNTRY_CODE = a.COUNTRY_CODE and results.IN
     results.CURRENCY,
     a.CURRENCY;
 
+@cds.persistence.exists
 entity PreviousApprovalTemp as select from TransactionalData.PT_TMAPPRST as approvals
 inner join LatestApprovalRequests as latestApprovals
     on approvals.OfferId = latestApprovals.OfferId 
@@ -310,6 +320,7 @@ inner join LatestApprovalRequests as latestApprovals
    as REGULATORY_APPROVED:Integer
 }group by approvals.OfferId, approvals.productcode;
 
+@cds.persistence.exists
 entity PreviousApproval as select from PreviousApprovalTemp as temp{
     key temp.OFFER_ID,
     key temp.PRODUCT_ID,
@@ -322,6 +333,7 @@ entity PreviousApproval as select from PreviousApprovalTemp as temp{
     case when temp.BUSINESS_APPROVED = 1 then 1 else temp.REGULATORY_APPROVED end as REGULATORY_APPROVED:Integer
 };
 
+@cds.persistence.exists
 entity InstituteMap as select from MasterData.PT_TMINST as institute{
     institute.InstituteID as PARENT_ID,
     institute.InstituteID as CHILD_ID
@@ -333,6 +345,7 @@ select from MasterData.PT_TMINSHIER as hierarchy{
 }where hierarchy.ActiveRecord = 'Yes';
 
 //EFRCL- 289937- MEA-Kindly exclude Patient Access Programs and Bonus letters from the offer history section at the bottom of the Financial Offer Tab
+@cds.persistence.exists
 entity TenderHistory as select from TenderResults as results
 inner join InstituteMap as institute on results.INSTITUTE_ID = institute.CHILD_ID{
     results.COUNTRY_CODE,
@@ -385,9 +398,13 @@ group by results.COUNTRY_CODE,
             results.OUTCOME,
             results.OFFERSTATUS;
 
+@cds.persistence.exists
 entity ResultsWithNegotiation as select OfferID, ProductCode from TransactionalData.PT_TMTRRES where Active = 1 and Outcome = 'FOC negotiation';
+
+@cds.persistence.exists
 entity ResultsWithAppealInProgress as select TenderID, OfferID, ProductCode from TransactionalData.PT_TMTRRES where Active = 1 and Outcome = 'Appeal in Progress';
 
+@cds.persistence.exists
 entity OfferStatus as select from TransactionalData.PT_TMOFRS as offer{
     key offer.OfferID as OFFER_ID,
     case
@@ -418,13 +435,15 @@ entity OfferStatus as select from TransactionalData.PT_TMOFRS as offer{
                 case 
                     when exists (select * from ResultsWithNegotiation where OfferID = offer.OfferID) then 'In FOC Negotiation'
                     when exists (select * from ResultsWithAppealInProgress where OfferID = offer.OfferID) then 'Appeal in Progress'
+                    when (offer.OfferStatusTable.CountryCode = 'NL' or offer.OfferStatusTable.CountryCode = 'PL') and offer.OfferStatusTable.TableStatus is not null then offer.OfferStatusTable.TableStatus
                     else offer.OfferStatusTable.STATUS 
             end
         else offer.OfferStatusTable.STATUS 
     end as STATUS:String(255)
 }where offer.OfferStatusTable.Active = 1
-group by offer.OfferID, offer.WholesaleOffer, offer.OfferStatusTable.STATUS; //group by missing?
+group by offer.OfferID, offer.WholesaleOffer, offer.OfferStatusTable.STATUS, offer.OfferStatusTable.CountryCode, offer.OfferStatusTable.TableStatus; //group by missing?
 
+@cds.persistence.exists
 entity OfferValues as select from TransactionalData.PT_TMOFRS as offer{
     offer.TenderID as TENDER_ID,
     key offer.OfferID as OFFER_ID,
@@ -475,11 +494,13 @@ group by
     offer.Quotation.SubmittedOn,
     offer.Distributor.DistributorName;
 
+@cds.persistence.exists
 entity BrandsInTender as select from TransactionalData.PT_TMTEND as tender{
     tender.CountryCode as COUNTRYCODE,
     key tender.TenderID as TENDERID,
     key tender.Offer.Product.SKU.Product.HLEVEL4_CODE as BRANDID,
-    key tender.Offer.OfferID as OFFERID
+    key tender.Offer.OfferID as OFFERID,
+    tender.Offer.Product.SKU.Product.HLEVEL4_NAME as BRANDNAME
 }
 where tender.Active = 1
 and tender.Offer.Active = 1
@@ -488,6 +509,7 @@ and tender.Offer.Product.Active = 1;
 //EHQUT-189207-Creation Date instead of BidDueDate on main page
 //EHQUT-197392-MEA - additional edit access to Tender Results and Delivery Tracking tabs
 //EFRCL-283873- Italy replace Publication date with Termination date
+@cds.persistence.exists
 entity TenderOfferMaster as select from TransactionalData.PT_TMTEND as tender{
     tender.CountryCode as COUNTRY,
     key tender.TenderID as TENDER_ID,
@@ -503,7 +525,7 @@ entity TenderOfferMaster as select from TransactionalData.PT_TMTEND as tender{
     ifnull(tender.Offer.OfferStatus.STATUS, 'Offer Created') as STATUS:String(255),
     tender.PublicationDate as PUBLICATION_DATE,
     tender.TerminationDate as TERMINATION_DATE,
-    tender.SubmittedOn as CREATION_DATE, 
+    case when tender.CountryCode = 'IT' then tender.createdAt else tender.SubmittedOn end as CREATION_DATE:Date, 
     tender.Offer.InternalBidDueDate as INTERNAL_BID_DUE_DATE,
     case when tender.Offer.RevisedOfferNo = 0 and tender.Offer.ContinuationOfferNo = 0 then tender.BidDueDate else tender.Offer.NewOfferDueDate end as CLOSING_DATE:Date,
     ifnull(tender.Offer.ActiveOffer, 1) as ACTIVE_OFFER:Integer,
@@ -520,6 +542,7 @@ entity TenderOfferMaster as select from TransactionalData.PT_TMTEND as tender{
 }where tender.Active = 1
 and ifnull(Offer.Active, 1) = 1;
 
+@cds.persistence.exists
 entity OfferProductPlus as select from TransactionalData.PT_TMOFPR as offerProduct{
     *,
     offerProduct.SKU.Product.HLEVEL4_CODE as HLEVEL4_CODE,
@@ -529,6 +552,7 @@ entity OfferProductPlus as select from TransactionalData.PT_TMOFPR as offerProdu
     offerProduct.Offer.Tender.InstituteID as INSTITUTE_ID
 };
 //EITOG-215125-MEA - budgeted profitability for 2023 to be maintained at the product pack level
+@cds.persistence.exists
 entity OfferProductConsolidation as select from OfferProductPlus as offerProduct
 left outer join MasterDataViews.DirectBrand as directBrand
     on offerProduct.INSTITUTE_ID = directBrand.INSTITUTE_ID
@@ -637,11 +661,12 @@ left outer join TransactionalData.ProductPricing as productPricing
     offerProduct.Price.FOC as FOC,
     offerProduct.Price.FOCType as FOC_TYPE,
 	offerProduct.Price.FOC_ABS_PCT as FOC_ABS_PCT,
-	offerProduct.Price.COGS * offerProduct.Price.SpotRate / (case when offerProduct.UnitPerPack = 'Unit' then offerProduct.SKU.PACKFACTOR else 1 end) as COGS:Double,
+	offerProduct.Price.COGS * offerProduct.Price.BudgetRate / (case when offerProduct.UnitPerPack = 'Unit' then offerProduct.SKU.PACKFACTOR else 1 end) as COGS:Double,
 	offerProduct.Price.BudgetRate as BUDGET_RATE,
     offerProduct.Price.SpotRate as SPOT_RATE,
     offerProduct.Price.BusinessCasePrice as BUSINESS_CASE_PRICE,
     offerProduct.Price.Discount as DISCOUNT,
+    offerProduct.Price.Deductions,
     offerProduct.Price.AdditionalDiscount as ADDITIONAL_DISCOUNT,
     offerProduct.Price.StandardDiscount as STANDARD_DISCOUNT,
     offerProduct.Price.FOCStep  as FOC_STEP,
@@ -687,9 +712,11 @@ left outer join TransactionalData.ProductPricing as productPricing
     offerProduct.Custom.Integer_1 as PackSizeRequired,
     offerProduct.Custom.Date_1 as EARLIEST_DATE,
     offerProduct.Comment,
-    offerProduct.AlternateOfferYN
+    offerProduct.AlternateOfferYN,
+    offerProduct.Custom.Integer_1 as ItemNumber
 }where offerProduct.Active = 1 and offerProduct.Offer.Active = 1 and offerProduct.Offer.Tender.Active = 1 and offerProduct.ActiveProduct = 1;
 
+@cds.persistence.exists
 entity OfferSignatory1 as select from TransactionalData.PT_TMOFRS as offer
 inner join ApprovalRequests as approvalRequest
     on  approvalRequest.TenderID = offer.TenderID
@@ -713,6 +740,7 @@ left outer join TransactionalData.PT_TMQUTO as quotation
     ifnull(quotation.Signatory1.TITLE, signatory.TITLE) as TITLE:String
 };
 
+@cds.persistence.exists
 entity OfferSignatory2 as select from TransactionalData.PT_TMOFRS as offer
 inner join ApprovalRequests as approvalRequest
     on  approvalRequest.TenderID = offer.TenderID
@@ -737,6 +765,7 @@ left outer join TransactionalData.PT_TMQUTO as quotation
 };
 
 //EHQUT-RITM12706398-OfferValidity for SEWA
+@cds.persistence.exists
 entity OfferConsolidation as select from TransactionalData.PT_TMOFRS as offer
 left outer join MasterData.COUNTRY_LEGAL_ENTITY_SIGNATORIES as signatory1Default
     on offer.SellingCompany = signatory1Default.LEGAL_ENTITY_CODE
@@ -787,6 +816,21 @@ left outer join TransactionalDataViews.ApprovalRequests as approvalRequests
           then ifnull(offer.Quotation.OfferValidity,ADD_MONTHS(CURRENT_DATE,1))
         when offer.CountryCode = 'IT'
            then ifnull(offer.Quotation.OfferValidity, ifnull(offer.Tender.OfferValidity, TO_DATE(TO_NVARCHAR(YEAR(ADD_YEARS(CURRENT_DATE, date_settings.NextYearDelta))) || '-' || TO_NVARCHAR(date_settings.NextMonth) || '-' ||TO_NVARCHAR(date_settings.NextDay))))
+        when offer.CountryCode = 'TH'
+            then
+                case
+                    when offer.Quotation.OfferValidity is null 
+                        then
+                            case
+                                when offer.Tender.Custom.String_5 = 'Days'
+                                    then  ADD_DAYS(CURRENT_DATE, offer.Tender.ContractLength)
+                                when offer.Tender.Custom.String_5 = 'Months'
+                                    then  ADD_MONTHS(CURRENT_DATE, offer.Tender.ContractLength)
+                                when offer.Tender.Custom.String_5 = 'Years'
+                                    then  ADD_YEARS(CURRENT_DATE, offer.Tender.ContractLength)
+                            end
+                    else offer.Quotation.OfferValidity
+                end
        else ifnull(offer.Quotation.OfferValidity, TO_DATE(TO_NVARCHAR(YEAR(ADD_YEARS(CURRENT_DATE, date_settings.NextYearDelta))) || '-' || TO_NVARCHAR(date_settings.NextMonth) || '-' ||TO_NVARCHAR(date_settings.NextDay)))
     end as OFFERVALIDITY,
 
@@ -886,6 +930,7 @@ left outer join TransactionalDataViews.ApprovalRequests as approvalRequests
     offer.Comment as ClientComment,
     offer.Tender.Custom.String_2 as Regions,
     offer.Tender.Country.Region,
+    offer.InternalBidDueDate,
     offer.Tender.Custom.Integer_2 as Contract_Length2,
     offer.Tender.Custom.Integer_3 as Contract_Length3
 }where offer.Active = 1 and offer.Tender.Active = 1
@@ -977,8 +1022,11 @@ left outer join TransactionalDataViews.ApprovalRequests as approvalRequests
           offer.Tender.Custom.Integer_3,
           offer.Comment,
           offer.Tender.Custom.String_2,
-          offer.Tender.Country.Region;
+          offer.Tender.Country.Region,
+          offer.InternalBidDueDate,
+          offer.Tender.Custom.String_5;
 
+@cds.persistence.exists
 entity QuotationUpdates as select from TransactionalData.PT_TMQUTO as quotation
 inner join TransactionalDataViews.OfferStatus as status on quotation.OfferID = status.OFFER_ID{
     key 'PT_TMQUTO(OfferID=''' || quotation.OfferID || ''',Active=1,OfferDate=' || quotation.OfferDate || ')' as QUOTATION_PATH:String(500),
@@ -994,6 +1042,7 @@ inner join TransactionalDataViews.OfferStatus as status on quotation.OfferID = s
 and status.STATUS='Offer Approved'
 and quotation.Active = 1;
 
+@cds.persistence.exists
 entity PreApprovedPrices as select from PricingAppData.InstituteGroupPriceLatest as price{
     key price.InstituteGroup.Institutes.InstituteId,
     key price.ProductPackId,
@@ -1002,6 +1051,7 @@ entity PreApprovedPrices as select from PricingAppData.InstituteGroupPriceLatest
     case when price.UoM = 'Unit' then price.MSP * price.ProductPack.PACKFACTOR else price.MSP end as PricePack:Double
 };
 //EHQUT-CR8
+@cds.persistence.exists
 entity ProductPricingView as select from TransactionalData.PT_TMOFRS as offer 
 inner join TransactionalData.PT_TMOFPR as product on product.OfferID = offer.OfferID
 left outer join TransactionalData.ProductPricing as productPricing 
@@ -1072,7 +1122,7 @@ left outer join TransactionalData.PriceCondition as priceCondition
     consumerPrices.FloorPrice,
     priceCondition.PriceConditionClassification.ConditionType as ConditionType,
     case 
-        when consumerPrices.ConsumerPriceExclPP is not null
+        when consumerPrices.ConsumerPriceExclPP is not null and consumerPrices.ConsumerPriceExclPP <> 0
             then
                 (consumerPrices.ConsumerPriceExclPP - consumerPrices.MaxPriceNhsPP * (1 - (PT_TMBDPR.AdditionalDiscount/100))) / consumerPrices.ConsumerPriceExclPP
         else null
@@ -1105,7 +1155,9 @@ left outer join TransactionalData.PriceCondition as priceCondition
         else product.RequestedVolume 
     end as totalVolume:Double,
     case   
-        when PT_TMBDPR.NetofferPrice is not null
+        when (PT_TMBDPR.NetofferPrice is not null and PT_TMBDPR.NetofferPrice <> 0) 
+        and( product.RequestedVolume is not null and product.RequestedVolume <> 0) 
+        and (product.RequestedVolume <> PT_TMBDPR.FOC)
             then 
                 round(PT_TMBDPR.NetofferPrice * ( 
                     (
@@ -1208,7 +1260,9 @@ left outer join TransactionalData.PriceCondition as priceCondition
         else null
     end as GrossProfit:Double,
     case   
-        when PT_TMBDPR.NetofferPrice is not null
+        when (PT_TMBDPR.NetofferPrice is not null and PT_TMBDPR.NetofferPrice <> 0) 
+        and ( product.RequestedVolume is not null and product.RequestedVolume <> 0) 
+        and (product.RequestedVolume <> PT_TMBDPR.FOC)
             then 
                 round(1 - ((
                     (
@@ -1257,6 +1311,7 @@ left outer join TransactionalData.PriceCondition as priceCondition
  * This view contains calculated fields used on the Spain financial offers page
  */
 //CR2
+@cds.persistence.exists
 entity PriceConditionView as select from TransactionalData.PT_TMTEND as tender 
 inner join TransactionalData.PT_TMOFRS as offer 
     on offer.TenderID = tender.TenderID
@@ -1347,6 +1402,8 @@ left outer join MasterDataLatestValues.ActiveChannelProductPolicies as channelpr
                 case
                     when institute.ApplicableTaxRate = 'E1'
                         then masterPrices.TaxE1
+                    when institute.ApplicableTaxRate = 'E2'
+                        then masterPrices.TaxE2
                     else 
                         masterPrices.TaxES
                 end
@@ -1364,6 +1421,7 @@ left outer join MasterDataLatestValues.ActiveChannelProductPolicies as channelpr
  * This view contains calculated fields used in the Standard Tender application financial offers page
  * for the ConditionType 'Price
  */
+@cds.persistence.exists
 entity StandardTenderPriceConditionView as select from TransactionalData.PT_TMTEND as tender 
 inner join TransactionalData.PT_TMOFRS as offer 
     on offer.TenderID = tender.TenderID
@@ -1371,6 +1429,10 @@ inner join TransactionalData.PT_TMOFRS as offer
 inner join TransactionalData.PT_TMOFPR as product 
     on product.OfferID = offer.OfferID
     and product.Active = 1 
+left outer join MasterDataLatestValues.CountryRegisteredPrice as RegisteredPrice
+    on  RegisteredPrice.COUNTRY_CODE = product.CountryCode
+    and RegisteredPrice.PRODUCT_ID   = product.ProductCode
+    and RegisteredPrice.CURRENCY =  offer.Currency
 inner join MasterData.PT_TMPRDPCK as productPacks
     on productPacks.PRODUCTPACKID = product.ProductCode
     and productPacks.ACTIVERECORD = 'Yes' 
@@ -1383,6 +1445,15 @@ left outer join TransactionalData.PriceCondition as priceCondition
     on priceConditionClassification.ID = priceCondition.PriceConditionClassification.ID
     and product.OfferID = priceCondition.OfferID
     and product.ProductCode = priceCondition.ProductCode
+left outer join MasterData.NLPPP as nlppp 
+    on nlppp.CountryCode = product.CountryCode
+    and nlppp.PRODUCTPACKID = product.ProductCode
+    and nlppp.Status = 'Approved'
+    and nlppp.StartDate <= CURRENT_DATE
+    and CURRENT_DATE <= nlppp.EndDate
+left outer join TransactionalDataViews.PriceConditionCurrentSectionTaiwanView as curentSection
+	on curentSection.INSTITUTE_ID = tender.InstituteID
+	and curentSection.ProductCode = product.ProductCode
 {
     tender.CountryCode,
     tender.Country.Region,
@@ -1405,23 +1476,24 @@ left outer join TransactionalData.PriceCondition as priceCondition
     priceConditionClassification.isMain,
     case 
         when product.UnitPerPack = 'Unit'
-            then product.RegisteredPrice.REGISTERED_PRICE / product.SKU.PACKFACTOR
-        else product.RegisteredPrice.REGISTERED_PRICE
+            then RegisteredPrice.REGISTERED_PRICE / product.SKU.PACKFACTOR
+        else RegisteredPrice.REGISTERED_PRICE
     end as CurrentBasePrice:Double,
     @Core.Computed: false
     case 
         when product.UnitPerPack = 'Unit'
-            then  ifnull(priceCondition.Price0, (product.RegisteredPrice.REGISTERED_PRICE / product.SKU.PACKFACTOR))
-        else ifnull(priceCondition.Price0, product.RegisteredPrice.REGISTERED_PRICE)
+            then  ifnull(priceCondition.Price0, (RegisteredPrice.REGISTERED_PRICE / product.SKU.PACKFACTOR))
+        else ifnull(priceCondition.Price0, RegisteredPrice.REGISTERED_PRICE)
     end as BasePrice:Double,
+    nlppp.PPP as masterPriceAIP: Double,
     @Core.Computed: false
     case 
         when priceCondition.Price1 is null or priceCondition.Price1 = 0 and tender.CountryCode = 'TW'
             then 
                 case 
                     when product.UnitPerPack = 'Unit'
-                        then  ifnull(priceCondition.Price0, (product.RegisteredPrice.REGISTERED_PRICE / product.SKU.PACKFACTOR))
-                        else ifnull(priceCondition.Price0, product.RegisteredPrice.REGISTERED_PRICE)
+                        then  ifnull(priceCondition.Price0, (RegisteredPrice.REGISTERED_PRICE / product.SKU.PACKFACTOR))
+                        else ifnull(priceCondition.Price0, RegisteredPrice.REGISTERED_PRICE)
                 end
         else
             ifnull(priceCondition.Price1, 0)
@@ -1453,13 +1525,33 @@ left outer join TransactionalData.PriceCondition as priceCondition
     end as Level3Discount1:Double,
     offer.Currency,
     @Core.Computed: false
+    case 
+        when priceConditionClassification.ConditionType = 'WithMaximumPrice'
+            then ifnull(priceCondition.OfferPrice, priceCondition.Price1 * (1 - ifnull(priceCondition.Level2Discount1, 0)))
+        when priceConditionClassification.ConditionType = 'SpecialPrice'
+            then priceCondition.OfferPrice
+        else null
+    end as SpecialPrice: Double,
+    @Core.Computed: false
+    ifnull(priceCondition.Price0, 0) as Price0: Double,
+    @Core.Computed: false
+    ifnull(priceCondition.Price1, 0) as Price1: Double,
+    @Core.Computed: false
+    ifnull(priceCondition.Price2, 0) as Price2: Double,
+    @Core.Computed: false
+    ifnull(priceCondition.Level2Discount1, offer.Custom.Double_9) as Level2Discount1 : Double,
+    @Core.Computed: false
+    ifnull(offer.Custom.Double_9, 0) as MaxWholesalerMargin : Double,
+    @Core.Computed: false
+    ifnull(product.Price.COGS, (product.Cogs.COGS / productPacks.PACKFACTOR)) as COGS: Double,
+    @Core.Computed: false
     ifnull(priceCondition.Last12MonthsVolumeMainCustomer,1) as Last12MonthsVolumeMainCustomer:Integer,
     @Core.Computed: false
     ifnull(priceCondition.Last12MonthsVolumeBranch, 1) as Last12MonthsVolumeBranch:Integer,
     @Core.Computed: false
     ifnull(priceCondition.AnticipatedYearlyVolumeMainCustomer,1) as AnticipatedYearlyVolumeMainCustomer:Integer,
     @Core.Computed: false
-    priceCondition.AnticipatedYearlyVolumeBranch,
+    ifnull(priceCondition.AnticipatedYearlyVolumeBranch,1) as AnticipatedYearlyVolumeBranch: Integer,
     @Core.Computed: false
     ifnull(priceCondition.Level2Discount2,0) as Level2Discount2:Double,
      @Core.Computed: false
@@ -1484,9 +1576,62 @@ left outer join TransactionalData.PriceCondition as priceCondition
     ifnull(priceCondition.FreeGoods_Amount,0) as FreeGoods_Amount:Double,
      @Core.Computed: false
     ifnull(priceCondition.FreeGoods_Percentage,0) as FreeGoods_Percentage:Double,
-    priceCondition.NLPriceConditionType
+    priceCondition.NLPriceConditionType,
+    @Core.Computed: false
+    ifnull(priceCondition.CurrentBasePrice, curentSection.Price0) as TWCurrentBasePrice: Decimal,
+    @Core.Computed: false
+    ifnull(priceCondition.CurrentInvoicePrice, curentSection.Price1) as CurrentInvoicePrice: Decimal,
+    @Core.Computed: false
+    ifnull(priceCondition.CurrentGeneralDiscount, curentSection.Level2Discount1) as CurrentGeneralDiscount: Double,
+    @Core.Computed: false
+    ifnull(priceCondition.CurrentGeneralDiscount_Amount, curentSection.GeneralDiscount_Amount) as CurrentGeneralDiscount_Amount: Double,
+    @Core.Computed: false
+    ifnull(priceCondition.CurrentSecondDiscount, curentSection.Level2Discount2) as CurrentSecondDiscount: Double,
+    @Core.Computed: false
+    ifnull(priceCondition.CurrentSecondlDiscount_Amount, curentSection.SecondDiscount_Amount) as CurrentSecondlDiscount_Amount: Double,
+    @Core.Computed: false
+    ifnull(priceCondition.CurrentNetOfferPrice, curentSection.Price2) as CurrentNetOfferPrice: Decimal,
+    @Core.Computed: false
+    ifnull(priceCondition.CurrentAnnualDiscount_Amount_Branch, curentSection.AnnualDiscountForBranch) as CurrentAnnualDiscount_Amount_Branch: Double,
+    @Core.Computed: false
+    ifnull(priceCondition.CurrentAnnualDiscount_Amount_Per_Unit, curentSection.Level3Discount1) as CurrentAnnualDiscount_Amount_Per_Unit: Double,
+    @Core.Computed: false
+    ifnull(priceCondition.CurrentNetPrice, curentSection.Price3) as CurrentNetPrice: Double,
+    @Core.Computed: false
+    ifnull(priceCondition.CurrentNegotiationPrice, curentSection.AwardedPrice) as CurrentNegotiationPrice: Double,
+    @Core.Computed: false
+    ifnull(priceCondition.CurrentTotalYearlyValueMainCustomer, curentSection.TotalYearlyValueMainCustomer) as CurrentTotalYearlyValueMainCustomer: Double,
+    @Core.Computed: false
+    ifnull(priceCondition.CurrentTotalYearlyValueBranch, curentSection.TotalYearlyValueBranch) as CurrentTotalYearlyValueBranch: Double,
+    @Core.Computed: false
+    ifnull(priceCondition.CurrentTotalDiscountNHI, curentSection.TotalDiscountNHI) as CurrentTotalDiscountNHI: Double,
+    @Core.Computed: false
+    ifnull(priceCondition.CurrentTotalDiscountInvoice, curentSection.TotalDiscountInvoice) as CurrentTotalDiscountInvoice: Double,
+    priceCondition.ConfidentialPrice,
+    priceCondition.PVL,
+    priceCondition.RoyalDecree,
+    priceCondition.Liquidation,
+    priceCondition.RefundDate,
+    priceCondition.Settlement.ID as Settlement_ID,
+    priceCondition.PriceConditionCode,
+    priceCondition.Discount as ESDiscount:Double,
+    priceCondition.RoyalDecreeValue,
+    priceCondition.RoyalDecreeIncl,
+    priceCondition.StandardDiscount,
+    priceCondition.AdditionalDiscount,
+    priceCondition.NetPriceWithoutTaxBeforeDeductionRD,
+    priceCondition.NetPriceWithoutTaxAfterDeductionRD,
+    priceCondition.NetPriceWithTaxAfterDeductionRD,
+    priceCondition.NetPriceWithoutTax,
+    priceCondition.NetPriceWithTax,
+    product.MaxPrice as MaximumPrice: Double,
+    priceCondition.ConfidentialDiscount,
+    priceCondition.RoyalDecreePercentage_1,
+    priceCondition.MonthlyRentPerUnit,
+    priceCondition.AnnualValue
 }where tender.Active = 1;
 //CR2
+@cds.persistence.exists
 entity TenderRappelView as select from TransactionalData.PT_TMTEND as tender 
 inner join TransactionalData.PT_TMOFRS as offer 
     on offer.TenderID = tender.TenderID
@@ -1526,6 +1671,7 @@ group by tender.TenderID,
         institute.InstituteID, 
         priceCondition.PriceConditionCode; 
 
+@cds.persistence.exists
 entity TenderFOCView as select from TransactionalData.PT_TMTEND as tender 
 inner join TransactionalData.PT_TMOFRS as offer 
     on offer.TenderID = tender.TenderID
@@ -1564,6 +1710,7 @@ group by tender.TenderID, offer.OfferID, product.ProductCode,institute.Institute
 /**
  * This view contains Tender History fields used on the Spain financial offers page
  */
+@cds.persistence.exists
 entity TenderHistorySpain as select from TransactionalData.PT_TMTEND as tender
 inner join TransactionalData.PT_TMOFRS as offer 
     on offer.TenderID = tender.TenderID
@@ -1651,6 +1798,7 @@ group by tender.TenderID,
     priceCondition.Discount,    
     product.Results.Outcome;
 
+@cds.persistence.exists
 entity TenderHistoryBrazilAdhesionContracts as select from BrazilContractingData.Contracts as contract
     inner join BrazilContractingData.ContractProducts as contractProduct
         on contractProduct.Contract.ID = contract.ID
@@ -1673,6 +1821,7 @@ entity TenderHistoryBrazilAdhesionContracts as select from BrazilContractingData
 		 contract.ContractType,
 		 product.RequestedVolume;    
 
+@cds.persistence.exists
 entity TenderHistoryBrazil as select from TransactionalData.PT_TMTEND as tender
 inner join TransactionalData.PT_TMOFRS as offer 
     on offer.TenderID = tender.TenderID
@@ -1746,6 +1895,7 @@ group by tender.TenderID,
     /**
  * This view contains Brazil PriceCondition ZWP0 price fields used in the PriceConditionBrazilView
  */
+@cds.persistence.exists
 entity PriceConditionPriceListView as select from TransactionalData.PT_TMTEND as tender 
 inner join TransactionalData.PT_TMOFRS as offer 
     on offer.TenderID = tender.TenderID
@@ -1791,6 +1941,7 @@ left outer join MasterDataViews.MostRecentBrazilMasterPricesView as masterPrices
     /**
  * This view contains Brazil PriceCondition ZWD4 price fields used in the PriceConditionBrazilView
  */
+@cds.persistence.exists
 entity PriceConditionStandardDiscountView as select from TransactionalData.PT_TMTEND as tender 
 inner join TransactionalData.PT_TMOFRS as offer 
     on offer.TenderID = tender.TenderID
@@ -1833,6 +1984,7 @@ left outer join MasterDataViews.MostRecentBrazilMasterPricesView as masterPrices
     /**
  * This view contains Brazil PriceCondition IBRX price fields used in the PriceConditionBrazilView
  */
+@cds.persistence.exists
 entity PriceConditionICMSTaxesView as select from TransactionalData.PT_TMTEND as tender 
 inner join TransactionalData.PT_TMOFRS as offer 
     on offer.TenderID = tender.TenderID
@@ -1872,6 +2024,7 @@ left outer join MasterDataViews.MostRecentBrazilMasterPricesView as masterPrices
     masterPrices.Value;
 
 
+@cds.persistence.exists
 entity DirectIndirectDistributor as select from MasterData.PT_TMDIST {
     key DistributorID, 
     key CountryCode,
@@ -1883,6 +2036,7 @@ entity DirectIndirectDistributor as select from MasterData.PT_TMDIST {
     end as isDirect:Boolean,
 };
 
+@cds.persistence.exists
 entity DirectIndirectCustomers as select from TransactionalData.PT_TMTEND as tender 
 inner join TransactionalData.PT_TMOFRS as o on o.TenderID = tender.TenderID and o.Active = 1
 inner join MasterData.PT_TMINST as inst on tender.InstituteID = inst.InstituteID 
@@ -1904,6 +2058,7 @@ inner join DirectIndirectDistributor as dist on dist.DistributorID = o.Distribut
  * TODO: use the below join if you want to use DirectIndirectCustomers
  * inner join DirectIndirectCustomers as customer on tender.InstituteID = customer.InstituteID and tender.TenderID = customer.TenderID and tender.OfferID = customer.OfferID
  */
+@cds.persistence.exists
 entity PriceConditionBrazilView as select from TransactionalData.PT_TMTEND as tender 
 inner join TransactionalData.PT_TMOFRS as offer 
     on offer.TenderID = tender.TenderID
@@ -2001,6 +2156,7 @@ left outer join TransactionalData.PriceCondition as priceCondition
     priceCondition.CapBrazil.CAP as CapValue,
     }where tender.Active = 1 and tender.CountryCode = 'BR';
 
+@cds.persistence.exists
     entity OfferValidation {
             OFFERSTATUSPATH       : String(124) not null;
             TENDERID              : String(50) not null;
@@ -2069,7 +2225,7 @@ left outer join TransactionalData.PriceCondition as priceCondition
             BID_DUE_DATE          : Date; // Chile
             TENDER_SUBMITTED_BY   : String; // Chile
             REMARKS               : String(5000);
-            CUSTOM_REMARKS        : String(500) not null;
+            CUSTOM_REMARKS        : String not null;
             DELIVERYTERMS         : String(5000);
             PAYMENTTERMS          : String(5000);
             SHIPMENTTERMS         : String(5000);
@@ -2102,14 +2258,245 @@ left outer join TransactionalData.PriceCondition as priceCondition
             ContractLength         : Integer;
             ContractExtenseion     : Integer;
             NumberOfExtension      : Integer;  //PT_TMTEND/CUSTOM_INTEGER_1
-            ClientComment          : String(500);
-            Comment                : String(500);
+            ClientComment          : String;
+            Comment                : String;
             Regions                : String;
             InternalDueDate        : Date;
             ExpectedAwardDate      : Date;
+            Unitofvalidityperiod   : String;
+			DeliveryDue            : Integer;
+			Unitofdeliverydue      : String;
+			QuotationDeliverymethod : String;
+			QuotationRecipientname  : String;
+			QuotationRecipientcontact : String;
+			Expectdatetoreceivethedocument: Date;
+            RequestorPphoneNnumber: Integer;
+            BayerRepresentativeName: String;
+            BayerRepresentativePhoneNumber: Integer;
+            PeriodOfBankGauranteeStart: Date;
+            PeriodOfBankGauranteeEnd: Date;
+            BGValueBaht: Double;
+            TenderAnnouncementReference: String;
             Contract_Length1       : Integer; //PT_TMTEND/CUSTOM_INTEGER_1
             Contract_Length2       : Integer; //PT_TMTEND/CUSTOM_INTEGER_2
             Contract_Length3       : Integer; //PT_TMTEND/CUSTOM_INTEGER_3
+            ContractLenghtUnit: String;
+            AttentionTo: String;
+            QuotationDate: Date;
+            InternalBidDueDate     : Date;
+            Tender_Custom_Integer_1: Integer;
+            Tender_Custom_Integer_2: Integer;
+            Tender_Custom_Integer_3: Integer;
+            Tender_Custom_Integer_4: Integer;
+            Tender_Custom_Integer_5: Integer;
+            Tender_Custom_Integer_6: Integer;
+            Tender_Custom_Integer_7: Integer;
+            Tender_Custom_Integer_8: Integer;
+            Tender_Custom_Integer_9: Integer;
+            Tender_Custom_Integer_10: Integer;
+            Tender_Custom_String_1: String;
+            Tender_Custom_String_2: String;
+            Tender_Custom_String_3: String;
+            Tender_Custom_String_4: String;
+            Tender_Custom_String_5: String;
+            Tender_Custom_String_6: String;
+            Tender_Custom_String_7: String;
+            Tender_Custom_String_8: String;
+            Tender_Custom_String_9: String;
+            Tender_Custom_String_10: String;
+            Tender_Custom_String_11: String;
+            Tender_Custom_String_12: String;
+            Tender_Custom_String_13: String;
+            Tender_Custom_String_14: String;
+            Tender_Custom_String_15: String;
+            Tender_Custom_String_16: String;
+            Tender_Custom_String_17: String;
+            Tender_Custom_String_18: String;
+            Tender_Custom_String_19: String;
+            Tender_Custom_String_20: String;
+            Tender_Custom_Double_1: Double;
+            Tender_Custom_Double_2: Double;
+            Tender_Custom_Double_3: Double;
+            Tender_Custom_Double_4: Double;
+            Tender_Custom_Double_5: Double;
+            Tender_Custom_Double_6: Double;
+            Tender_Custom_Double_7: Double;
+            Tender_Custom_Double_8: Double;
+            Tender_Custom_Double_9: Double;
+            Tender_Custom_Double_10: Double;
+            Tender_Custom_Date_1: Date;
+            Tender_Custom_Date_2: Date;
+            Tender_Custom_Date_3: Date;
+            Tender_Custom_Date_4: Date;
+            Tender_Custom_Date_5: Date;
+            Tender_Custom_Date_6: Date;
+            Tender_Custom_Date_7: Date;
+            Tender_Custom_Date_8: Date;
+            Tender_Custom_Date_9: Date;
+            Tender_Custom_Date_10: Date;
+            Tender_Custom_Boolean_1: Boolean;
+            Tender_Custom_Boolean_2: Boolean;
+            Tender_Custom_Boolean_3: Boolean;
+            Tender_Custom_Boolean_4: Boolean;
+            Tender_Custom_Boolean_5: Boolean;
+            Tender_Custom_Boolean_6: Boolean;
+            Tender_Custom_Boolean_7: Boolean;
+            Tender_Custom_Boolean_8: Boolean;
+            Tender_Custom_Boolean_9: Boolean;
+            Tender_Custom_Boolean_10: Boolean;
+            Tender_Custom_Datetime_1: DateTime;
+            Tender_Custom_Datetime_2: DateTime;
+            Tender_Custom_Datetime_3: DateTime;
+            Tender_Custom_Datetime_4: DateTime;
+            Tender_Custom_Datetime_5: DateTime;
+            Tender_Custom_Datetime_6: DateTime;
+            Tender_Custom_Datetime_7: DateTime;
+            Tender_Custom_Datetime_8: DateTime;
+            Tender_Custom_Datetime_9: DateTime;
+            Tender_Custom_Datetime_10: DateTime;
+            Offer_Custom_Integer_1: Integer;
+            Offer_Custom_Integer_2: Integer;
+            Offer_Custom_Integer_3: Integer;
+            Offer_Custom_Integer_4: Integer;
+            Offer_Custom_Integer_5: Integer;
+            Offer_Custom_Integer_6: Integer;
+            Offer_Custom_Integer_7: Integer;
+            Offer_Custom_Integer_8: Integer;
+            Offer_Custom_Integer_9: Integer;
+            Offer_Custom_Integer_10: Integer;
+            Offer_Custom_String_1: String;
+            Offer_Custom_String_2: String;
+            Offer_Custom_String_3: String;
+            Offer_Custom_String_4: String;
+            Offer_Custom_String_5: String;
+            Offer_Custom_String_6: String;
+            Offer_Custom_String_7: String;
+            Offer_Custom_String_8: String;
+            Offer_Custom_String_9: String;
+            Offer_Custom_String_10: String;
+            Offer_Custom_String_11: String;
+            Offer_Custom_String_12: String;
+            Offer_Custom_String_13: String;
+            Offer_Custom_String_14: String;
+            Offer_Custom_String_15: String;
+            Offer_Custom_String_16: String;
+            Offer_Custom_String_17: String;
+            Offer_Custom_String_18: String;
+            Offer_Custom_String_19: String;
+            Offer_Custom_String_20: String;
+            Offer_Custom_Double_1: Double;
+            Offer_Custom_Double_2: Double;
+            Offer_Custom_Double_3: Double;
+            Offer_Custom_Double_4: Double;
+            Offer_Custom_Double_5: Double;
+            Offer_Custom_Double_6: Double;
+            Offer_Custom_Double_7: Double;
+            Offer_Custom_Double_8: Double;
+            Offer_Custom_Double_9: Double;
+            Offer_Custom_Double_10: Double;
+            Offer_Custom_Date_1: Date;
+            Offer_Custom_Date_2: Date;
+            Offer_Custom_Date_3: Date;
+            Offer_Custom_Date_4: Date;
+            Offer_Custom_Date_5: Date;
+            Offer_Custom_Date_6: Date;
+            Offer_Custom_Date_7: Date;
+            Offer_Custom_Date_8: Date;
+            Offer_Custom_Date_9: Date;
+            Offer_Custom_Date_10: Date;
+            Offer_Custom_Boolean_1: String;
+            Offer_Custom_Boolean_2: String;
+            Offer_Custom_Boolean_3: String;
+            Offer_Custom_Boolean_4: String;
+            Offer_Custom_Boolean_5: String;
+            Offer_Custom_Boolean_6: String;
+            Offer_Custom_Boolean_7: String;
+            Offer_Custom_Boolean_8: String;
+            Offer_Custom_Boolean_9: String;
+            Offer_Custom_Boolean_10: String;
+            Offer_Custom_Datetime_1: DateTime;
+            Offer_Custom_Datetime_2: DateTime;
+            Offer_Custom_Datetime_3: DateTime;
+            Offer_Custom_Datetime_4: DateTime;
+            Offer_Custom_Datetime_5: DateTime;
+            Offer_Custom_Datetime_6: DateTime;
+            Offer_Custom_Datetime_7: DateTime;
+            Offer_Custom_Datetime_8: DateTime;
+            Offer_Custom_Datetime_9: DateTime;
+            Offer_Custom_Datetime_10: DateTime;
+            Quotation_Custom_Integer_1: Integer;
+            Quotation_Custom_Integer_2: Integer;
+            Quotation_Custom_Integer_3: Integer;
+            Quotation_Custom_Integer_4: Integer;
+            Quotation_Custom_Integer_5: Integer;
+            Quotation_Custom_Integer_6: Integer;
+            Quotation_Custom_Integer_7: Integer;
+            Quotation_Custom_Integer_8: Integer;
+            Quotation_Custom_Integer_9: Integer;
+            Quotation_Custom_Integer_10: Integer;
+            Quotation_Custom_String_1: String;
+            Quotation_Custom_String_2: String;
+            Quotation_Custom_String_3: String;
+            Quotation_Custom_String_4: String;
+            Quotation_Custom_String_5: String;
+            Quotation_Custom_String_6: String;
+            Quotation_Custom_String_7: String;
+            Quotation_Custom_String_8: String;
+            Quotation_Custom_String_9: String;
+            Quotation_Custom_String_10: String;
+            Quotation_Custom_String_11: String;
+            Quotation_Custom_String_12: String;
+            Quotation_Custom_String_13: String;
+            Quotation_Custom_String_14: String;
+            Quotation_Custom_String_15: String;
+            Quotation_Custom_String_16: String;
+            Quotation_Custom_String_17: String;
+            Quotation_Custom_String_18: String;
+            Quotation_Custom_String_19: String;
+            Quotation_Custom_String_20: String;
+            Quotation_Custom_Double_1: Double;
+            Quotation_Custom_Double_2: Double;
+            Quotation_Custom_Double_3: Double;
+            Quotation_Custom_Double_4: Double;
+            Quotation_Custom_Double_5: Double;
+            Quotation_Custom_Double_6: Double;
+            Quotation_Custom_Double_7: Double;
+            Quotation_Custom_Double_8: Double;
+            Quotation_Custom_Double_9: Double;
+            Quotation_Custom_Double_10: Double;
+            Quotation_Custom_Date_1: Date;
+            Quotation_Custom_Date_2: Date;
+            Quotation_Custom_Date_3: Date;
+            Quotation_Custom_Date_4: Date;
+            Quotation_Custom_Date_5: Date;
+            Quotation_Custom_Date_6: Date;
+            Quotation_Custom_Date_7: Date;
+            Quotation_Custom_Date_8: Date;
+            Quotation_Custom_Date_9: Date;
+            Quotation_Custom_Date_10: Date;
+            Quotation_Custom_Boolean_1: Boolean;
+            Quotation_Custom_Boolean_2: Boolean;
+            Quotation_Custom_Boolean_3: Boolean;
+            Quotation_Custom_Boolean_4: Boolean;
+            Quotation_Custom_Boolean_5: Boolean;
+            Quotation_Custom_Boolean_6: Boolean;
+            Quotation_Custom_Boolean_7: Boolean;
+            Quotation_Custom_Boolean_8: Boolean;
+            Quotation_Custom_Boolean_9: Boolean;
+            Quotation_Custom_Boolean_10: Boolean;
+            Quotation_Custom_Datetime_1: DateTime;
+            Quotation_Custom_Datetime_2: DateTime;
+            Quotation_Custom_Datetime_3: DateTime;
+            Quotation_Custom_Datetime_4: DateTime;
+            Quotation_Custom_Datetime_5: DateTime;
+            Quotation_Custom_Datetime_6: DateTime;
+            Quotation_Custom_Datetime_7: DateTime;
+            Quotation_Custom_Datetime_8: DateTime;
+            Quotation_Custom_Datetime_9: DateTime;
+            Quotation_Custom_Datetime_10: DateTime;
+            NLHospitalManagerEmail: String;
+            NLHospitalManagerContactNumber : String;
+            TotalPNM_Value               : Double;
             ApproverTypes         : Association to many MasterData.ApproverTypes
                                         on ApproverTypes.CountryCode = $self.COUNTRYCODE;
     };
@@ -2117,6 +2504,7 @@ left outer join TransactionalData.PriceCondition as priceCondition
 
      //Transactional Data Services
     // EFRCL- 268955-Spain - correct mistakes on Commercial agreement templates
+    @cds.persistence.exists
     entity OfferProductValidation {
             TENDER_ID                                   : String(30);
             COUNTRY_CODE                                : String;
@@ -2301,6 +2689,7 @@ left outer join TransactionalData.PriceCondition as priceCondition
             AlternateOfferYN                            : String(255);
             NET_OFFER_SALES_OFFER_CURRENCY              : Double;
             NET_OFFER_SALES_OFFER_CURRENCY_IN_WORDS     : String;
+            FOCInfoText                                 : String;
             ContractDuration_1                          : Double;
             ContractDuration_2                          : Double;
             ContractDuration_3                          : Double;
@@ -2310,7 +2699,294 @@ left outer join TransactionalData.PriceCondition as priceCondition
             Discount_1                                  : Double;
             Discount_2                                  : Double;
             Discount_3                                  : Double;
+            ItemNumber                                  : Integer;
             NLPriceConditionType                        : String;
+            Product_Custom_Integer_1: Integer;
+            Product_Custom_Integer_2: Integer;
+            Product_Custom_Integer_3: Integer;
+            Product_Custom_Integer_4: Integer;
+            Product_Custom_Integer_5: Integer;
+            Product_Custom_Integer_6: Integer;
+            Product_Custom_Integer_7: Integer;
+            Product_Custom_Integer_8: Integer;
+            Product_Custom_Integer_9: Integer;
+            Product_Custom_Integer_10: Integer;
+            Product_Custom_String_1: String;
+            Product_Custom_String_2: String;
+            Product_Custom_String_3: String;
+            Product_Custom_String_4: String;
+            Product_Custom_String_5: String;
+            Product_Custom_String_6: String;
+            Product_Custom_String_7: String;
+            Product_Custom_String_8: String;
+            Product_Custom_String_9: String;
+            Product_Custom_String_10: String;
+            Product_Custom_String_11: String;
+            Product_Custom_String_12: String;
+            Product_Custom_String_13: String;
+            Product_Custom_String_14: String;
+            Product_Custom_String_15: String;
+            Product_Custom_String_16: String;
+            Product_Custom_String_17: String;
+            Product_Custom_String_18: String;
+            Product_Custom_String_19: String;
+            Product_Custom_String_20: String;
+            Product_Custom_Double_1: Double;
+            Product_Custom_Double_2: Double;
+            Product_Custom_Double_3: Double;
+            Product_Custom_Double_4: Double;
+            Product_Custom_Double_5: Double;
+            Product_Custom_Double_6: Double;
+            Product_Custom_Double_7: Double;
+            Product_Custom_Double_8: Double;
+            Product_Custom_Double_9: Double;
+            Product_Custom_Double_10: Double;
+            Product_Custom_Date_1: Date;
+            Product_Custom_Date_2: Date;
+            Product_Custom_Date_3: Date;
+            Product_Custom_Date_4: Date;
+            Product_Custom_Date_5: Date;
+            Product_Custom_Date_6: Date;
+            Product_Custom_Date_7: Date;
+            Product_Custom_Date_8: Date;
+            Product_Custom_Date_9: Date;
+            Product_Custom_Date_10: Date;
+            Product_Custom_Boolean_1: Boolean;
+            Product_Custom_Boolean_2: Boolean;
+            Product_Custom_Boolean_3: Boolean;
+            Product_Custom_Boolean_4: Boolean;
+            Product_Custom_Boolean_5: Boolean;
+            Product_Custom_Boolean_6: Boolean;
+            Product_Custom_Boolean_7: Boolean;
+            Product_Custom_Boolean_8: Boolean;
+            Product_Custom_Boolean_9: Boolean;
+            Product_Custom_Boolean_10: Boolean;
+            Product_Custom_Datetime_1: DateTime;
+            Product_Custom_Datetime_2: DateTime;
+            Product_Custom_Datetime_3: DateTime;
+            Product_Custom_Datetime_4: DateTime;
+            Product_Custom_Datetime_5: DateTime;
+            Product_Custom_Datetime_6: DateTime;
+            Product_Custom_Datetime_7: DateTime;
+            Product_Custom_Datetime_8: DateTime;
+            Product_Custom_Datetime_9: DateTime;
+            Product_Custom_Datetime_10: DateTime;
+            Delivery_Custom_Integer_1: Integer;
+            Delivery_Custom_Integer_2: Integer;
+            Delivery_Custom_Integer_3: Integer;
+            Delivery_Custom_Integer_4: Integer;
+            Delivery_Custom_Integer_5: Integer;
+            Delivery_Custom_Integer_6: Integer;
+            Delivery_Custom_Integer_7: Integer;
+            Delivery_Custom_Integer_8: Integer;
+            Delivery_Custom_Integer_9: Integer;
+            Delivery_Custom_Integer_10: Integer;
+            Delivery_Custom_String_1: String;
+            Delivery_Custom_String_2: String;
+            Delivery_Custom_String_3: String;
+            Delivery_Custom_String_4: String;
+            Delivery_Custom_String_5: String;
+            Delivery_Custom_String_6: String;
+            Delivery_Custom_String_7: String;
+            Delivery_Custom_String_8: String;
+            Delivery_Custom_String_9: String;
+            Delivery_Custom_String_10: String;
+            Delivery_Custom_String_11: String;
+            Delivery_Custom_String_12: String;
+            Delivery_Custom_String_13: String;
+            Delivery_Custom_String_14: String;
+            Delivery_Custom_String_15: String;
+            Delivery_Custom_String_16: String;
+            Delivery_Custom_String_17: String;
+            Delivery_Custom_String_18: String;
+            Delivery_Custom_String_19: String;
+            Delivery_Custom_String_20: String;
+            Delivery_Custom_Double_1: Double;
+            Delivery_Custom_Double_2: Double;
+            Delivery_Custom_Double_3: Double;
+            Delivery_Custom_Double_4: Double;
+            Delivery_Custom_Double_5: Double;
+            Delivery_Custom_Double_6: Double;
+            Delivery_Custom_Double_7: Double;
+            Delivery_Custom_Double_8: Double;
+            Delivery_Custom_Double_9: Double;
+            Delivery_Custom_Double_10: Double;
+            Delivery_Custom_Date_1: Date;
+            Delivery_Custom_Date_2: Date;
+            Delivery_Custom_Date_3: Date;
+            Delivery_Custom_Date_4: Date;
+            Delivery_Custom_Date_5: Date;
+            Delivery_Custom_Date_6: Date;
+            Delivery_Custom_Date_7: Date;
+            Delivery_Custom_Date_8: Date;
+            Delivery_Custom_Date_9: Date;
+            Delivery_Custom_Date_10: Date;
+            Delivery_Custom_Boolean_1: Boolean;
+            Delivery_Custom_Boolean_2: Boolean;
+            Delivery_Custom_Boolean_3: Boolean;
+            Delivery_Custom_Boolean_4: Boolean;
+            Delivery_Custom_Boolean_5: Boolean;
+            Delivery_Custom_Boolean_6: Boolean;
+            Delivery_Custom_Boolean_7: Boolean;
+            Delivery_Custom_Boolean_8: Boolean;
+            Delivery_Custom_Boolean_9: Boolean;
+            Delivery_Custom_Boolean_10: Boolean;
+            Delivery_Custom_Datetime_1: DateTime;
+            Delivery_Custom_Datetime_2: DateTime;
+            Delivery_Custom_Datetime_3: DateTime;
+            Delivery_Custom_Datetime_4: DateTime;
+            Delivery_Custom_Datetime_5: DateTime;
+            Delivery_Custom_Datetime_6: DateTime;
+            Delivery_Custom_Datetime_7: DateTime;
+            Delivery_Custom_Datetime_8: DateTime;
+            Delivery_Custom_Datetime_9: DateTime;
+            Delivery_Custom_Datetime_10: DateTime;
+            TenderResults_Custom_Integer_1: Integer;
+            TenderResults_Custom_Integer_2: Integer;
+            TenderResults_Custom_Integer_3: Integer;
+            TenderResults_Custom_Integer_4: Integer;
+            TenderResults_Custom_Integer_5: Integer;
+            TenderResults_Custom_Integer_6: Integer;
+            TenderResults_Custom_Integer_7: Integer;
+            TenderResults_Custom_Integer_8: Integer;
+            TenderResults_Custom_Integer_9: Integer;
+            TenderResults_Custom_Integer_10: Integer;
+            TenderResults_Custom_String_1: String;
+            TenderResults_Custom_String_2: String;
+            TenderResults_Custom_String_3: String;
+            TenderResults_Custom_String_4: String;
+            TenderResults_Custom_String_5: String;
+            TenderResults_Custom_String_6: String;
+            TenderResults_Custom_String_7: String;
+            TenderResults_Custom_String_8: String;
+            TenderResults_Custom_String_9: String;
+            TenderResults_Custom_String_10: String;
+            TenderResults_Custom_String_11: String;
+            TenderResults_Custom_String_12: String;
+            TenderResults_Custom_String_13: String;
+            TenderResults_Custom_String_14: String;
+            TenderResults_Custom_String_15: String;
+            TenderResults_Custom_String_16: String;
+            TenderResults_Custom_String_17: String;
+            TenderResults_Custom_String_18: String;
+            TenderResults_Custom_String_19: String;
+            TenderResults_Custom_String_20: String;
+            TenderResults_Custom_Double_1: Double;
+            TenderResults_Custom_Double_2: Double;
+            TenderResults_Custom_Double_3: Double;
+            TenderResults_Custom_Double_4: Double;
+            TenderResults_Custom_Double_5: Double;
+            TenderResults_Custom_Double_6: Double;
+            TenderResults_Custom_Double_7: Double;
+            TenderResults_Custom_Double_8: Double;
+            TenderResults_Custom_Double_9: Double;
+            TenderResults_Custom_Double_10: Double;
+            TenderResults_Custom_Date_1: Date;
+            TenderResults_Custom_Date_2: Date;
+            TenderResults_Custom_Date_3: Date;
+            TenderResults_Custom_Date_4: Date;
+            TenderResults_Custom_Date_5: Date;
+            TenderResults_Custom_Date_6: Date;
+            TenderResults_Custom_Date_7: Date;
+            TenderResults_Custom_Date_8: Date;
+            TenderResults_Custom_Date_9: Date;
+            TenderResults_Custom_Date_10: Date;
+            TenderResults_Custom_Boolean_1: Boolean;
+            TenderResults_Custom_Boolean_2: Boolean;
+            TenderResults_Custom_Boolean_3: Boolean;
+            TenderResults_Custom_Boolean_4: Boolean;
+            TenderResults_Custom_Boolean_5: Boolean;
+            TenderResults_Custom_Boolean_6: Boolean;
+            TenderResults_Custom_Boolean_7: Boolean;
+            TenderResults_Custom_Boolean_8: Boolean;
+            TenderResults_Custom_Boolean_9: Boolean;
+            TenderResults_Custom_Boolean_10: Boolean;
+            TenderResults_Custom_Datetime_1: DateTime;
+            TenderResults_Custom_Datetime_2: DateTime;
+            TenderResults_Custom_Datetime_3: DateTime;
+            TenderResults_Custom_Datetime_4: DateTime;
+            TenderResults_Custom_Datetime_5: DateTime;
+            TenderResults_Custom_Datetime_6: DateTime;
+            TenderResults_Custom_Datetime_7: DateTime;
+            TenderResults_Custom_Datetime_8: DateTime;
+            TenderResults_Custom_Datetime_9: DateTime;
+            TenderResults_Custom_Datetime_10: DateTime;
+            CompetitorResult_Custom_Integer_1: Integer;
+            CompetitorResult_Custom_Integer_2: Integer;
+            CompetitorResult_Custom_Integer_3: Integer;
+            CompetitorResult_Custom_Integer_4: Integer;
+            CompetitorResult_Custom_Integer_5: Integer;
+            CompetitorResult_Custom_Integer_6: Integer;
+            CompetitorResult_Custom_Integer_7: Integer;
+            CompetitorResult_Custom_Integer_8: Integer;
+            CompetitorResult_Custom_Integer_9: Integer;
+            CompetitorResult_Custom_Integer_10: Integer;
+            CompetitorResult_Custom_String_1: String;
+            CompetitorResult_Custom_String_2: String;
+            CompetitorResult_Custom_String_3: String;
+            CompetitorResult_Custom_String_4: String;
+            CompetitorResult_Custom_String_5: String;
+            CompetitorResult_Custom_String_6: String;
+            CompetitorResult_Custom_String_7: String;
+            CompetitorResult_Custom_String_8: String;
+            CompetitorResult_Custom_String_9: String;
+            CompetitorResult_Custom_String_10: String;
+            CompetitorResult_Custom_String_11: String;
+            CompetitorResult_Custom_String_12: String;
+            CompetitorResult_Custom_String_13: String;
+            CompetitorResult_Custom_String_14: String;
+            CompetitorResult_Custom_String_15: String;
+            CompetitorResult_Custom_String_16: String;
+            CompetitorResult_Custom_String_17: String;
+            CompetitorResult_Custom_String_18: String;
+            CompetitorResult_Custom_String_19: String;
+            CompetitorResult_Custom_String_20: String;
+            CompetitorResult_Custom_Double_1: Double;
+            CompetitorResult_Custom_Double_2: Double;
+            CompetitorResult_Custom_Double_3: Double;
+            CompetitorResult_Custom_Double_4: Double;
+            CompetitorResult_Custom_Double_5: Double;
+            CompetitorResult_Custom_Double_6: Double;
+            CompetitorResult_Custom_Double_7: Double;
+            CompetitorResult_Custom_Double_8: Double;
+            CompetitorResult_Custom_Double_9: Double;
+            CompetitorResult_Custom_Double_10: Double;
+            CompetitorResult_Custom_Date_1: Date;
+            CompetitorResult_Custom_Date_2: Date;
+            CompetitorResult_Custom_Date_3: Date;
+            CompetitorResult_Custom_Date_4: Date;
+            CompetitorResult_Custom_Date_5: Date;
+            CompetitorResult_Custom_Date_6: Date;
+            CompetitorResult_Custom_Date_7: Date;
+            CompetitorResult_Custom_Date_8: Date;
+            CompetitorResult_Custom_Date_9: Date;
+            CompetitorResult_Custom_Date_10: Date;
+            CompetitorResult_Custom_Boolean_1: Boolean;
+            CompetitorResult_Custom_Boolean_2: Boolean;
+            CompetitorResult_Custom_Boolean_3: Boolean;
+            CompetitorResult_Custom_Boolean_4: Boolean;
+            CompetitorResult_Custom_Boolean_5: Boolean;
+            CompetitorResult_Custom_Boolean_6: Boolean;
+            CompetitorResult_Custom_Boolean_7: Boolean;
+            CompetitorResult_Custom_Boolean_8: Boolean;
+            CompetitorResult_Custom_Boolean_9: Boolean;
+            CompetitorResult_Custom_Boolean_10: Boolean;
+            CompetitorResult_Custom_Datetime_1: DateTime;
+            CompetitorResult_Custom_Datetime_2: DateTime;
+            CompetitorResult_Custom_Datetime_3: DateTime;
+            CompetitorResult_Custom_Datetime_4: DateTime;
+            CompetitorResult_Custom_Datetime_5: DateTime;
+            CompetitorResult_Custom_Datetime_6: DateTime;
+            CompetitorResult_Custom_Datetime_7: DateTime;
+            CompetitorResult_Custom_Datetime_8: DateTime;
+            CompetitorResult_Custom_Datetime_9: DateTime;
+            CompetitorResult_Custom_Datetime_10: DateTime;
+            TenderAnnouncementReference                 : String;
+            NLStaticField1                      : String;
+            NLStaticField2                      : String;
+            PL_VolumeInPacks                    : Double;
+            PNM_VALUE                           : Double;
+            MaxNetPricePerPack                          : Double;
             FreeGoodsOther                              : Association to many TransactionalData.FreeGoodsOther
                                                             on FreeGoodsOther.ProductPackId = $self.PRODUCTID
                                                             and FreeGoodsOther.ProductPricing.OfferID = $self.OFFER_ID;
@@ -2337,6 +3013,7 @@ left outer join TransactionalData.PriceCondition as priceCondition
     /**
  * This view contains Tender History fields for standard tender application
  */
+ @cds.persistence.exists
     entity StandardTenderHistory as select from TransactionalData.PT_TMTEND as tender
     inner join TransactionalData.PT_TMOFRS as offer 
         on offer.TenderID = tender.TenderID
@@ -2362,12 +3039,17 @@ left outer join TransactionalData.PriceCondition as priceCondition
         and product.ProductCode = priceCondition.ProductCode
     left outer join TransactionalData.FreeGoodsOther as foc
         on foc.PriceCondition.ID = priceCondition.ID
+    left join ProductTotalAmount as productTotal
+            on productTotal.OfferID = offer.OfferID
+            and productTotal.ProductCode = product.ProductCode
     {
     key tender.TenderID,
     key offer.OfferID,
     key product.ProductCode,
     key tender.CountryCode,
+    tender.Country.Region,
     offer.Currency,
+    offer.CreationDate,
     product.Price.NetofferPrice as NetofferPriceBDPR,
     product.Price.NetPrice as NetPriceBDPR,
     product.UnitPerPack,
@@ -2379,6 +3061,7 @@ left outer join TransactionalData.PriceCondition as priceCondition
     institute.InstituteName as INSTITUTE_NAME,
     product.SKU.PRODUCTPACKNAME as PRODUCT_NAME,
     product.Price.OfferPrice as OfferPriceBDPR,
+    product.RequestedVolume,
     priceCondition.Tax,
     priceCondition.StandardDiscount,
     priceCondition.AdditionalDiscount,
@@ -2408,22 +3091,26 @@ left outer join TransactionalData.PriceCondition as priceCondition
     priceCondition.Discount as DISCOUNT,
     priceCondition.GeneralDiscount_Amount, 
     priceCondition.SecondDiscount_Amount,
+    priceCondition.NegotiationPrice,
     product.Results.AwardedPrice,
-    offer.OfferStatusTable.STATUS as OfferStatus,
+    offer.OfferStatus.STATUS as OfferStatus,
     CASE 
         when (product.ProductCode = foc.ProductPackId) 
             then 'Yes' 
             else 'No'
     end as FOC:String(3),
-    ifnull(product.Results.Outcome, 'NA') as OUTCOME:String(10)
+    ifnull(product.Results.Outcome, 'NA') as OUTCOME:String(10),
+    productTotal.TotalAmount
     }
-    where offer.OfferStatusTable.STATUS = 'Results Recorded'
+    where (offer.OfferStatusTable.STATUS = 'Quotation Submitted' or offer.OfferStatusTable.STATUS = 'Results Recorded' or offer.OfferStatusTable.STATUS = 'Delivery Ongoing')
     group by tender.TenderID,
         offer.OfferID,
         product.ProductCode,
         tender.CountryCode,
+        tender.Country.Region,
         tender.TenderName,
         offer.Currency,
+        offer.CreationDate,
         offer.SubmittedOn,
         institute.InstituteID,
         institute.InstituteName,
@@ -2436,6 +3123,7 @@ left outer join TransactionalData.PriceCondition as priceCondition
         product.Results.AwardedPrice,
         product.Price.NetofferPrice,
         product.Price.NetPrice,
+        product.RequestedVolume,
         offer.Quotation.EffectiveDate,
         offer.Quotation.ExpiryDate,
         priceCondition.Tax,
@@ -2464,10 +3152,14 @@ left outer join TransactionalData.PriceCondition as priceCondition
         priceCondition.TotalDiscountInvoice,
         priceCondition.GeneralDiscount_Amount, 
         priceCondition.SecondDiscount_Amount,
+        priceCondition.NegotiationPrice,
         offer.OfferStatusTable.STATUS,
         product.Results.Outcome,
-        foc.ProductPackId;
+        offer.OfferStatus.STATUS,
+        foc.ProductPackId,
+        productTotal.TotalAmount;
 
+@cds.persistence.exists
 entity PriceConditionCurrentSectionTaiwanView as select from TransactionalDataViews.StandardTenderHistory{
         key ProductCode,
         key INSTITUTE_ID,
@@ -2490,6 +3182,7 @@ entity PriceConditionCurrentSectionTaiwanView as select from TransactionalDataVi
 
 }where OUTCOME = 'Won' and CountryCode = 'TW' and EffectiveDate <= CURRENT_DATE;
 
+@cds.persistence.exists
 entity ZuelligExtractView as select from TransactionalData.PT_TMTEND as tender  
         inner join MasterData.PT_TMINST as inst 
             on inst.InstituteID = tender.InstituteID 
@@ -2645,6 +3338,7 @@ entity ZuelligExtractView as select from TransactionalData.PT_TMTEND as tender
             ifnull(regpr.RegisteredPrice, 0) as RegisteredPrice
     }
     where offer.OfferStatusTable.STATUS = 'Results Recorded' and quotation.EffectiveDate <= CURRENT_DATE and tender.CountryCode = 'TW' and tender.Active = 1 and offer.Active = 1;
+@cds.persistence.exists
     entity TaiwanInstituteInBranchView as select from MasterData.PT_TMINST as inst
         inner join MasterData.PT_TMINSHIER as hier on inst.InstituteID = hier.InstituteID {
         key hier.ParentInstituteID,
@@ -2660,6 +3354,7 @@ entity ZuelligExtractView as select from TransactionalData.PT_TMTEND as tender
     }
     where CountryCode = 'TW';
 
+@cds.persistence.exists
     entity StandardTenderFOCInformation as select from TransactionalData.PT_TMTEND as tender
     inner join TransactionalData.PT_TMOFRS as offer 
         on offer.TenderID = tender.TenderID
@@ -2719,3 +3414,124 @@ entity ZuelligExtractView as select from TransactionalData.PT_TMTEND as tender
         foc.FreeGoodsOther_Step,
         foc.FreeGoodsOther_ABS_PCT,
         foc.ADD_INCLUDE;
+
+@cds.persistence.exists
+    entity ContractDurationBase as select from TransactionalData.NLPriceConditions as nlpc
+        inner join TransactionalData.PriceCondition as pc
+             on pc.ID = nlpc.PriceCondition.ID{
+        pc.OfferID,
+        key nlpc.PriceCondition.ID as PriceCondition_ID: UUID,
+        nlpc.ContractDuration,
+        nlpc.OfferPrice,
+        COUNT(nlpc.ContractDuration) OVER (PARTITION BY nlpc.PriceCondition.ID) AS CountContractDuration: Integer,
+        MIN(nlpc.ContractDuration) OVER (PARTITION BY nlpc.PriceCondition.ID) AS MinContractDuration: Double,
+        MAX(nlpc.ContractDuration) OVER (PARTITION BY nlpc.PriceCondition.ID) AS MaxContractDuration: Double,
+        ROW_NUMBER() OVER (PARTITION BY nlpc.PriceCondition.ID ORDER BY nlpc.ContractDuration) AS RowAsc: Integer,
+        ROW_NUMBER() OVER (PARTITION BY nlpc.PriceCondition.ID ORDER BY nlpc.ContractDuration DESC) AS RowDesc: Integer,
+        FIRST_VALUE(nlpc.OfferPrice) OVER (PARTITION BY nlpc.PriceCondition.ID ORDER BY nlpc.ContractDuration) AS MinOfferPrice: Double,
+        FIRST_VALUE(nlpc.OfferPrice) OVER (PARTITION BY nlpc.PriceCondition.ID ORDER BY nlpc.ContractDuration DESC) AS MaxOfferPrice: Double
+    };
+     entity NLContractDurationsView as select from ContractDurationBase as rd{
+        key rd.OfferID,
+        key rd.PriceCondition_ID,
+        rd.MinContractDuration AS MinContractDuration: Double,
+        rd.MinOfferPrice AS MinOfferPrice: Double,
+        CASE
+            WHEN rd.CountContractDuration = 1 THEN NULL
+            WHEN rd.CountContractDuration = 2 THEN (
+                SELECT cd.ContractDuration 
+                FROM ContractDurationBase AS cd 
+                WHERE cd.PriceCondition_ID = rd.PriceCondition_ID 
+                AND cd.RowAsc = 2
+            )
+            ELSE (
+                SELECT cd.ContractDuration 
+                FROM ContractDurationBase AS cd 
+                WHERE cd.PriceCondition_ID = rd.PriceCondition_ID 
+                AND cd.RowAsc = 2
+            )
+        END AS AvgContractDuration: Double,
+        CASE
+            WHEN rd.CountContractDuration = 1 THEN NULL
+            WHEN rd.CountContractDuration = 2 THEN (
+                SELECT cd.OfferPrice 
+                FROM ContractDurationBase AS cd 
+                WHERE cd.PriceCondition_ID = rd.PriceCondition_ID 
+                AND cd.RowAsc = 2
+            )
+            ELSE (
+                SELECT cd.OfferPrice 
+                FROM ContractDurationBase AS cd 
+                WHERE cd.PriceCondition_ID = rd.PriceCondition_ID 
+                AND cd.RowAsc = 2
+            )
+        END AS AvgOfferPrice : Double,
+        CASE
+            WHEN rd.CountContractDuration = 1 THEN NULL
+            WHEN rd.CountContractDuration = 2 THEN NULL
+            ELSE rd.MaxContractDuration
+        END AS MaxContractDuration : Double,
+        CASE
+            WHEN rd.CountContractDuration = 1 THEN NULL
+            WHEN rd.CountContractDuration = 2 THEN NULL
+            ELSE rd.MaxOfferPrice
+        END AS MaxOfferPrice : Double
+    }GROUP BY 
+    rd.OfferID,
+    rd.PriceCondition_ID,
+    rd.MinContractDuration,
+    rd.MinOfferPrice,
+    rd.CountContractDuration,
+    rd.MaxContractDuration,
+    rd.MaxOfferPrice;
+
+    @cds.persistence.exists
+    entity NLContractDurationOfferPrices as select from TransactionalData.PT_TMTEND as tender
+        inner join TransactionalData.PT_TMOFRS as offer
+            on offer.TenderID = tender.TenderID
+            and offer.Active = 1
+        inner join TransactionalData.PT_TMOFPR as pr
+            on pr.OfferID = offer.OfferID
+            and pr.Active = 1
+        inner join TransactionalData.PriceCondition as pricecondition
+            on pricecondition.OfferID = pr.OfferID
+            and pricecondition.ProductCode = pr.ProductCode
+        left join TransactionalData.NLPriceConditions as nlpc1
+            on nlpc1.PriceCondition.ID = pricecondition.ID
+            and nlpc1.ContractDuration= tender.Custom.Integer_1
+        left join TransactionalData.NLPriceConditions as nlpc2
+            on nlpc2.PriceCondition.ID = pricecondition.ID
+            and nlpc2.ContractDuration = tender.Custom.Integer_2
+        left join TransactionalData.NLPriceConditions as nlpc3
+            on nlpc3.PriceCondition.ID = pricecondition.ID
+            and nlpc3.ContractDuration = tender.Custom.Integer_3 {
+                key pr.OfferID,
+                key pr.ProductCode,
+                tender.Custom.Integer_1 as ContractDuration_1: Double,
+                nlpc1.OfferPrice as OfferPrice_1: Double,
+                tender.Custom.Integer_2 as ContractDuration_2: Double,
+                nlpc2.OfferPrice as OfferPrice_2: Double,
+                tender.Custom.Integer_3 as ContractDuration_3: Double,
+                nlpc3.OfferPrice as OfferPrice_3: Double
+    }where tender.CountryCode = 'NL';
+
+
+@cds.persistence.exists
+    entity ProductTotalAmount as select from TransactionalData.PT_TMOFPR {
+        key ProductCode,
+        key OfferID,
+        CountryCode,
+        Price.OfferPrice * (1 - Price.Deductions) *
+        case
+            when Price.FOCType = 'FOC 1'
+                then 
+                    case 
+                        when Price.FOC_ABS_PCT = 'PCT'
+                            then RequestedVolume - round(RequestedVolume * Price.FOC)
+                        when Price.FOC_ABS_PCT = 'STP'
+                            then RequestedVolume - floor(RequestedVolume / Price.FOCStep) * Price.FOC
+                        else RequestedVolume - Price.FOC
+                    end
+                else RequestedVolume        
+        end as TotalAmount:Double
+    };

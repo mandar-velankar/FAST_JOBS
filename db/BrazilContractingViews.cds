@@ -8,6 +8,7 @@ using { com.bayer.SXTENDER.TransactionalDataConversion} from '../db/Transactiona
 using { com.bayer.SXTENDER.BrazilContractingData} from '../db/BrazilContractingData';
 using { com.bayer.SXTENDER.MasterData.SAP} from './SAP';
 
+@cds.persistence.exists
 entity ContractsView as select from BrazilContractingData.Contracts as Contracts
     inner join AdminData.PT_TMUSER as ModifiedByUser on ModifiedByUser.CWID = Contracts.modifiedBy
     inner join AdminData.PT_TMUSER as CreatedByUser on CreatedByUser.CWID = Contracts.createdBy {
@@ -64,6 +65,7 @@ entity ContractsView as select from BrazilContractingData.Contracts as Contracts
         CreatedByUser.UserName,
         Contracts.Tender.TenderName;
 
+@cds.persistence.exists
 entity ContractProductsView as select from BrazilContractingData.ContractProducts as ContractProducts
 left outer join BrazilContractingViews.AdhesionContractCompositionView as AdhesionContract 
     on ContractProducts.OfferID = AdhesionContract.OfferID
@@ -99,7 +101,7 @@ left outer join BrazilContractingViews.AdhesionContractCompositionView as Adhesi
         ContractProducts.OfferProduct.PriceCondition.CommercialProposal,
         AdhesionContract.ExistingAdhesionContractsVolume,
         AdhesionContract.RemainingAdhesionContractsVolume;
-
+@cds.persistence.exists
 entity AdhesionContractCompositionView as select from BrazilContractingData.ContractProducts as ContractProducts
 {
     ContractProducts.ProductPackID,
@@ -113,6 +115,7 @@ group by ContractProducts.ProductPackID,
     ContractProducts.LotID,
     ContractProducts.OfferProduct.RequestedVolume;
 
+@cds.persistence.exists
 entity SalesOrdersView as select from BrazilContractingData.SalesOrders as SalesOrders {
     key SalesOrders.ID,
         SalesOrders.Contract.ID as Contract_ID,
@@ -146,6 +149,7 @@ entity SalesOrdersView as select from BrazilContractingData.SalesOrders as Sales
         SalesOrders.Status.Status,
         SalesOrders.createdAt;
 
+@cds.persistence.exists
 entity OfferProductCompositionView as select from ContractProductsView as ContractProductsView
 inner join TransactionalData.PT_TMOFPR as OfferProduct
     on OfferProduct.OfferID = ContractProductsView.OfferID
@@ -161,6 +165,7 @@ inner join TransactionalData.PT_TMOFPR as OfferProduct
     OfferProduct.LotID,
     OfferProduct.SORTER;
 
+@cds.persistence.exists
 entity SalesOrderProductsView as select from BrazilContractingData.SalesOrderProducts as SalesOrderProducts
 inner join SalesOrdersView as SalesOrdersView
     on SalesOrdersView.ID = SalesOrderProducts.SalesOrder.ID
