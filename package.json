@@ -61,6 +61,11 @@
       },
       "auth": {
         "kind": "jwt-auth"
+      },
+      "[development]": {
+        "auth": {
+          "kind": "mocked"
+        }
       }
     }
   }
