@@ -64,7 +64,7 @@ resources:
   - name: F_TNDR_CAG_FAST_JOBS-db
     type: org.cloudfoundry.existing-service
     properties:
-      hdi-container-name: 'FAST-db-hdi-container'
+      hdi-container-name: FAST-db-hdi-container
   - name: FAST-logging
     type: org.cloudfoundry.managed-service
     parameters:
