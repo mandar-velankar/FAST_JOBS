@@ -4,7 +4,6 @@ using {
 } from '../db/MasterData';
 using {com.bayer.SXTENDER.TransactionalData} from '../db/TransactionalData';
 using {com.bayer.SXTENDER.MasterDataViews} from '../db/MasterDataViews';
-using {com.bayer.SXTENDER.ExternalDataViews} from '../db/ExternalDataViews';
 using {com.bayer.SXTENDER.AdminData} from '../db/AdminData';
 using {
     User,
@@ -41,8 +40,7 @@ service UITemplateService @(path : 'uit')@(requires : [
         *,
         DivisionName as Division
     };
-    @cds.persistence.exists
-    entity MasterDistributors @readonly @(cds.redirection.target:false) as projection on ExternalDataViews.MasterDistributors;
+
     @cds.persistence.exists
     entity MasterCountryCurrencies as select from MasterData.CountryCurrency;
     @cds.persistence.exists

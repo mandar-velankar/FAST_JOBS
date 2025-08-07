@@ -40,7 +40,6 @@ select from TransactionalData.ProductPricing
     FreeGoodsOther.FreeGoodsOther as FreeGoods:Double,
     FreeGoodsOther.FreeGoodsOther_ABS_PCT as FreeGoods_ABS_PCT:String,
     ifnull(FreeGoodsOther.FreeGoodsOther_Step,0) as FreeGoods_Step:Double
-
 } where FreeGoodsOther.FreeGoodsOther is not null and FreeGoodsOther.FreeGoodsOther > 0 and FreeGoodsOther.FreeGoodsOther  != '0';
 
 @cds.persistence.exists
@@ -242,4 +241,4 @@ left join PriceAgreementData.CustomerPrices as cp on cp.PriceAgreementId = pa.ID
                 ELSE 0
             END
     END AS YLAP: Integer
-}where pa.CountryCode = 'ES' and pa.Status is NULL and cp.Synchronized = true
+}where pa.CountryCode = 'ES' and pa.Status is NULL and cp.Synchronized = true;

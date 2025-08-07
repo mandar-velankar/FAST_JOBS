@@ -12,7 +12,6 @@ using {com.bayer.SXTENDER.AdminDataViews} from '../db/AdminDataViews';
 using {com.bayer.SXTENDER.BankGuaranteeData} from '../db/BankGuaranteeData';
 using {com.bayer.SXTENDER.PriceAgreementData} from '../db/PriceAgreementData';
 using {com.bayer.SXTENDER.BrazilContractingData} from '../db/BrazilContractingData';
-using {com.bayer.SXTENDER.ExternalDataViews} from '../db/ExternalDataViews';
 using { com.bayer.SXTENDER.ClaimsData} from '../db/ClaimsData';
 using { com.bayer.SXTENDER.ClaimsViews } from '../db/ClaimsViews';
 
@@ -570,10 +569,6 @@ service StandardAppService @(path : 'sta_tender')@(requires : [
     entity CountryStatusses @readonly as projection on MasterData.MASTER_COUNTRY_STATUS;
     @cds.persistence.exists
     entity Divisions @readonly @(cds.redirection.target:false)    as projection on MasterDataViews.Divisions;
-    @cds.persistence.exists
-    entity MasterDistributors @readonly @(cds.redirection.target:false) as projection on ExternalDataViews.MasterDistributors;
-    @cds.persistence.exists
-    entity MasterInstitutes @readonly @(cds.redirection.target:false) as projection on ExternalDataViews.MasterInstitutes;
     @cds.persistence.exists
     entity CountryLegalEntity @readonly @(cds.redirection.target:false) as projection on MasterDataViews.CountryLegalEntity;
     @cds.redirection.target
