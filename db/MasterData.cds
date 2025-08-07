@@ -1152,3 +1152,10 @@ entity WholesalePurchasePriceApprovalsNotification {
 	SelectedWppApprover: WPPApprovers;
 	WholesalePurchasePriceApprovalPageLink: String;
 }
+
+@cds.persistence.exists
+entity MarketIncentive: managed{
+    CountryCode: String;
+    MarketIncentiveID: String;
+    Description: String;
+}
