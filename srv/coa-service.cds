@@ -7,43 +7,43 @@ using { com.bayer.SXTENDER.AdminDataViews }             from '../db/AdminDataVie
 using { com.bayer.SXTENDER.MasterDataViews }            from '../db/./MasterDataViews';
 
 service CreateOpportunityService @(path: 'createopportunity') @(requires:['f_tndr_cag_admin','f_tndr_cag_createopportunity_user','f_tndr_cag_technical_user','authenticated-user']){
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity CountryTenderNo        @readonly as projection on TransactionalDataViews.CountryTenderNo;
-    @cds.persistence.exists
+    //@cds.persistence.exists
     @cds.autoexpose
     entity CountryChannels        @readonly as select from MasterData.MASTER_COUNTRY_CHANNELS {
         *
     } where ChannelName != 'Private';
-    @cds.persistence.exists
+    //@cds.persistence.exists
     @cds.autoexpose
     entity CountryClassifications @readonly as projection on MasterData.MASTER_COUNTRY_CLASSIFICATION;
-    @cds.persistence.exists
+    //@cds.persistence.exists
     @cds.autoexpose
     entity CountryTenderType      @readonly as projection on MasterData.MASTER_COUNTRY_TENDER_TYPE;
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity TenderType             @readonly as projection on MasterData.MASTER_TENDER_TYPE;
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity PT_TMINST              @readonly as projection on MasterData.PT_TMINST;
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity CountryBrands          @readonly as projection on MasterDataViews.CountryBrands;
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity CountryBrandProducts   @readonly as projection on MasterDataViews.CountryBrandProducts;
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity CountryCurrency        @readonly as projection on MasterDataViews.CountryCurrency;
 
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity SalesOpportunities       as projection on SalesOpportunityData.SalesOpportunities{
         *,
         Institute: redirected to PT_TMINST,
         Products: redirected to SalesOpportunityProducts
     };
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity SalesOpportunityProducts as projection on SalesOpportunityData.SalesOpportunityProducts;
 
     //Admin Data Views
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity UserCountry              as projection on AdminData.PT_TMUSERCTRY;
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity TenderCountriesUser @(restrict: [
 		{grant: '*', to: 'authenticated-user', where: 'User.CWID = $user.id'}
 	]) as projection on MasterData.PT_TMCTRY{
@@ -51,18 +51,18 @@ service CreateOpportunityService @(path: 'createopportunity') @(requires:['f_tnd
 		User: redirected to UserCountry
 	};
 
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity PT_TMTEND as projection on TransactionalData.PT_TMTEND {
         * ,
     };
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity CountrySpecificInformation as projection on TransactionalData.CountrySpecificTenderInfo;
 
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity PT_TMTNOFST as projection on TransactionalData.PT_TMTNOFST;
     
 
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity OpportunityTenderStatus as select from SalesOpportunities as opp
     left outer join TransactionalData.CountrySpecificTenderInfo as info 
         on opp.ID = info.TenderReference
@@ -93,7 +93,7 @@ service CreateOpportunityService @(path: 'createopportunity') @(requires:['f_tnd
     };
 
 
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity PublicSalesOpportunities as select from SalesOpportunities as opp
     left outer join OpportunityTenderStatus as st 
         on opp.ID = st.TenderReference
@@ -121,7 +121,7 @@ service CreateOpportunityService @(path: 'createopportunity') @(requires:['f_tnd
         opp.Products: redirected to SalesOpportunityProducts
     };
 
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity ParticipatedPublicMarketOpportunities as select from CountrySpecificInformation as countryInfo
     left outer join PT_TMTEND as tndr 
         on countryInfo.TenderID = tndr.TenderID 

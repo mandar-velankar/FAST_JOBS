@@ -13,21 +13,21 @@ service ContractService @(path: 'ctr') @(requires:['f_tndr_cag_admin','f_tndr_ca
     //entity Deliveries as projection on ContractsAppData.Deliveries;
     //entity Letters as projection on ContractsAppData.Letters;
 
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity ProductHierarchy as projection on MasterData.PT_TMPRDHIER;
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity Product as projection on MasterData.PT_TMPRDPCK {
         *,
         Product: redirected to ProductHierarchy
     };
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity PenaltyReasons as projection on MasterData.PT_TMPNLTYRS;
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity CountryCurrency @readonly as projection on MasterDataViews.CountryCurrency;
     //EHQUT-192851-Add OTC customer group for "Contract Management" app
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity CountryChannels as projection on MasterData.MASTER_COUNTRY_CHANNELS ;
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity Products as select from ContractsAppData.Products {
         *,
         /*sum(
@@ -101,22 +101,22 @@ service ContractService @(path: 'ctr') @(requires:['f_tndr_cag_admin','f_tndr_ca
         modifiedBy,
         Contract;
         
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity MspApprovers as select from ContractsAppData.Products {
         key CountryCode,
         key MspApprovedByName
     }group by CountryCode, MspApprovedByName;
 
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity NspApprovers as select from ContractsAppData.Products {
         key CountryCode,
         key NspApprovedByName
     }group by CountryCode, NspApprovedByName;
 
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity ContractInstitutes as projection on ContractsAppData.ContractInstitutes;
 
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity Contracts as select from ContractsAppData.Contracts{
         *,
         null as OfferValue: Double,
@@ -124,7 +124,7 @@ service ContractService @(path: 'ctr') @(requires:['f_tndr_cag_admin','f_tndr_ca
         Institutes: redirected to ContractInstitutes
     };
 
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity CountryContractBrands as select from Contracts {
         key CountryCode,
         key Products.Product.Product.HLEVEL4_CODE as BrandID,
@@ -142,7 +142,7 @@ service ContractService @(path: 'ctr') @(requires:['f_tndr_cag_admin','f_tndr_ca
         ' All' as BrandName
     };
 
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity TenderDistributor as projection on MasterData.PT_TMDIST;
 
     //TenderDeliveries
@@ -153,13 +153,13 @@ service ContractService @(path: 'ctr') @(requires:['f_tndr_cag_admin','f_tndr_ca
     //entity TenderLetters as projection on TransactionalDataConversion.PT_TMUDLTRS;
     //entity PT_TMUDLTRS as projection on TransactionalData.PT_TMUDLTRS; //we need this for saving TODO make 1 saving 
 
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity CountryLegalentity as projection on MasterData.PT_TMCTLE;
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity CountryProductPack as projection on MasterData.PT_TMCTPRDPCK;
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity UserCountry as projection on AdminData.PT_TMUSERCTRY;
-    @cds.persistence.exists
+    //@cds.persistence.exists
 	entity TenderCountriesUser @(restrict: [
 		{grant: '*', to: 'authenticated-user', where: 'User.CWID = $user.id'}
 	]) as projection on MasterData.PT_TMCTRY{
@@ -168,26 +168,26 @@ service ContractService @(path: 'ctr') @(requires:['f_tndr_cag_admin','f_tndr_ca
 		CountryPacks: redirected to CountryProductPack,
 		User: redirected to UserCountry
 	};
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity TenderSellingCompany as projection on MasterData.PT_TMLE;
 
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity TenderChildren as projection on MasterData.PT_TMINSHIER;
 
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity TenderInstitute as projection on MasterData.PT_TMINST{
         *,
         Children: redirected to TenderChildren
     }
 
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity TenderPrice as projection on TransactionalData.PT_TMBDPR;
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity TenderGroupPurchasing as projection on TransactionalData.PT_OFGRPUR;
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity TenderResults as projection on TransactionalData.PT_TMTRRES;
     
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity TenderProducts as projection on TransactionalDataConversion.PT_TMOFPR {
         *,
         SORTER as Sorter,
@@ -207,7 +207,7 @@ service ContractService @(path: 'ctr') @(requires:['f_tndr_cag_admin','f_tndr_ca
         Price.Deductions as CommissionRate
     }excluding{INCOTerms, SampleQuantity, SORTER};
 
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity TenderContracts as projection on TransactionalDataConversion.PT_TMOFRS {
         *,
         Products: redirected to TenderProducts,

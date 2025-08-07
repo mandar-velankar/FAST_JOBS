@@ -9,28 +9,28 @@ using { com.bayer.SXTENDER.PricingAppData } from '../db/PricingAppData';
 
 service EpaService @(path: 'epa') @(requires:['f_tndr_cag_admin','f_tndr_cag_epa_user']){
     //EPA: Electronic Pricing Approval
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity PT_TMINST as projection on MasterData.PT_TMINST;
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity InstituteGroup as projection on PricingAppData.InstituteGroup;
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity InstituteGroupInstitute as projection on PricingAppData.InstituteGroupInstitute;
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity InstituteGroupPrice as projection on PricingAppData.InstituteGroupPrice;
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity InstituteGroupPriceLatest @readonly as projection on PricingAppData.InstituteGroupPriceLatest;
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity CountryApprovers @readonly as projection on PricingAppData.CountryApprovers;
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity Countries @(cds.redirection.target:true) as projection on MasterData.PT_TMCTRY;
 
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity CountryLegalentity as projection on MasterData.PT_TMCTLE;
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity CountryProductPack as projection on MasterData.PT_TMCTPRDPCK;
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity UserCountry as projection on AdminData.PT_TMUSERCTRY;
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity CountriesUser @(restrict: [
         {grant: '*', to: 'authenticated-user', where: 'User.CWID = $user.id'}
     ]) @(cds.redirection.target:false) as projection on MasterData.PT_TMCTRY{
@@ -40,7 +40,7 @@ service EpaService @(path: 'epa') @(requires:['f_tndr_cag_admin','f_tndr_cag_epa
         User: redirected to UserCountry
     };
 
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity LatestApprovals as projection on PricingAppData.ApprovalRequests;
 
     // entity LatestApprovalRequests{
@@ -67,7 +67,7 @@ service EpaService @(path: 'epa') @(requires:['f_tndr_cag_admin','f_tndr_cag_epa
     // 								and CountryApprover.Division = Division;
     // }
 
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity ChannelsForCountry{
         key CountryCode:String;
         key Channel:String(50);
@@ -75,7 +75,7 @@ service EpaService @(path: 'epa') @(requires:['f_tndr_cag_admin','f_tndr_cag_epa
         InstituteGroups:Association[*] to InstituteGroup on InstituteGroups.Channel = Channel;
     }
 
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity DivisionsForCountry{
         key CountryCode:String;
         key Division:String(200);
@@ -83,7 +83,7 @@ service EpaService @(path: 'epa') @(requires:['f_tndr_cag_admin','f_tndr_cag_epa
         Brands:Association[*] to BrandsForDivision on Brands.Division = Division; 
     }
 
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity BrandsForDivision{
         key Division:String(200);
         key BrandId:String(50);
@@ -92,7 +92,7 @@ service EpaService @(path: 'epa') @(requires:['f_tndr_cag_admin','f_tndr_cag_epa
         Products:Association[*] to ProductsForBrand on Products.BrandId = BrandId;
     }
 
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity ProductsForBrand{
         key BrandId:String(50);
         key ProductId:Integer;
@@ -102,14 +102,14 @@ service EpaService @(path: 'epa') @(requires:['f_tndr_cag_admin','f_tndr_cag_epa
         Prices:Association[1] to ProductPricingData;
     }
 
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity ProductPricingModel{
         key Currency:String(3);
         key UoM:String(50);
         Price:Double;
     }
 
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity ProductPricingData{
         key Currency:String(3);
         RegisteredPrice: Association[1] to ProductPricingModel on RegisteredPrice.Currency = Currency;
