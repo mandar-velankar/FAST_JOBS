@@ -7,12 +7,12 @@ using { com.bayer.SXTENDER.AdminData } from '../db/AdminData';
 
 service PriceAgreementService @(path: 'priceagreement') @(requires:['f_tndr_cag_admin','f_tndr_cag_priceagreements_user','f_tndr_cag_technical_user','authenticated-user']){
 
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity PriceAgreements @(cds.redirection.target:true) as projection on PriceAgreementData.PriceAgreements;
 
     //EHQUT-383702-Spain search Division filter
     //EHQUT-383697-Spain - visual mark to notify that the offer is canceled in FAST
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity PriceAgreementsMasterView @(cds.redirection.target:true) as select from PriceAgreementData.PriceAgreements as pa
     inner join MaterialsConcatList as list on list.CountryCode = pa.CountryCode and list.ProductPackID = pa.ProductPackId and list.ActiveRecord = 'Yes'
     left outer join PriceAgreementDataViews.PriceAgreementNewMaterialsView as panm on panm.ID = pa.ID
@@ -86,74 +86,74 @@ service PriceAgreementService @(path: 'priceagreement') @(requires:['f_tndr_cag_
             pa.OfferProduct.Offer.Division as Division,
             list.MaterialsList
     };
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity Candidates as projection on PriceAgreementData.CandidatesView;
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity CandidatePrices as projection on PriceAgreementData.CandidatePrices;
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity CustomerPrices as select from PriceAgreementData.CustomerPrices;
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity ConsumerPrices as select from MasterDataViews.MostRecentConsumerPricesView;
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity PriceCondition as projection on TransactionalData.PriceCondition;
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity PriceConditionClassification as projection on TransactionalData.PriceConditionClassification;
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity RoyalDecree as projection on MasterData.RoyalDecree;
     //entity Materials as projection on PriceAgreementData.MaterialsView;
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity NewMaterialsView as projection on PriceAgreementData.NewMaterialsView;
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity NewFOCMaterialsView as projection on PriceAgreementData.NewFOCMaterialsView;
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity PT_TMINST as projection on MasterData.PT_TMINST;
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity PT_TMCTPRDPCK as projection on MasterData.PT_TMCTPRDPCK;
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity PT_TMTEND @(cds.redirection.target:true) as projection on TransactionalData.PT_TMTEND;
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity PT_TMPRDPCK as projection on MasterData.PT_TMPRDPCK;
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity PriceAgreementProductNames as projection on PriceAgreementData.PriceAgreementProductNames;
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity PriceAgreementFOC as projection on PriceAgreementDataViews.PriceAgreementFOC;
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity Deliveries as projection on PriceAgreementDataViews.Deliveries;
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity MaterialsFOC as projection on TransactionalData.ProductPricing;
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity PT_TMSKUPRDPCK @(cds.redirection.target:true) as projection on MasterData.PT_TMSKUPRDPCK;
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity FreeGoodsOther as projection on TransactionalData.FreeGoodsOther;
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity PaMainFOCView as projection on PriceAgreementDataViews.PaMainFOCView;
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity Settlements as projection on MasterData.Settlements;
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity SettlementDates as projection on PriceAgreementData.SettlementDates;
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity MasterPrices as projection on MasterDataViews.MostRecentMasterPricesView;
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity PriceAgreement_APPRST as projection on PriceAgreementData.PriceAgreement_APPRST; //EJUVE-CR3
     //Brazil
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity LotProducts as projection on TransactionalData.LotProduct;
 
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity PT_TMOFPR as projection on TransactionalData.PT_TMOFPR;
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity PT_TMOFRS as projection on TransactionalData.PT_TMOFRS;
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity Country as projection on MasterData.PT_TMCTRY;
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity Users as projection on AdminData.PT_TMUSER;
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity MaterialsConcatList as projection on PriceAgreementDataViews.MaterialsConcatList;
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity User @(cds.redirection.target:true) as projection on AdminData.PT_TMUSER;
     
     //Countries where user has accesss to
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity UserCountry @(restrict: [
 		{grant: '*', to: 'authenticated-user', where: 'User.CWID = $user.id'}
 	])as projection on AdminData.PT_TMUSERCTRY {
@@ -165,7 +165,7 @@ service PriceAgreementService @(path: 'priceagreement') @(requires:['f_tndr_cag_
     action syncPriceAgreements(ids : array of String);
     // action syncFocCustPrices(ids : array of String);
      //EJUVE-CR3 START
-     @cds.persistence.exists
+     //@cds.persistence.exists
       entity PriceagreementOffers {
           PriceagreementID: UUID;
 		  TenderID: String;
@@ -184,7 +184,7 @@ service PriceAgreementService @(path: 'priceagreement') @(requires:['f_tndr_cag_
           
 } 
 //EJUVE-CR3 END
-@cds.persistence.exists
+//@cds.persistence.exists
 entity PriceAgreementNewYLLPorYLAP as Select from PriceAgreementService.PriceAgreementsMasterView as pa
 inner join TransactionalData.PriceCondition as pc on pa.OfferId=pc.OfferID and pa.ProductPackId=pc.ProductCode
 inner join TransactionalData.PriceConditionClassification as pcc on pc.PriceConditionClassification.ID=pcc.ID and pcc.isMain=true

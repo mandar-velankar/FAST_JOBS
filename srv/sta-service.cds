@@ -33,10 +33,10 @@ service StandardAppService @(path : 'sta_tender')@(requires : [
     
 
     @readonly 
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity BrandsInTender  as projection on TransactionalDataViews.BrandsInTender;
     @cds.redirection.target
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity TenderFormView as projection on TransactionalData.PT_TMTEND {
         *,
         Institute.InstituteType,
@@ -53,13 +53,13 @@ service StandardAppService @(path : 'sta_tender')@(requires : [
         Institute.RegionalHealthSystem,
         Country.Region
     }; 
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity CountryRegionsTableView as projection on MasterData.CountryRegions;
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity PT_TMAWRDCR as projection on TransactionalData.PT_TMAWRDCR;
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity AppConfig @readonly as projection on AdminData.AppConfig;
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity AwardCriteriaTableView as select from TransactionalData.PT_TMTEND as tend
     left outer join TransactionalData.PT_TMAWRDCR as cr on tend.TenderID = cr.TENDERID
     left outer join MasterData.AwardCriteriaValueHelp as ac ON cr.AwardCriteria is null and ac.Criteria is not null and ac.CountryCode = tend.CountryCode
@@ -76,7 +76,7 @@ service StandardAppService @(path : 'sta_tender')@(requires : [
             else 0
         end as Weight:Double
     };
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity TenderMasterView as select from TransactionalData.PT_TMTEND as tender
         inner join AdminData.PT_TMUSER as CreatedByUser on CreatedByUser.UserID = tender.createdBy 
         inner join AdminData.PT_TMUSER as ModifyedByUser on ModifyedByUser.UserID = tender.modifiedBy
@@ -149,7 +149,7 @@ service StandardAppService @(path : 'sta_tender')@(requires : [
         offer.Custom.String_1;
 
     @cds.redirection.target
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity InstitutesView as select from MasterData.PT_TMINST as inst
         left join MasterData.PT_TMINSHIER as hier on hier.InstituteID = inst.InstituteID {
         *,
@@ -167,42 +167,42 @@ service StandardAppService @(path : 'sta_tender')@(requires : [
         inst.InstituteTerritory.IsKAM
     }where inst.ActiveRecord = 'Yes'
     order by CountryCode, InstituteName;
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity ClassifiactionsView as projection on MasterData.MASTER_COUNTRY_CLASSIFICATION as classification {
         *,
         classification.COUNTRY_CODE as CountryCode: String
     }order by CLASSIFICATION;
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity CountryInstituteTypeView as projection on MasterData.MASTER_COUNTRY_CHANNELS as instType {
         *,
         instType.ChannelCountry as CountryCode: String
     }order by ChannelName;
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity CountryTenderNo as projection on TransactionalDataViews.CountryTenderNo;
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity TenderOffers as projection on TransactionalDataViews.TenderOffers;
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity PT_TMOFRS as projection on TransactionalData.PT_TMOFRS;
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity PT_TMTNOFST as projection on TransactionalData.PT_TMTNOFST;
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity PT_TMINST   as projection on MasterData.PT_TMINST;
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity PT_TMTEND as projection on TransactionalData.PT_TMTEND;
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity PT_TMDIST as projection on MasterData.PT_TMDIST;
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity PT_TMOFPR as projection on TransactionalData.PT_TMOFPR;
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity PT_TMQUTO as projection on TransactionalData.PT_TMQUTO;
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity PT_TMBDPR as projection on TransactionalData.PT_TMBDPR {
         *,
         Product: redirected to TransactionalData.PT_TMOFPR
     };
 
     @cds.redirection.target
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity OfferFormView as select from TransactionalData.PT_TMOFRS{
         *,
         @Core.Computed: false
@@ -225,17 +225,17 @@ service StandardAppService @(path : 'sta_tender')@(requires : [
         offer.SellingCompanyDetails.LegalEntityName,
         offer.SellingCompanyDetails.LegalEntityID
     };*/ // Form used in the Offer tab
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity CountryProductPackView as select from MasterData.PT_TMCTPRDPCK{
         *
     };
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity DistinctProductScopeView as select from CountryProductPackView {
         COUNTRYCODE as CountryCode,
         key ProductScope
     } group by ProductScope, COUNTRYCODE;
 
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity OfferProductsTableView as select from TransactionalData.PT_TMOFPR {
         *,
         key ProductCode,
@@ -490,7 +490,7 @@ service StandardAppService @(path : 'sta_tender')@(requires : [
             @Core.Computed: false
             ifnull(PricingPolicy.Value, 0) as VwBudgetedProfitability:Double
     };*/
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity OfferProductsDetailView as select from TransactionalData.PT_TMOFPR {
         *,
         key OfferID,
@@ -523,7 +523,7 @@ service StandardAppService @(path : 'sta_tender')@(requires : [
         end as VwBudgetedProfitability:Double,
         SKU.ProductType
     };
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity OfferProductsTotalForOffer as select from TransactionalData.PT_TMOFRS as offer
         inner join OfferProductsTableView as product on product.OfferID = offer.OfferID {
         key offer.OfferID,
@@ -533,11 +533,11 @@ service StandardAppService @(path : 'sta_tender')@(requires : [
     } group by offer.OfferID,
                offer.Currency,
                offer.Tender.Country.Region;
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity Country as projection on MasterData.PT_TMCTRY;
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity Users as projection on AdminData.PT_TMUSER;
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity UserCountries @readonly @(restrict: [
 		{grant: '*', to: 'authenticated-user', where: 'User.CWID = $user.id'}
 	])as projection on AdminData.PT_TMUSERCTRY {
@@ -547,14 +547,14 @@ service StandardAppService @(path : 'sta_tender')@(requires : [
         User.UserName,
         User.UserEmail
     };
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity UsersPerCountry @readonly @(cds.redirection.target:false) as projection on AdminData.PT_TMUSERCTRY {
         *,
         User.UserName as UserName,
         Country: redirected to Country,
         User: redirected to Users,
     };
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity UsersHavingOneCountry @(cds.redirection.target:false) as select from UsersPerCountry {
         key CWID,
         max(CountryCode) as CountryCode: String,
@@ -563,16 +563,16 @@ service StandardAppService @(path : 'sta_tender')@(requires : [
     }
     group by CWID
     having count(CountryCode) = 1;
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity CountryTenderBrands @readonly as projection on TransactionalDataViews.CountryTenderBrands;
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity CountryStatusses @readonly as projection on MasterData.MASTER_COUNTRY_STATUS;
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity Divisions @readonly @(cds.redirection.target:false)    as projection on MasterDataViews.Divisions;
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity CountryLegalEntity @readonly @(cds.redirection.target:false) as projection on MasterDataViews.CountryLegalEntity;
     @cds.redirection.target
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity PT_TMAPPRST as projection on TransactionalData.PT_TMAPPRST{
         *,
         OfferProduct: redirected to TransactionalData.PT_TMOFPR on OfferProduct.OfferID     = OfferId
@@ -580,21 +580,21 @@ service StandardAppService @(path : 'sta_tender')@(requires : [
                                   and OfferProduct.Active = Active
                                   and OfferProduct.LotID = LotID
     };
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity StandardTenderPriceConditionView as select from TransactionalDataViews.StandardTenderPriceConditionView;
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity PriceConditionSpecialPriceView as projection on TransactionalDataViews.StandardTenderPriceConditionView {
         *,
         @Core.Computed: false
         ifnull(Level2Discount2, (SpecialPrice - COGS) / SpecialPrice) as Margin: Double
     } where CountryCode = 'PL';
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity PriceConditionWithMaximumPriceView as projection on TransactionalDataViews.StandardTenderPriceConditionView {
         *,
         @Core.Computed: false
         ifnull(Level2Discount2, (SpecialPrice - COGS) / SpecialPrice) as Margin: Double
     } where CountryCode = 'PL';
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity PriceConditionPriceView as projection on TransactionalDataViews.StandardTenderPriceConditionView {
         CountryCode,
         Region,
@@ -619,7 +619,7 @@ service StandardAppService @(path : 'sta_tender')@(requires : [
         Level3Discount1 as Deductions,
         NetOfferPrice
     };
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity PriceConditionDiscountView as projection on TransactionalDataViews.StandardTenderPriceConditionView{
         CountryCode,
         Region,
@@ -644,15 +644,15 @@ service StandardAppService @(path : 'sta_tender')@(requires : [
         Level3Discount1 as Deductions,
         NetOfferPrice
     };
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity PriceConditionTaiwanPriceView as projection on TransactionalDataViews.StandardTenderPriceConditionView;
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity PriceConditionTaiwanDiscountView as projection on TransactionalDataViews.StandardTenderPriceConditionView;
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity PriceConditionNLPriceView as projection on TransactionalDataViews.StandardTenderPriceConditionView;
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity PriceConditionNLDiscountView as projection on TransactionalDataViews.StandardTenderPriceConditionView;
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity PriceConditionPriceWithFOCView as projection on TransactionalDataViews.StandardTenderPriceConditionView {
             CountryCode,
             Region,
@@ -677,7 +677,7 @@ service StandardAppService @(path : 'sta_tender')@(requires : [
             Level3Discount1 as Deductions,
             NetPrice as NetOfferPrice
     }where ConditionType = 'PriceWithFOC';
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity PriceConditionDiscountWithFOCView as projection on TransactionalDataViews.StandardTenderPriceConditionView {
             CountryCode,
             Region,
@@ -702,31 +702,31 @@ service StandardAppService @(path : 'sta_tender')@(requires : [
             Level3Discount1 as Deductions,
             NetPrice as NetOfferPrice
     };
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity PriceConditionClassification as select from TransactionalData.PriceConditionClassification;
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity FreeGoodsOther as select from TransactionalData.FreeGoodsOther {
         *,
        ProductPack.PRODUCTPACKNAME as ProductPackName: String
     };
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity InstituteDistributorBrandProduct as projection on MasterDataViews.InstituteDistributorBrandProduct;
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity TenderChannel as projection on MasterData.TenderChannel;
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity OfferValidation as projection on TransactionalDataViews.OfferValidation;
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity OfferProductValidation as projection on TransactionalDataViews.OfferProductValidation;
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity CountryLegalEntitySignatories as projection on MasterData.COUNTRY_LEGAL_ENTITY_SIGNATORIES as signatory {
         *,
         signatory.COUNTRY_CODE as CountryCode
     };
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity ApproverList as projection on MasterData.CountryApprovers;
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity ApproverTypes as projection on MasterData.ApproverTypes;
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity OfferProductOfferStatus as projection on TransactionalData.OfferProductOfferStatus{
         *,
         ApproverList: redirected to ApproverList,
@@ -734,7 +734,7 @@ service StandardAppService @(path : 'sta_tender')@(requires : [
     };
 
     @cds.redirection.target
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity ProductPricesCheckView as select from TransactionalData.PT_TMOFPR as product{
         key product.OfferID,
         product.Active,
@@ -746,7 +746,7 @@ service StandardAppService @(path : 'sta_tender')@(requires : [
     }where product.Offer.OfferStatus.STATUS = 'Offer Created' and product.ActiveProduct = 1
     group by product.OfferID, product.Active, product.Offer.OfferStatus.STATUS, product.ActiveProduct;
 
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity AwardedProducts as select from TransactionalData.PT_TMTRRES as result
         inner join OfferProducts as product on result.OfferID = product.OfferID
                                                           and result.ProductCode = product.ProductCode
@@ -761,7 +761,7 @@ service StandardAppService @(path : 'sta_tender')@(requires : [
         result.LotID,
         product.SORTER
     };
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity OfferProducts as projection on TransactionalData.PT_TMOFPR {
         TenderID,        
     key OfferID,        
@@ -771,7 +771,7 @@ service StandardAppService @(path : 'sta_tender')@(requires : [
     key Active,
         SORTER
     };
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity AwardedProductFormView as select from TransactionalData.PT_TMTRRES as result
         inner join TransactionalData.PT_TMOFPR as product on result.OfferID = product.OfferID
                                                           and result.ProductCode = product.ProductCode
@@ -860,21 +860,21 @@ service StandardAppService @(path : 'sta_tender')@(requires : [
         priceCondition.ID as priceconditionID : UUID
 
     };
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity MasterCountryOutComes as select from MasterData.MASTER_COUNTRY_OUTCOMES;
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity MasterOutComeReasons as select from MasterData.PT_TMOUTRS;
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity MasterCountryCurrencies as select from MasterData.CountryCurrency;
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity StandardDivisions as projection on MasterData.StandardDivisions;
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity OfferStatus as projection on TransactionalDataViews.OfferStatus;
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity ProductPack as projection on MasterData.PT_TMPRDPCK;
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity PriceCondition as projection on TransactionalData.PriceCondition;
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity CountryBrands as select from CountryBrandProducts as Product{
         key Product.COUNTRY_CODE,
         key Product.BRAND_ID,
@@ -883,17 +883,17 @@ service StandardAppService @(path : 'sta_tender')@(requires : [
         Product.BU
     }where Product.BRAND_ID is not null
     group by Product.COUNTRY_CODE, Product.BRAND_ID, Product.BU;
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity CountryBrandProducts @readonly as projection on MasterDataViews.CountryBrandProducts;
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity CompetitorResultsTableView as select from TransactionalData.TransCompetitorResult;
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity MasterCompetitors as select from MasterData.MasterCompetitors;
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity MasterCompetitorProducts as select from MasterData.MasterCompetitors;
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity WordTemplate as projection on AdminData.WordTemplate;
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity WordTemplateCountry as projection on AdminData.WordTemplateCountry{
         *,
         WordTemplates.name,
@@ -901,30 +901,30 @@ service StandardAppService @(path : 'sta_tender')@(requires : [
         WordTemplates: Redirected to WordTemplate on WordTemplates.templateId = templateId
     };
 
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity WordAttachments {
         key offerId    : String(50);
         key templateId : Integer;
             content    : LargeBinary @Core.MediaType : mediaType; //'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
             mediaType  : String      @Core.IsMediaType;
     }
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity ExcelTemplate as projection on AdminData.ExcelTemplate;
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity ExcelTemplateCountry as projection on AdminData.ExcelTemplateCountry{
         *,
         ExcelTemplates.name,
         ExcelTemplates.filename,
         ExcelTemplates: Redirected to ExcelTemplate on ExcelTemplates.templateId = templateId
     };
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity ExcelAttachments {
         key offerId    : String(50);
         key templateId : Integer;
             content    : LargeBinary @Core.MediaType : mediaType; //'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
             mediaType  : String      @Core.IsMediaType;
     }
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity DeliveryProductTableView as select from TransactionalData.PT_TMOFPR as product
         inner join TransactionalData.PT_TMTRRES as result 
             on result.OfferID = product.OfferID and result.ProductCode = product.ProductCode
@@ -969,9 +969,9 @@ service StandardAppService @(path : 'sta_tender')@(requires : [
     //     LotID,
     //     Institute.InstituteName
     // };
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity DeliveryTrackingDetailView as projection on TransactionalData.PT_TMDLVTR;
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity PdfEmail: cuid, managed {
         URL : String;
         TenderID: String(50);
@@ -983,7 +983,7 @@ service StandardAppService @(path : 'sta_tender')@(requires : [
         Sent: Boolean;
     };
 
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity ChildInstitutes as select from MasterData.PT_TMINST as inst
         inner join MasterData.PT_TMINSHIER as hier on inst.InstituteID = hier.InstituteID {
         key hier.ParentInstituteID,
@@ -1001,11 +1001,11 @@ service StandardAppService @(path : 'sta_tender')@(requires : [
             InstituteName,
             PaymentTerms
     };
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity ChildInstitutesView as select from ChildInstitutes{
         *,
     }order by InstituteName;
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity PakistanMasterDistributors as select from MasterData.DistributorAssignment as pkdist
         inner join MasterData.PT_TMDIST as dist on dist.DistributorID = pkdist.DistributorID{
             key pkdist.InstituteID,
@@ -1014,14 +1014,14 @@ service StandardAppService @(path : 'sta_tender')@(requires : [
             dist.DistributorName,
             key dist.CountryCode
     }group by pkdist.InstituteID,pkdist.BU,pkdist.DistributorID,dist.DistributorName,dist.CountryCode;
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity ProductBrand as select from MasterData.PT_TMPRDHIER as prdhier
         inner join MasterData.PT_TMPRDPCK as prdpck on prdpck.HLEVEL6_CODE = prdhier.HLEVEL6_CODE {
             key prdpck.PRODUCTPACKID,
                 prdhier.HLEVEL6_CODE,
                 prdhier.HLEVEL4_NAME
     };
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity InstitutesInBranchWithParent as select from MasterData.PT_TMINSHIER as h
         inner join MasterData.PT_TMINST as i on h.InstituteID = i.InstituteID {
             i.InstituteID,
@@ -1036,7 +1036,7 @@ service StandardAppService @(path : 'sta_tender')@(requires : [
     }where h.ActiveRecord = 'Yes' and
     i.ActiveRecord = 'Yes' and
     i.CountryCode = 'TW';
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity InstituteInBranchView as select from InstitutesInBranchWithParent as p
         inner join MasterData.PT_TMINSHIER as h on p.ParentInstituteID = h.ParentInstituteID
         inner join MasterData.PT_TMINST as i on h.InstituteID = i.InstituteID {
@@ -1047,35 +1047,35 @@ service StandardAppService @(path : 'sta_tender')@(requires : [
     }where p.ParentInstituteID <> h.InstituteID 
     and i.InstituteType <> 'Branch' 
     and i.ActiveRecord = 'Yes';
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity StandardTenderHistory as projection on TransactionalDataViews.StandardTenderHistory;
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity StandardTenderHistorySpain as projection on TransactionalDataViews.StandardTenderHistorySpain;
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity PriceConditionCurrentSectionTaiwanView as projection on TransactionalDataViews.PriceConditionCurrentSectionTaiwanView;
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity CSVAttachment {
         key Zuellig: Boolean default false;
         content    : LargeBinary @Core.MediaType : 'text/csv';
     }
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity TaiwanFASTData {
        content    : LargeBinary @Core.MediaType : 'application/json';
     };
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity PT_TMSKUPRDPCK as projection on MasterData.PT_TMSKUPRDPCK;
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity ContractInfomation as projection on TransactionalData.ContractInfomation{
         OfferProduct: redirected to PT_TMOFPR,
         *
     };
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity MailTemplates                                as projection on AdminData.MailTemplate;
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity MailTemplateFiles                            as projection on AdminData.MailTemplateFile;
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity Outbox                                       as projection on TransactionalData.OutgoingMails;
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity StandardTenderFOCInformation                 as projection on TransactionalDataViews.StandardTenderFOCInformation;   
     @cds.redirection.target
     entity NotificationUserList as select from AdminData.PT_TMUSERCTRY{
@@ -1087,7 +1087,7 @@ service StandardAppService @(path : 'sta_tender')@(requires : [
         User.UserName,
         User.UserEmail
     }where CountryCode = 'NL' and User.Role = 'Hospital Manager';
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity InstitutesInGroup as select from PT_TMINST as inst
     inner join MasterData.PT_TMINSHIER as hier 
         on hier.InstituteID = inst.InstituteID {
@@ -1099,20 +1099,20 @@ service StandardAppService @(path : 'sta_tender')@(requires : [
     }where inst.CountryCode = 'NL' 
         and inst.ActiveRecord = 'Yes' 
         and hier.ActiveRecord = 'Yes';
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity ZagisUploadFile {
         key OfferID   : String(50) default '';
         @Core.MediaType     : 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
         content    : LargeBinary;
     }
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity AwardedOfferDistributors as projection on TransactionalData.AwardedOfferDistributors;
      entity ExtractNLHistoricalInformation {
         key templateId : Integer;
             content    : LargeBinary @Core.MediaType : mediaType; //'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
             mediaType  : String      @Core.IsMediaType;
     }
-    @cds.persistence.exists
+    //@cds.persistence.exists
    entity MaxHierarchy as select from TransactionalData.PT_TMAPPRST{	
         key OfferId,
         key productcode,
@@ -1121,7 +1121,7 @@ service StandardAppService @(path : 'sta_tender')@(requires : [
         ApprovalStatus
     }where ApprovalStatus = 'Waiting'
     group by OfferId, productcode, ApproverName, ApprovalStatus;
-    @cds.persistence.exists
+    //@cds.persistence.exists
    entity NLDistributorsView as select from TransactionalData.AwardedOfferDistributors{
         key OfferID,
         key ProductPackID,
@@ -1131,7 +1131,7 @@ service StandardAppService @(path : 'sta_tender')@(requires : [
             else 'Wholesaler'
         end as DistributionType: String
     }group by OfferID, ProductPackID;
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity SelectedContractDuration as select from  ContractInfomation{
         key OfferID,
         key ProductCode,
@@ -1139,7 +1139,7 @@ service StandardAppService @(path : 'sta_tender')@(requires : [
         max(ContractStartDate) as ContractStartDate : Date,
         max(ContractEndDate) as ContractEndDate : Date,
     }group by OfferID, ProductCode;
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity NLExtractOffers as select from TransactionalData.PT_TMTEND as tender
         inner join TransactionalData.PT_TMOFRS as offer
             on offer.TenderID = tender.TenderID
@@ -1288,15 +1288,15 @@ service StandardAppService @(path : 'sta_tender')@(requires : [
             selectedcontractduration.ContractDuration,
         }where(tender.CountryCode = 'NL' and tender.Active = 1 and offer.Active = 1);
     @cds.redirection.target
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity NLPriceConditions as projection on TransactionalData.NLPriceConditions; 
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity ComplianceOfficerView @(cds.redirection.target:false) as select from TransactionalData.PT_TMOFRS; 
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity GlobalStrategicMarketingView @(cds.redirection.target:false) as select from TransactionalData.PT_TMOFRS;   
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity SupplyManagementView @(cds.redirection.target:false) as select from TransactionalData.PT_TMOFRS;     
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity PLOwnerNameView  @(cds.redirection.target:false) as select from AdminData.PT_TMUSER{
         key UserID,
             UserName,
@@ -1306,7 +1306,7 @@ service StandardAppService @(path : 'sta_tender')@(requires : [
             BU,
             Countries.CountryCode
     } where Countries.CountryCode = 'PL' and Role = 'KAM';
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity SalesReportsView as select from ClaimsData.ClaimFiles as cf 
         inner join ClaimsData.ClaimData as cd         
             on cd.ClaimFiles.ID = cf.ID
@@ -1389,7 +1389,7 @@ service StandardAppService @(path : 'sta_tender')@(requires : [
 	        CountryCurrency.Currency,
             cd.BrandId,
             cd.BrandContractCalculatedVolume;
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity OverviewSectionsView as select from SalesReportsView as ow{
             key ow.ID,
             ow.TenderID,
@@ -1418,7 +1418,7 @@ service StandardAppService @(path : 'sta_tender')@(requires : [
             inst.InstituteTerritory.Territory,
             inst.InstituteTerritory.IsKAM
         }order by CountryCode, InstituteName;
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity ExtractPolandSalesReport {
         key templateId    : String;
         key TenderID      : String;
@@ -1434,7 +1434,7 @@ service StandardAppService @(path : 'sta_tender')@(requires : [
             content       : LargeBinary @Core.MediaType : mediaType; //'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
             mediaType     : String      @Core.IsMediaType;
     };
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity SalesReportTenderView as Select from TransactionalData.PT_TMTEND as tender
         inner join MasterData.PT_TMINST as inst 
             on inst.InstituteID = tender.InstituteID 
@@ -1478,13 +1478,13 @@ service StandardAppService @(path : 'sta_tender')@(requires : [
         inst.InstituteType,
         cd.ProductPackID,
         cd.BrandId;
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity ProfitabilityCalcParamView @(cds.redirection.target:false) as select from TransactionalData.PT_TMOFRS;
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity Settlements                                  as projection on MasterData.Settlements;
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity DiscountCondition @(cds.redirection.target:false) as projection on TransactionalData.DiscountCondition;
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity DiscountConditionView as Select from TransactionalData.DiscountCondition as dc
         inner join TransactionalDataViews.StandardTenderPriceConditionView as pc on dc.PriceCondition.ID = pc.PriceConditionID{
             key dc.ID,
@@ -1500,7 +1500,7 @@ service StandardAppService @(path : 'sta_tender')@(requires : [
             dc.NetPriceWithTax, 
             pc.Tax
     }where pc.ConditionType = 'Rappel';
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity PriceConditionRappelView as Select from TransactionalDataViews.StandardTenderPriceConditionView as std
         left outer join TransactionalDataViews.StandardTenderPriceConditionView as main
             on std.CountryCode = main.CountryCode
@@ -1544,7 +1544,7 @@ service StandardAppService @(path : 'sta_tender')@(requires : [
                 std.AnnualValue,
                 std.MarketIncentiveID
             };
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity CCMPriceConditionView                   as select from TransactionalData.CCMPriceCondition{
         CountryCode,
         key OfferID,
@@ -1574,17 +1574,17 @@ service StandardAppService @(path : 'sta_tender')@(requires : [
         NETPRICEWITHTAX,
         key ConditionType
     };
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity PriceConditionDescuentoComercialView         as projection on TransactionalDataViews.StandardTenderPriceConditionView;
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity PriceConditionPVLView                        as projection on TransactionalDataViews.StandardTenderPriceConditionView;
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity PriceConditionPrecioNetoView                 as projection on TransactionalDataViews.StandardTenderPriceConditionView;
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity PriceConditionDescuentoEspecialView          as projection on TransactionalDataViews.StandardTenderPriceConditionView;
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity PriceConditionRentalView                     as projection on TransactionalDataViews.StandardTenderPriceConditionView;
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity FastConditionContractsView as select from TransactionalData.PT_TMTEND as tender
         inner join TransactionalData.PT_TMOFRS as offer 
             on offer.TenderID = tender.TenderID
@@ -1612,7 +1612,7 @@ service StandardAppService @(path : 'sta_tender')@(requires : [
         tender.ExternalID
     }where tender.CountryCode = 'ES' 
     group by tender.TenderID, offer.OfferID, product.CountryCode, institute.InstituteID, institute.InstituteName, institute.External_InstituteId, offer.Division, offer.DistributorID, institute.CustomerID, tender.User.UserName, tender.TenderName, tender.Classification, tender.SAPID, tender.ExternalID;
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity ConditionContractsView as select from TransactionalData.PT_TMTEND as tender
         inner join TransactionalData.PT_TMOFRS as offer 
             on offer.TenderID = tender.TenderID
@@ -1641,7 +1641,7 @@ service StandardAppService @(path : 'sta_tender')@(requires : [
         institute.InstituteType
     }where tender.CountryCode = 'ES'
     group by tender.TenderID, offer.OfferID, product.CountryCode, product.ProductCode, product.Price.OfferPrice, product.SKU.PRODUCTPACKNAME, product.SKU.UOM, institute.InstituteID, institute.InstituteName, institute.CustomerID, institute.InstituteType;
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity CCMMaterilsView as select from TransactionalData.PT_TMOFPR as product 
         inner join MasterData.PT_TMSKUPRDPCK as skuprdpck 
             on skuprdpck.ProductPackID = product.ProductCode
@@ -1652,7 +1652,7 @@ service StandardAppService @(path : 'sta_tender')@(requires : [
         product.CountryCode
     }where product.CountryCode = 'ES'
     group by product.ProductCode, skuprdpck.SKUCode, skuprdpck.ActiveRecord, product.CountryCode; 
-    @cds.persistence.exists
+    //@cds.persistence.exists
    entity PriceConditionInvoiceView as select from TransactionalData.PT_TMTEND as tender 
     inner join TransactionalData.PT_TMOFRS as offer 
         on offer.TenderID = tender.TenderID
@@ -1746,7 +1746,7 @@ service StandardAppService @(path : 'sta_tender')@(requires : [
             priceCondition.AnnualValue, 
             priceCondition.Tax; 
             
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity PriceConditionRebateView as select from TransactionalData.PT_TMTEND as tender 
     inner join TransactionalData.PT_TMOFRS as offer 
         on offer.TenderID = tender.TenderID
@@ -1825,7 +1825,7 @@ service StandardAppService @(path : 'sta_tender')@(requires : [
             priceCondition.Tax,
             priceCondition.MarketIncentiveID; 
 
-@cds.persistence.exists
+//@cds.persistence.exists
 entity PriceConditionDiscountConditionsView as select from TransactionalData.PT_TMTEND as tender 
     inner join TransactionalData.PT_TMOFRS as offer 
         on offer.TenderID = tender.TenderID
@@ -1893,7 +1893,7 @@ entity PriceConditionDiscountConditionsView as select from TransactionalData.PT_
             discountCondition.NetPriceWithTax,
             priceCondition.Tax; 
 
-    @cds.persistence.exists        
+    //@cds.persistence.exists        
     entity PriceConditionFOCView as select from TransactionalData.PT_TMTEND as tender 
     inner join TransactionalData.PT_TMOFRS as offer 
         on offer.TenderID = tender.TenderID
@@ -1980,8 +1980,8 @@ entity PriceConditionDiscountConditionsView as select from TransactionalData.PT_
     action getSAPSalesOrderSimulation(offerID: String, tenderID: String, productCode: Integer, instituteID: Integer, customerID: String, materialNumber: String, countryCode: String) returns String;
     action updateFinalContractStartEndDate(OfferID: String, ContractStartDate: Date, ContractEndDate: Date) returns String;
     action createAllFastConditionContracts(OfferID: String) returns String;
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity BankGuarantees                               as projection on BankGuaranteeData.BankGuarantees;
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity MarketIncentive                              as projection on MasterData.MarketIncentive;  
 }

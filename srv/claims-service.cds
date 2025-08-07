@@ -8,40 +8,40 @@ using { com.bayer.SXTENDER.AdminData } from '../db/AdminData';
 
 service ClaimsService @(path: 'claims') @(requires:['f_tndr_cag_admin','f_tndr_cag_claims_user','f_tndr_cag_technical_user','authenticated-user']){
 
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity PT_TMOFRS as projection on TransactionalData.PT_TMOFRS;
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity PT_TMDIST as projection on MasterData.PT_TMDIST;
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity Country as projection on MasterData.PT_TMCTRY;
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity Users as projection on AdminData.PT_TMUSER;
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity CountryTenderBrands @readonly as projection on TransactionalDataViews.CountryTenderBrands;
 
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity ClaimFiles @(cds.redirection.target:true) as projection on ClaimsData.ClaimFiles;
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity ClaimData @(cds.redirection.target:true) as projection on ClaimsData.ClaimData;
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity ClaimFilesView as projection on ClaimsViews.ClaimFilesView;
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity ClaimDataView as projection on ClaimsViews.ClaimDataView;
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity ClaimDataCalculatedView as projection on ClaimsViews.ClaimDataCalculatedView;
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity ExcelTemplate as projection on AdminData.ExcelTemplate;
 
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity ContrastAgentSalesData as projection on ClaimsData.ContrastAgentSalesData;
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity ContrastAgentSalesDataNL as projection on ClaimsData.ContrastAgentSalesDataNL;
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity SalesReportFile as projection on ClaimsData.SalesReportFile;
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity SalesReportFileFieldMetaData as projection on ClaimsData.SalesReportFileFieldMetaData;
 
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity UserCountries @readonly @(restrict: [
 		{grant: '*', to: 'authenticated-user', where: 'User.CWID = $user.id'}
 	])as projection on AdminData.PT_TMUSERCTRY {
@@ -52,10 +52,10 @@ service ClaimsService @(path: 'claims') @(requires:['f_tndr_cag_admin','f_tndr_c
         User.UserEmail
     };
 
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity ClaimDataBrandsView as projection on ClaimsViews.ClaimDataBrandsView;
 
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity ExtractApprovedClaim{
         key templateId    : String;
         key CountryCode   : String;
@@ -66,7 +66,7 @@ service ClaimsService @(path: 'claims') @(requires:['f_tndr_cag_admin','f_tndr_c
             content       : LargeBinary @Core.MediaType : mediaType; //'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
             mediaType     : String      @Core.IsMediaType;
     }
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity ExtractClaimsSales {
         key templateId    : String;
         key CountryCode   : String;
@@ -79,14 +79,14 @@ service ClaimsService @(path: 'claims') @(requires:['f_tndr_cag_admin','f_tndr_c
             mediaType     : String      @Core.IsMediaType;
     }
     
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity PLExtractClaimFilesView as projection on ClaimsViews.PLExtractClaimFilesView;
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity NLExtractClaimFilesView as projection on ClaimsViews.NLExtractClaimFilesView;
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity ExtractClaimDataView as projection on ClaimsViews.ExtractClaimDataView;
 
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity ExtractFASTOffer as select from TransactionalData.PT_TMTEND as tender 
         inner join TransactionalData.PT_TMOFRS as offer 
             on offer.TenderID = tender.TenderID
@@ -136,18 +136,18 @@ service ClaimsService @(path: 'claims') @(requires:['f_tndr_cag_admin','f_tndr_c
         product.SKU.Product.HLEVEL4_CODE,
         product.SKU.CONCENTRATION;
 
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity ClaimApproverTypes as projection on ClaimsData.ClaimApproverTypes;
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity ClaimApprovals @(cds.redirection.target:true) as projection on ClaimsData.ClaimApprovals;
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity UserClaimApprovals @(restrict: [
 		{grant: '*', to: 'authenticated-user', where: 'ApproverCWID = $user.id'}
 	])as projection on ClaimsData.ClaimApprovals;
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity ClaimFileStatusView as projection on ClaimsViews.ClaimFileStatusView;
 
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity ExtractFASTOfferNL as select from TransactionalData.PT_TMTEND as tender 
         inner join TransactionalData.PT_TMOFRS as offer 
             on offer.TenderID = tender.TenderID
@@ -210,9 +210,9 @@ service ClaimsService @(path: 'claims') @(requires:['f_tndr_cag_admin','f_tndr_c
         product.SKU.Product.HLEVEL4_CODE,
         product.SKU.CONCENTRATION;
 
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity ExcelClaimFileSalesReportTemplate as projection on ClaimsData.ExcelClaimFileSalesReportTemplate;
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity NLExtractClaimDataView as projection on ClaimsViews.NLExtractClaimDataView;
 
     action approveRejectClaimFiles(claimFile_ID: String, countryCode: String, status: String, claimFileDetailPageURL: String) returns String;

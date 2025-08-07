@@ -8,18 +8,18 @@ using {User,Country,managed,cuid} from '@sap/cds/common';
 service PolicyService @(path: 'ppa') @(requires:['f_tndr_cag_admin','f_tndr_cag_ppa_user','f_tndr_cag_technical_user','authenticated-user']){
     
     //OverallStatus
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity OverallApprovalStatus as projection on PricingPolicyData.OverallApprovalStatus;
 
     //Brands
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity Brands as projection on PricingPolicyData.Brands;
 
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity BrandPolicies as projection on PricingPolicyData.BrandPolicies;
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity DraftBrandPolicies as select from BrandPolicies where Status = 'Draft'; 
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity LatestApprovedBrandPolicies as select from BrandPolicies as Policy 
         inner join PricingPolicyData.LatestApprovedBrandPoliciesSegregate as Approved 
         on Approved.BrandId = Policy.BrandId 
@@ -34,7 +34,7 @@ service PolicyService @(path: 'ppa') @(requires:['f_tndr_cag_admin','f_tndr_cag_
                 Policy.Status
         };
 
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity AggregatedBrandPolicies as select from BrandPolicies as Policy
     left outer join DraftBrandPolicies as DraftPolicies on
          Policy.BrandId = DraftPolicies.BrandId and
@@ -53,7 +53,7 @@ service PolicyService @(path: 'ppa') @(requires:['f_tndr_cag_admin','f_tndr_cag_
 
 
     //Products
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity Products as select from PricingPolicyData.BrandProducts as BrandProduct 
     left outer join PricingPolicyData.ActiveProductPolicies as Policy on 
         BrandProduct.ProductPackId = Policy.ProductPackId and 
@@ -79,20 +79,20 @@ service PolicyService @(path: 'ppa') @(requires:['f_tndr_cag_admin','f_tndr_cag_
     } order by ProductName;
 
     //Policies & Policy prices linked
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity Policies as projection on PricingPolicyData.ProductPolicies;
 
     //Approvals for policies
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity Approvals @(cds.redirection.target:true) as projection on PricingPolicyData.Approvals;
 
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity Country as projection on MasterData.PT_TMCTRY;
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity Users as projection on AdminData.PT_TMUSER;
     
     //Countries where user has accesss to
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity UserCountry @(restrict: [
 		{grant: '*', to: 'authenticated-user', where: 'User.CWID = $user.id'}
 	])as projection on AdminData.PT_TMUSERCTRY {
@@ -102,7 +102,7 @@ service PolicyService @(path: 'ppa') @(requires:['f_tndr_cag_admin','f_tndr_cag_
     };
 
     //divisions distinct 
-    @cds.persistence.exists
+    //@cds.persistence.exists
     entity Divisions as projection on MasterDataViews.Divisions;
 
     
