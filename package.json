@@ -40,11 +40,13 @@
     "watch": "cds watch --port 4006",
     "watch:hybrid": "cds bind --exec npm run watch --profile hybrid",
     "watch:mv": "cds bind --exec npm run watch --profile mandar",
+    "watch:jp": "cds bind --exec npm run watch --profile jorj",
     "build:cds": "cds build --production",
     "undeploy": "cf undeploy F_TNDR_CAG_FAST_JOBS --delete-services --delete-service-keys --delete-service-brokers",
     "deploy:sql": "cds deploy --to sqlite",
     "deploy:hana:hybrid": "cds bind --exec cds deploy --to hana --profile hybrid",
     "deploy:hana:mv": "cds bind --exec cds deploy --to hana --profile mandar",
+    "deploy:hana:jp": "cds bind --exec cds deploy --to hana --profile jorj",
     "build": "rimraf resources mta_archives && mbt build --mtar archive",
     "deploy": "cf deploy mta_archives/archive.mtar --retries 1"
   },
