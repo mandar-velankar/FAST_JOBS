@@ -363,6 +363,7 @@ entity PT_TMCTPRDPCK{
 	ProductScope: String(100);
 	ProductGroup: String;
 	OutSourcedStatus: String;
+	EAN: String;
 	//Associations
 	Country:Association to PT_TMCTRY on Country.CountryCode = COUNTRYCODE;
 	Origin:Association to PT_TMCTRY on Origin.CountryCode = COUNTRYOFORIGIN;
