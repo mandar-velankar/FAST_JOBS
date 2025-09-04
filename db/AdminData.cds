@@ -7,7 +7,6 @@ using {
     cuid
 } from '@sap/cds/common';
 using {com.bayer.SXTENDER.MasterData} from './MasterData';
-using {com.bayer.SXTENDER.AdminDataViews} from './AdminDataViews';
 
 //Autorization tables
 //-------------------
@@ -39,8 +38,6 @@ entity PT_TMUSER {
         //Associations
         Countries       : Association to many PT_TMUSERCTRY
                               on Countries.User = $self;
-        toUserCountries : Association to many AdminDataViews.UserCountries
-                              on toUserCountries.USER_ID = UserID;
         UserTerritory   : Association to many MasterData.UserTerritory
                               on UserTerritory.UserID = UserID;
 }
