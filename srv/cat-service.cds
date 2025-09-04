@@ -4,12 +4,9 @@ using {
 } from '../db/MasterData';
 using {com.bayer.SXTENDER.TransactionalData} from '../db/TransactionalData';
 using {com.bayer.SXTENDER.MasterDataViews} from '../db/MasterDataViews';
-using {com.bayer.SXTENDER.MasterDataLatestValues} from '../db/MasterDataLatestValues';
 using {com.bayer.SXTENDER.TransactionalDataViews} from '../db/TransactionalDataViews';
-using {com.bayer.SXTENDER.IntegrationDataConversion} from '../db/IntegrationDataConversion';
 using {com.bayer.SXTENDER.AdminData} from '../db/AdminData';
 using {com.bayer.SXTENDER.AdminDataViews} from '../db/AdminDataViews';
-using {com.bayer.SXTENDER.BankGuaranteeData} from '../db/BankGuaranteeData';
 using {com.bayer.SXTENDER.PriceAgreementData} from '../db/PriceAgreementData';
 using {com.bayer.SXTENDER.BrazilContractingData} from '../db/BrazilContractingData';
 using {
@@ -215,19 +212,6 @@ service CatalogService @(path : 'tender')@(requires : [
     entity BUDGETEDPROFITABILITY                        as projection on MasterData.BUDGETEDPROFITABILITY;
     //Master Data Latest Values
     //@cds.persistence.exists
-    entity CountryRegisteredPrice @readonly             as projection on MasterDataLatestValues.CountryRegisteredPrice;
-    //@cds.persistence.exists
-    entity CountryCogs @readonly                        as projection on MasterDataLatestValues.CountryCogs;
-    //@cds.persistence.exists
-    entity ExchangeRates @readonly                      as projection on MasterDataLatestValues.ExchangeRates;
-    //@cds.persistence.exists
-    entity VWBUDGETEDPROFITABILITY @readonly            as projection on MasterDataLatestValues.VWBUDGETEDPROFITABILITY;
-    //@cds.persistence.exists
-    entity MostRecentBrandPolicies @readonly            as projection on MasterDataLatestValues.MostRecentBrandPolicies;
-    //@cds.persistence.exists
-    entity MostRecentDistributorBrandPolicies @readonly as projection on MasterDataLatestValues.MostRecentDistributorBrandPolicies;
-    //Master Data Views
-    //@cds.persistence.exists
     entity CountryBrandProducts @readonly               as projection on MasterDataViews.CountryBrandProducts;
     //@cds.persistence.exists
     entity CountryBrands @readonly                      as projection on MasterDataViews.CountryBrands;
@@ -238,8 +222,7 @@ service CatalogService @(path : 'tender')@(requires : [
     //@cds.persistence.exists
     entity AggregatedDistributorBrandPolicies @readonly as projection on MasterDataViews.AggregatedDistributorBrandPolicies;
     //@cds.persistence.exists
-    entity ChannelProductPolicies @readonly             as projection on MasterDataLatestValues.ActiveChannelProductPolicies;
-
+   
     //Master Data Services
     //@cds.persistence.exists
     entity InstituteDistributor {
@@ -557,22 +540,7 @@ service CatalogService @(path : 'tender')@(requires : [
             HIERARCHY          : Integer;
     };
 
-    //SALES OPPORTUNINTY
-    //@cds.persistence.exists
-    entity Buyers                                       as projection on IntegrationDataConversion.PublicMarketBuyers;
-    //@cds.persistence.exists
-    entity Products                                     as projection on IntegrationDataConversion.PublicMarketProducts;
 
-    //@cds.persistence.exists
-    entity PublicMarketTenders                          as projection on IntegrationDataConversion.PublicMarketTenders {
-        * , Comprador : redirected to Buyers, Items : redirected to Products
-    };
-
-    //BANK GUARANTEE
-    //@cds.persistence.exists
-    entity BankGuarantees                               as projection on BankGuaranteeData.BankGuarantees {
-        * , Tender : redirected to PT_TMTEND
-    };
 
     //PRICE AGREEMENT
     //@cds.persistence.exists

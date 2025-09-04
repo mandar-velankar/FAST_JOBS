@@ -8,7 +8,6 @@ using {
 } from '@sap/cds/common';
 using {com.bayer.SXTENDER.MasterData} from './MasterData';
 using {com.bayer.SXTENDER.AdminDataViews} from './AdminDataViews';
-using {com.bayer.SXTENDER.BrazilContractingData} from '../db/BrazilContractingData';
 
 //Autorization tables
 //-------------------
