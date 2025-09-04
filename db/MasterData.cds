@@ -1,7 +1,6 @@
 namespace com.bayer.SXTENDER.MasterData;
 using { User, Country, managed, cuid, temporal } from '@sap/cds/common';
 using { com.bayer.SXTENDER.TransactionalData } from './TransactionalData';
-using { com.bayer.SXTENDER.MasterDataViews } from './MasterDataViews';
 using { com.bayer.SXTENDER.AdminData } from './AdminData';
 
 //Country
