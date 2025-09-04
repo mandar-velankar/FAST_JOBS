@@ -7,7 +7,6 @@ using {
     cuid
 } from '@sap/cds/common';
 using {com.bayer.SXTENDER.TransactionalData} from './TransactionalData';
-using {com.bayer.SXTENDER.AdminDataViews} from './AdminDataViews';
 using {com.bayer.SXTENDER.AdminData} from './AdminData';
 using {com.bayer.SXTENDER.MasterData} from './MasterData';
 using {com.bayer.SXTENDER.MasterDataViews} from './MasterDataViews';

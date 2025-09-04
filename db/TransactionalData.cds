@@ -11,8 +11,6 @@ using {
 } from './FASTTypes';
 using {com.bayer.SXTENDER.MasterData} from './MasterData';
 using {com.bayer.SXTENDER.AdminData} from './AdminData';
-//using { com.bayer.SXTENDER.MasterDataViews } from './MasterDataViews';
-using {com.bayer.SXTENDER.TransactionalDataViews} from './TransactionalDataViews';
 using {com.bayer.SXTENDER.MasterDataViews} from './MasterDataViews';
 using {com.bayer.SXTENDER.PriceAgreementData} from './PriceAgreementData';
 
@@ -77,17 +75,11 @@ entity PT_TMOFRS { //Offers
         OfferStatusTable      : Association to PT_TMTNOFST
                                     on OfferStatusTable.OfferID = OfferID
                                     and OfferStatusTable.Active = Active;
-        OfferStatus:Association to TransactionalDataViews.OfferStatus on OfferStatus.OFFER_ID = OfferID;
         SellingCompanyDetails : Association to MasterData.PT_TMLE
                                     on SellingCompanyDetails.LegalEntityCode = SellingCompany;
         Quotation             : Association to PT_TMQUTO
                                     on Quotation.OfferID = OfferID
                                     and Quotation.Active = Active;
-        Revision              : Association to TransactionalDataViews.OfferRevisions
-                                    on  Revision.TENDERID       = TenderID
-                                    and Revision.TENDEROFFERNO  = TenderOfferNo;
-        OfferValue            : Association to TransactionalDataViews.OfferValues
-                                    on OfferValue.OFFER_ID = OfferID;
         PfiNumber             : Association to PT_TMPFIOM
                                     on PfiNumber.OfferID = OfferID;
         Signatories           : Association to many MasterData.COUNTRY_LEGAL_ENTITY_SIGNATORIES
@@ -101,13 +93,6 @@ entity PT_TMOFRS { //Offers
                                     on Lots.OfferID = OfferID;
 }
 
-
-@cds.persistence.exists
-entity OfferView as
-    select from PT_TMOFRS as offer {
-        *,
-        OfferStatus
-    };
 
 @cds.persistence.exists
 entity PT_OFGRPUR {
@@ -370,11 +355,6 @@ entity PT_TMOFPR {
                                        on  Results.OfferID     = OfferID
                                        and Results.ProductCode = ProductCode
                                        and Results.Active = Active;
-        ApprovalStatus           : Association to TransactionalDataViews.ApprovalRequests
-                                       on ApprovalStatus.OfferId = OfferID;
-        PreviousApproval         : Association to TransactionalDataViews.PreviousApproval
-                                       on  PreviousApproval.OFFER_ID   = OfferID
-                                       and PreviousApproval.PRODUCT_ID = ProductCode;
         Deliveries               : Association to many PT_TMDLVTR
                                        on  Deliveries.OfferID     = OfferID
                                        and Deliveries.ProductCode = ProductCode
@@ -414,16 +394,7 @@ entity PT_TMOFPR {
                                         and PricingPolicy.ProductPackID = ProductCode;
         ContractInfomation       :  Association to many ContractInfomation 
                                         on ContractInfomation.OfferID = OfferID
-                                        and ContractInfomation.ProductCode = ProductCode;   
-        NLContractDurationOfferPrices : Association to TransactionalDataViews.NLContractDurationOfferPrices 
-                                            on NLContractDurationOfferPrices.OfferID = OfferID
-                                            and NLContractDurationOfferPrices.ProductCode = ProductCode;     
-        ProductActiveSKUs             : Association to MasterDataViews.ProductActiveMaterialNumbers
-                                            on ProductActiveSKUs.ProductCode = ProductCode
-                                            and ProductActiveSKUs.CountryCode = CountryCode;         
-        ProductInActiveSKUs           : Association to MasterDataViews.ProductInActiveMaterialNumbers
-                                            on ProductInActiveSKUs.ProductCode = ProductCode
-                                            and ProductInActiveSKUs.CountryCode = CountryCode;             
+                                        and ContractInfomation.ProductCode = ProductCode;            
                                         
 }
 
@@ -720,19 +691,9 @@ entity PT_TMTEND: managed {
         Offer               : Association to many PT_TMOFRS
                                   on Offer.TenderID = TenderID
                                   and Offer.Active = Active;
-        OfferView               : Association to many OfferView
-                                  on OfferView.TenderID = TenderID;
-        // OfferStatus               : Association to many TransactionalDataViews.OfferStatus
-        //                           on OfferStatus.TENDER_ID = TenderID;
         Criteria            : Association to many PT_TMAWRDCR
                                   on Criteria.TENDERID = TenderID;
         Specifications      : Association to many Specifications on Specifications.TenderID = TenderID;
-        Brands              : Association to many TransactionalDataViews.BrandsInTender
-                                  on Brands.TENDERID = TenderID;
-        NextOfferId         : Association to TransactionalDataViews.TenderOffers
-                                  on NextOfferId.TENDERID = TenderID; //OK
-        TenderValue         : Association to TransactionalDataViews.TenderOffers
-                                  on TenderValue.TENDERID = TenderID; //Fake - we don't use this any more - remove from expand in UI5 to remove
         Origin              : Association to MasterData.MASTER_TENDER_ORIGIN
                                   on Origin.ID = TENDER_ORIGIN_ID; //OK
         CommercialAgreement : Association to many MasterData.MASTER_COMMERCIAL_AGREEMENT

@@ -5,7 +5,7 @@ using {com.bayer.SXTENDER.TransactionalData} from './TransactionalData';
 using { com.bayer.SXTENDER.MasterData.SAP } from '../db/SAP';
 using {com.bayer.SXTENDER.MasterData} from './MasterData';
 using {com.bayer.SXTENDER.AdminData} from './AdminData';
-using {com.bayer.SXTENDER.MasterDataViews} from './MasterDataViews';
+
 
 @cds.persistence.exists
 entity PriceAgreementExpiryDate as select from PriceAgreementData.PriceAgreements as PriceAgreements {
@@ -173,72 +173,3 @@ pa.CountryCode,
       else false
     end AS Synchronized: Boolean
 }group by pa.ID, pa.CountryCode, cp.Synchronized;
-
-@cds.persistence.exists
-entity PriceAgreementUpdatedRetailPrice as Select from PriceAgreementData.PriceAgreements as pa
-left outer join MasterDataViews.MostRecentConsumerPricesView as cp on cp.CountryCode = pa.CountryCode and cp.ProductPackId = pa.ProductPackId {
-    pa.ID,
-    pa.CountryCode,
-      CASE
-        WHEN pa.UoM = 'Pack' THEN
-            CASE
-                WHEN ABS(pa.ListPrice - cp.ConsumerPriceExclPP) < 0.0001 THEN 1
-                ELSE 0
-            END
-        ELSE
-            CASE
-                WHEN ABS(pa.ListPrice - cp.ConsumerPriceExclPU) < 0.0001 THEN 1
-                ELSE 0
-            END
-    END AS ListPriceEqual: Integer,
-    CASE
-        WHEN pa.UoM = 'Pack' THEN
-            CASE
-                WHEN ABS(pa.RetailPrice - cp.MaxPriceNhsPP) < 0.0001 THEN 1
-                ELSE 0
-            END
-        ELSE
-            CASE
-                WHEN ABS(pa.RetailPrice - cp.MaxPriceNhsPU) < 0.0001 THEN 1
-                ELSE 0
-            END
-    END AS RetailPriceEqual: Integer
-};
-
-@cds.persistence.exists
-entity PriceAgreementNewYLLPorYLAP as Select from PriceAgreementData.PriceAgreements as pa
-inner join TransactionalData.PriceCondition as pc on pa.OfferId=pc.OfferID and pa.ProductPackId=pc.ProductCode
-inner join TransactionalData.PriceConditionClassification as pcc on pc.PriceConditionClassification.ID=pcc.ID and pcc.isMain=true
-inner join MasterDataViews.MostRecentMasterPricesView as mp on pa.ProductPackId=mp.ProductPackId and pa.CountryCode=mp.CountryCode
-inner join MasterData.PT_TMINST as i on pa.InstituteId=i.InstituteID
-inner join MasterData.PT_TMPRDPCK as p on p.PRODUCTPACKID=pa.ProductPackId
-left join PriceAgreementData.CustomerPrices as cp on cp.PriceAgreementId = pa.ID{
-    pa.ID,
-    pa.CountryCode,
-    CASE
-        when pa.UoM = 'Pack' and i.InstituteType ='Private Account'
-          then 
-              CASE
-                WHEN ABS(mp.YLLP - pc.PVL) < 0.0001 THEN 1
-                ELSE 0
-              END  
-          else 
-            CASE
-                WHEN ABS(mp.YLLP - (pc.PVL * p.PACKFACTOR)) < 0.0001 THEN 1
-                ELSE 0
-            END
-    END AS YLLP: Integer,
-    CASE
-        when pa.UoM = 'Pack' and i.InstituteType <> 'Private Account'
-          then 
-              CASE
-                WHEN ABS(mp.YLAP - pc.ConfidentialPrice) < 0.0001 THEN 1
-                ELSE 0
-              END  
-          else 
-            CASE
-                WHEN ABS(mp.YLLP - (pc.ConfidentialPrice * p.PACKFACTOR)) < 0.0001 THEN 1
-                ELSE 0
-            END
-    END AS YLAP: Integer
-}where pa.CountryCode = 'ES' and pa.Status is NULL and cp.Synchronized = true;
