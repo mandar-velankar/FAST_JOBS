@@ -109,10 +109,6 @@ service CatalogService @(path : 'tender')@(requires : [
     entity FreeGoodsOther                               as projection on TransactionalData.FreeGoodsOther;
     //@cds.persistence.exists
     entity ProductTypeProfitability                     as projection on TransactionalData.ProductTypeProfitability;
-    //@cds.persistence.exists
-    entity ProductPricingView                           as projection on TransactionalDataViews.ProductPricingView;
-    //@cds.persistence.exists
-    entity PriceConditionView                           as projection on TransactionalDataViews.PriceConditionView;
     //spain
     //@cds.persistence.exists
     entity MasterPrices                                 as projection on MasterData.MasterPrices;
@@ -219,9 +215,6 @@ service CatalogService @(path : 'tender')@(requires : [
     entity CountryCurrency @readonly                    as projection on MasterDataViews.CountryCurrency;
     //@cds.persistence.exists
     entity CountryLegalEntity @readonly                 as projection on MasterDataViews.CountryLegalEntity;
-    //@cds.persistence.exists
-    entity AggregatedDistributorBrandPolicies @readonly as projection on MasterDataViews.AggregatedDistributorBrandPolicies;
-    //@cds.persistence.exists
    
     //Master Data Services
     //@cds.persistence.exists
@@ -341,8 +334,6 @@ service CatalogService @(path : 'tender')@(requires : [
     entity BrandsInTender @readonly                     as projection on TransactionalDataViews.BrandsInTender;
     //@cds.persistence.exists
     entity CountryMinPrice @readonly                    as projection on TransactionalDataViews.CountryMinPrice;
-    //@cds.persistence.exists
-    entity PreApprovedPrices @readonly                  as projection on TransactionalDataViews.PreApprovedPrices;
     //@cds.persistence.exists
     entity TenderHistorySpain @readonly                 as projection on TransactionalDataViews.TenderHistorySpain;
     //@cds.persistence.exists
