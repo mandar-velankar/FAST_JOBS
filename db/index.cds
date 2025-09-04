@@ -8,9 +8,7 @@ using from './MasterData';
 
 using from './MasterDataViews';
 using from './AdminData';
-using from './AdminDataViews';
 using from './TransactionalData';
-using from './TransactionalDataViews';
 
 using from './SAP';
 
