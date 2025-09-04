@@ -12,10 +12,8 @@ using {
 using {com.bayer.SXTENDER.MasterData} from './MasterData';
 using {com.bayer.SXTENDER.AdminData} from './AdminData';
 //using { com.bayer.SXTENDER.MasterDataViews } from './MasterDataViews';
-using {com.bayer.SXTENDER.MasterDataLatestValues} from './MasterDataLatestValues';
 using {com.bayer.SXTENDER.TransactionalDataViews} from './TransactionalDataViews';
 using {com.bayer.SXTENDER.MasterDataViews} from './MasterDataViews';
-using {com.bayer.SXTENDER.BankGuaranteeData} from './BankGuaranteeData';
 using {com.bayer.SXTENDER.PriceAgreementData} from './PriceAgreementData';
 
 @cds.persistence.exists
@@ -264,9 +262,6 @@ entity PT_TMBDPR {
                                     on  Product.OfferID     = OfferID
                                     and Product.ProductCode = ProductCode
                                     and Product.LotID       = LotID;
-        Bundled_1_Cogs        : Association to MasterDataLatestValues.CountryCogs
-                                    on  Bundled_1_Cogs.COUNTRY_CODE = CountryCode
-                                    and Bundled_1_Cogs.PRODUCT_ID   = FOCProduct_Bundled_1;
         Bundled_1_SKU         : Association to MasterData.PT_TMPRDPCK
                                     on Bundled_1_SKU.PRODUCTPACKID = FOCProduct_Bundled_1;
         Profitability         :  Association to MasterData.BUDGETEDPROFITABILITY on Profitability.PRODUCTPACKID = ProductCode  and Profitability.COUNTRYCODE =CountryCode and SubmittedOn >= Profitability.EFFECTIVEDATE and SubmittedOn <= Profitability.ENDDATE;
@@ -371,12 +366,6 @@ entity PT_TMOFPR {
                                        and Price.OfferID     = OfferID
                                        and Price.Active = Active
                                        and Price.LotID = LotID;
-        RegisteredPrice          : Association to many MasterDataLatestValues.CountryRegisteredPrice
-                                       on  RegisteredPrice.COUNTRY_CODE = CountryCode
-                                       and RegisteredPrice.PRODUCT_ID   = ProductCode;
-        Cogs                     : Association to MasterDataLatestValues.CountryCogs
-                                       on  Cogs.COUNTRY_CODE = CountryCode
-                                       and Cogs.PRODUCT_ID   = ProductCode;
         Results                  : Association to many PT_TMTRRES
                                        on  Results.OfferID     = OfferID
                                        and Results.ProductCode = ProductCode
@@ -420,10 +409,6 @@ entity PT_TMOFPR {
                                         on LotProduct.OfferID = OfferID
                                         and LotProduct.ProductCode = ProductCode
                                         and LotProduct.LotID = LotID;
-        BudgetedProfitability    : Association to MasterDataLatestValues.VWBUDGETEDPROFITABILITY
-                                        on BudgetedProfitability.COUNTRYCODE = CountryCode
-                                        and BudgetedProfitability.PRODUCTPACKID = ProductCode;
-                                        //and BudgetedProfitability.HLEVEL4_CODE = SKU.Product.HLEVEL4_CODE
         PricingPolicy            : Association to MasterData.PricingPolicy
                                         on PricingPolicy.CountryCode = CountryCode
                                         and PricingPolicy.ProductPackID = ProductCode;
@@ -758,8 +743,6 @@ entity PT_TMTEND: managed {
         CountrySpecificInformation : Association to CountrySpecificTenderInfo
                                         on CountrySpecificInformation.TenderID = TenderID
                                         and CountrySpecificInformation.CountryCode = CountryCode;
-        BankGuarantees: Association to BankGuaranteeData.BankGuarantees
-                                        on BankGuarantees.TenderID = TenderID;
         PriceAgreements: Association to PriceAgreementData.PriceAgreements
                                          on PriceAgreements.TenderId  = TenderID;
         User: Association to AdminData.PT_TMUSER

@@ -1,7 +1,6 @@
 namespace com.bayer.SXTENDER.MasterData;
 using { User, Country, managed, cuid, temporal } from '@sap/cds/common';
 using { com.bayer.SXTENDER.TransactionalData } from './TransactionalData';
-using { com.bayer.SXTENDER.MasterDataLatestValues } from './MasterDataLatestValues';
 using { com.bayer.SXTENDER.MasterDataViews } from './MasterDataViews';
 using { com.bayer.SXTENDER.AdminData } from './AdminData';
 
@@ -367,7 +366,6 @@ entity PT_TMCTPRDPCK{
 	Country:Association to PT_TMCTRY on Country.CountryCode = COUNTRYCODE;
 	Origin:Association to PT_TMCTRY on Origin.CountryCode = COUNTRYOFORIGIN;
 	ProductPack:Association to PT_TMPRDPCK on ProductPack.PRODUCTPACKID = PRODUCTPACKID;
-	COGS:Association to MasterDataLatestValues.CountryCogs on COGS.PRODUCT_ID = PRODUCTPACKID and COGS.COUNTRY_CODE = COUNTRYCODE;
 	ProductPackSKU:Association to many PT_TMSKUPRDPCK on ProductPackSKU.CountryProductPack = $self;
 }
 //Brand

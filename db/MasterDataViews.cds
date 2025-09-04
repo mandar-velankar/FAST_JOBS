@@ -3,7 +3,6 @@ namespace com.bayer.SXTENDER.MasterDataViews;
 using { User, Country, managed } from '@sap/cds/common';
 using { com.bayer.SXTENDER.MasterData } from './MasterData';
 using { com.bayer.SXTENDER.MasterData.SAP } from './SAP';
-using { com.bayer.SXTENDER.MasterDataLatestValues } from './MasterDataLatestValues';
 using { com.bayer.SXTENDER.AdminData } from './AdminData';
 
 @cds.persistence.exists
@@ -45,7 +44,6 @@ MostRecentSkuCodeForProductPack as sku on Product.PRODUCTPACKID = sku.ProductPac
 	case when Product.REGISTERED=0 then 0 else 1 end as REGISTERED:Integer,
 	Product.REGISTERED as REGISTERED_VALUE:Integer,
 	Product.COMMENT as COMMENT,
-	Product.COGS.COGS,
 	Product.GOV_CODE,
 	Product.CODE1,
 	Product.CODE2,
@@ -200,22 +198,6 @@ inner join CountryBrands as cb on dst.CountryCode = cb.COUNTRY_CODE and bdd.Divi
 	dst.ActiveRecord as ACTIVE_RECORD
 } where dst.ForAllBrands = false and dst.ActiveRecord = 'Yes';
 
-//Distributor brand policy with aggregated data for front-end
-@cds.persistence.exists
-entity AggregatedDistributorBrandPolicies as SELECT from MasterData.PT_TMDISBRD as DistributorBrands
-left outer join MasterDataLatestValues.LatestDistributorBrandPolicies as LatestDistributorBrandPolicies 
-	on DistributorBrands.CountryCode = LatestDistributorBrandPolicies.CountryCode
-	and DistributorBrands.HLevel4_Code = LatestDistributorBrandPolicies.BrandId
-	and DistributorBrands.DistributorID = LatestDistributorBrandPolicies.DistributorId
-left outer join MasterDataLatestValues.LatestBrandPolicies as LatestBrandPolicies
-	on DistributorBrands.CountryCode = LatestBrandPolicies.CountryCode
-	and DistributorBrands.HLevel4_Code = LatestBrandPolicies.BrandId{
-		key DistributorBrands.CountryCode,
-		key DistributorBrands.DistributorID as DistributorId,
-		key DistributorBrands.HLevel4_Code as BrandId,
-		ifnull(LatestDistributorBrandPolicies.StandardDiscount, ifnull(LatestBrandPolicies.StandardDiscount, 0)) as StandardDiscount:Double
-}group by DistributorBrands.CountryCode, DistributorBrands.DistributorID, DistributorBrands.HLevel4_Code, LatestDistributorBrandPolicies.StandardDiscount, LatestBrandPolicies.StandardDiscount;
-
 //Distinct list of divisions
 @cds.persistence.exists
 entity Divisions as select from MasterData.PT_TMPRDHIER as ProductHierarchy{
@@ -223,11 +205,6 @@ entity Divisions as select from MasterData.PT_TMPRDHIER as ProductHierarchy{
 	ProductHierarchy.HLEVEL1_NAME as DivisionName
 } group by ProductHierarchy.HLEVEL1_CODE, ProductHierarchy.HLEVEL1_NAME;
 
-//DONE
-@cds.persistence.exists
-entity ExchangeRates @readonly as projection on MasterDataLatestValues.ExchangeRates;
-//EHQUT-CR8
-//italy
 @cds.persistence.exists
 entity MostRecentConsumerPricesView as select from MasterData.ConsumerPrices {
 	key CountryCode,

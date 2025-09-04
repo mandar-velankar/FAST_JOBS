@@ -3,7 +3,6 @@ using {
     sap.common
 } from '../db/MasterData';
 using {com.bayer.SXTENDER.MasterDataViews} from '../db/MasterDataViews';
-using { com.bayer.SXTENDER.MasterDataLatestValues } from '../db/MasterDataLatestValues';
 using {com.bayer.SXTENDER.TransactionalData} from '../db/TransactionalData';
 using {com.bayer.SXTENDER.AdminData} from '../db/AdminData';
 using {
@@ -133,37 +132,6 @@ service MasterDataManagementService @(path : 'mdm')@(requires : ['authenticated-
 
     //@cds.persistence.exists
     entity ConsumerPrices as projection on MasterData.ConsumerPrices;
-
-    //@cds.persistence.exists
-    entity CountryRegisteredPrice as SELECT from MasterData.PT_TMPRDPCK as ProductPack
-    inner join MasterData.PT_TMCTPRDPCK AS CountryProductPack
-    ON CountryProductPack.PRODUCTPACKID = ProductPack.PRODUCTPACKID and ProductPack.ACTIVERECORD = 'Yes'
-    left join MasterDataLatestValues.CountryRegisteredPrice as l
-    on CountryProductPack.COUNTRYCODE=l.COUNTRY_CODE and ProductPack.PRODUCTPACKID =l.PRODUCT_ID
-    left join MasterDataLatestValues.CountryCogs as Cogs
-    on  CountryProductPack.COUNTRYCODE = Cogs.COUNTRY_CODE
-    and ProductPack.PRODUCTPACKID =Cogs.PRODUCT_ID
-    {
-        key CountryProductPack.COUNTRYCODE as CountryCode,
-        key ProductPack.PRODUCTPACKID as ProductPackID,
-        ifnull(l.UOM, '') as UOM: String,
-        ifnull(l.CURRENCY,'')  as PriceCurrency: String(3),
-        ifnull(l.REGISTERED_PRICE,0) as RegisteredPrice: Double,
-        l.EffDate as PriceEffDate,
-        l.EndDate as PriceEndDate,
-        l.RegisteredPriceSource,
-        l.RegisteredPriceID,
-        l.ActiveRecord as PriceActiveRecord, 
-        Cogs.COGSID,
-        ifnull(Cogs.COGS, 0) as CogsPrice: Double,
-        ifnull(Cogs.CURRENCY, l.CURRENCY)  as CogsCurrency: String(3),
-        //Cogs.UOM as CogsUom,
-        Cogs.EffectiveDate as CogsEffDate,
-        Cogs.EndDate as CogsEndDate,
-        Cogs.COGSType,
-        Cogs.ActiveRecord as CogsActiveRecord,
-        ProductPack.PRODUCTPACKNAME as ProductPackName
-    }where CountryProductPack.ACTIVERECORD = 'Yes';
 
     //@cds.persistence.exists
     entity PT_TMCOGS       as projection on MasterData.PT_TMCOGS;
