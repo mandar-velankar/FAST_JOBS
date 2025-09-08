@@ -1,5 +1,4 @@
 const { ProcessMaterials, ProcessCustomers } = require('./ItalyJobs');
-const { ProcessMaterialsBrazil, ProcessCustomersBrazil } = require('./BrazilJobs');
 const PriceAgreementMailJob = require("./PriceAgreementMailJob");
 const PriceAgreementPriceConditionNotificationMailJob = require("./PriceAgreementPriceConditionNotificationMailJob");
 const PriceAgreementNotificationNetPriceAbovePVLJob = require("./PriceAgreementNotificationNetPriceAbovePVLJob");
