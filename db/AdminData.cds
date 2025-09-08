@@ -21,37 +21,37 @@ entity CONDITIONAL_ACCESS {
 }
 
 //EHQUT-268955-Spain - correct mistakes on Commercial agreement templates
-@cds.persistence.exists
-entity PT_TMUSER {
-        ToolIdentity    : String(20);
-        ToolID          : Integer;
-    key UserID          : String(50);
-        UserName        : String(100);
-        LoginTime       : String(255);
-        CWID            : String(12);
-        UserEmail       : String(255);
-        Role            : String(100);
-        ContactNumber   : String(20);
-        BU              : String;
-        UserSignatureImg: LargeBinary @Core.MediaType: mediaType;
-        mediaType       : String @Core.IsMediaType;
-        //Associations
-        Countries       : Association to many PT_TMUSERCTRY
-                              on Countries.User = $self;
-        UserTerritory   : Association to many MasterData.UserTerritory
-                              on UserTerritory.UserID = UserID;
-}
-@cds.persistence.exists
-entity PT_TMUSERCTRY {
-    key CWID         : String(5);
-    key CountryCode  : String;
-        ActiveRecord : String(3);
-        //Associations
-        User         : Association to PT_TMUSER
-                           on User.CWID = CWID; //This cannot be found in OData
-        Country      : Association to MasterData.PT_TMCTRY
-                           on Country.CountryCode = CountryCode; //This can be found in OData
-}
+// @cds.persistence.exists
+// entity PT_TMUSER {
+//         ToolIdentity    : String(20);
+//         ToolID          : Integer;
+//     key UserID          : String(50);
+//         UserName        : String(100);
+//         LoginTime       : String(255);
+//         CWID            : String(12);
+//         UserEmail       : String(255);
+//         Role            : String(100);
+//         ContactNumber   : String(20);
+//         BU              : String;
+//         UserSignatureImg: LargeBinary @Core.MediaType: mediaType;
+//         mediaType       : String @Core.IsMediaType;
+//         //Associations
+//         Countries       : Association to many PT_TMUSERCTRY
+//                               on Countries.User = $self;
+//         UserTerritory   : Association to many MasterData.UserTerritory
+//                               on UserTerritory.UserID = UserID;
+// }
+// @cds.persistence.exists
+// entity PT_TMUSERCTRY {
+//     key CWID         : String(5);
+//     key CountryCode  : String;
+//         ActiveRecord : String(3);
+//         //Associations
+//         User         : Association to PT_TMUSER
+//                            on User.CWID = CWID; //This cannot be found in OData
+//         Country      : Association to MasterData.PT_TMCTRY
+//                            on Country.CountryCode = CountryCode; //This can be found in OData
+// }
 @cds.persistence.exists
 entity PT_TMUSERCTRYN {
     key CountryCode : String;
