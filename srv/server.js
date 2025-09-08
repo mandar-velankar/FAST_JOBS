@@ -2,7 +2,7 @@ const cds = require('@sap/cds')
 const jobManager = require("./jobs/JobManager");
 
 cds.on('served', async (services) => {
-    jobManager.registerJobs();
+    // jobManager.registerJobs();
     // const ProcessMasterDataPrices = require("./jobs/brasil/ProcessMasterDataPrices");
   // new ProcessMasterDataPrices("test","*").onTick();
   // const scheduler = await jobScheduler();
