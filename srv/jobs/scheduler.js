@@ -5,7 +5,6 @@ const qs = require("qs");
 const cds = require('@sap/cds');
 const { v4: uuidv4 } = require('uuid');
 const { ProcessMaterials, ProcessCustomers } = require('./ItalyJobs');
-const { ProcessMaterialsBrazil, ProcessCustomersBrazil } = require('./BrazilJobs');
 const { ExtendPriceAgreements } = require('./PriceAgreementJobs');
 
 
