@@ -999,6 +999,7 @@ entity UserTerritory {
 
 @cds.persistence.exists
 entity PaymentTerms {
+	CountryCode	: String not null;
 	E1KNVVM_ZTERM : String(6) not null;
 	Description : String;
 }
@@ -1178,3 +1179,21 @@ entity INTERIM_SPAINMATERIALS : cuid, managed {
     Status                 : String;
     Comments               : String;
 };
+
+@cds.persistence.exists
+entity INTERIM_SPAINCUSTOMERS : cuid, managed {
+    CustomerID     	   : Integer;
+    CustomerName       : String;
+	CG1_Description	   : String;
+	CG2_Description	   : String;
+	CG1_Code	       : String;
+	CG2_Code	       : String;
+    CustomerType       : String;
+    Address            : String;
+    Region             : String;
+    Province           : String;
+    Taxcode            : String;
+    PaymentTerm        : String;
+	Status             : String;
+    Comments           : String;
+}

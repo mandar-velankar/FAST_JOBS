@@ -19,6 +19,9 @@ cds.on('served', async (services) => {
   // const ProcessEmpenho = require("./jobs/brasil/ProcessEmpenho");
   // new ProcessEmpenho("test","*").onTick();
 
-  const ProcessMaterialMasterData = require("./jobs/ProcessMaterialMasterData");
-  new ProcessMaterialMasterData("test","*").onTick();
+  // const ProcessMaterialMasterData = require("./jobs/ProcessMaterialMasterData");
+  // new ProcessMaterialMasterData("test","*").onTick();
+
+  // const ProcessCustomerMasterData = require("./jobs/ProcessCustomerMasterData");
+  // new ProcessCustomerMasterData("test","*").onTick();
 });

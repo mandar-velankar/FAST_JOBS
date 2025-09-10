@@ -17,6 +17,8 @@ const ProcessSpainRappelData = require("./ProcessSpainRappelData");
 const PriceConditionQualityControl = require("./PriceConditionsQualityControlJob");
 const PriceConditionsQualityControlNotificationMail = require("./PriceConditionsQualityControlNotificationMailJob");
 const PriceAgreementExpiredMailJob = require("./PriceAgreementExpiredMailJob");
+const ProcessMaterialMasterData = require("./ProcessMaterialMasterData");
+const ProcessCustomerMasterData = require("./ProcessCustomerMasterData");
 
 module.exports = class JobFactory {
     static create(jobName, jobTime) {
@@ -84,6 +86,12 @@ module.exports = class JobFactory {
             case this.jobNames.PriceAgreementExpiredMailJob:
                     return new PriceAgreementExpiredMailJob(jobName,jobTime)
                     break;
+            case this.jobNames.ProcessMaterialMasterData:
+                return new ProcessMaterialMasterData(jobName,jobTime)
+                break;
+            case this.jobNames.ProcessCustomerMasterData:
+                return new ProcessCustomerMasterData(jobName,jobTime)
+                break;
             default:
                 throw new Error('Job type not supported');
                 break;
@@ -111,7 +119,9 @@ module.exports = class JobFactory {
             ProcessSpainRappelData: "ProcessSpainRappelData",
             PriceConditionQualityControl: "PriceConditionQualityControl",
             PriceAgreementExpiredMailJob :"PriceAgreementExpiredMailJob",
-            PriceConditionsQualityControlNotificationMail: "PriceConditionsQualityControlNotificationMail"
+            PriceConditionsQualityControlNotificationMail: "PriceConditionsQualityControlNotificationMail",
+            ProcessMaterialMasterData: "ProcessMaterialMasterData",
+            ProcessCustomerMasterData: "ProcessCustomerMasterData"
         };
     }
 }
