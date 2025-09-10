@@ -363,6 +363,7 @@ entity PT_TMCTPRDPCK{
 	ProductScope: String(100);
 	ProductGroup: String;
 	OutSourcedStatus: String;
+	EAN: String;
 	//Associations
 	Country:Association to PT_TMCTRY on Country.CountryCode = COUNTRYCODE;
 	Origin:Association to PT_TMCTRY on Origin.CountryCode = COUNTRYOFORIGIN;
@@ -998,6 +999,7 @@ entity UserTerritory {
 
 @cds.persistence.exists
 entity PaymentTerms {
+	CountryCode	: String not null;
 	E1KNVVM_ZTERM : String(6) not null;
 	Description : String;
 }
@@ -1158,4 +1160,47 @@ entity MarketIncentive: managed{
     CountryCode: String;
     MarketIncentiveID: String;
     Description: String;
+}
+
+@cds.persistence.exists
+entity INTERIM_SPAINMATERIALS : cuid, managed {
+    EAN_UPC                : String;
+    MaterialNumber         : Integer;
+    SAPName                : String;
+    CommercialName         : String;
+    ProductType            : String;
+    PackFactor             : Double;
+    Presentation           : String;
+    Strength               : Double;
+    UOM                    : String;
+    SalesUnitOfMeasure     : String;
+    ProductHierarchy       : String;
+    DivisionCode           : Integer;
+    Division               : String;
+    BrandID                : String;
+    MaterialGroup1         : String;
+    MaterialGroup4         : String;
+    MaterialGroup5         : String;
+    ItemCategoryGroup      : String;
+    MaterialStatus         : String;
+    Status                 : String;
+    Comments               : String;
+}
+
+@cds.persistence.exists
+entity INTERIM_SPAINCUSTOMERS : cuid, managed {
+    CustomerID     	   : Integer;
+    CustomerName       : String;
+	CG1_Description	   : String;
+	CG2_Description	   : String;
+	CG1_Code	       : String;
+	CG2_Code	       : String;
+    CustomerType       : String;
+    Address            : String;
+    Region             : String;
+    Province           : String;
+    Taxcode            : String;
+    PaymentTerm        : String;
+	Status             : String;
+    Comments           : String;
 }
