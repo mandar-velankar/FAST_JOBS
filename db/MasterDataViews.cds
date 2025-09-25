@@ -877,3 +877,66 @@ entity ProductInActiveMaterialNumbers as select from MasterData.PT_TMSKUPRDPCK {
 	group by 
 		CountryCode,
 		ProductPackID;
+
+@cds.persistence.exists
+entity FASTCoreMaterialView as select from SAP.FASTCoreMaterial as material
+	left join SAP.GTIN as gtin
+		on gtin.parent.ID = material.ID
+		and gtin.ProductStandardVariantID = 'GT'
+	left join SAP.PrdDesc as prddesc
+		on prddesc.parent.ID = material.ID
+	left join SAP.SalesSpec as salesspec
+		on salesspec.parent.ID = material.ID
+	left join SAP.SalesSpecTxt as salesspectxt
+		on salesspectxt.parentSalesSpec.ID = salesspec.ID
+	left join SAP.SalesSpecTxtSAPScrptLn as salesspectxtsaptln
+		on salesspectxtsaptln.parentSalesSpecTxt.ID = salesspectxt.ID
+	left join SAP.QtyConversion as qtyconversion
+		on qtyconversion.parent.ID = material.ID
+		and qtyconversion.UnitCode =
+			case
+				when prddesc.Description like '%JIVI%' or prddesc.Description like '%KOVALTRY%'
+					then 'IU'
+				else 'UNI'
+			end
+        and qtyconversion.CorrespondingQuantityUnitCode = 'PCE' {
+	key material.ID,
+	material.createdAt,
+	material.createdBy,
+	material.modifiedAt,
+	material.modifiedBy,
+	gtin.ProductStandardID as EAN_UPC: String,
+	gtin.ProductStandardVariantID,
+    ProductInternalID as MaterialNumber: String,
+    ProductHierarchyInternalID,
+    ItemCategoryGroupCode,
+    material.ProductSalesProcessUsabilityProfileCode as MaterialStatus: String,
+    prddesc.Description as SAPName: String,
+    salesspec.SalesMeasureUnitCode,
+    salesspec.FirstSalesSpecificationProductGroupCode as MaterialGroup1: String,
+    salesspec.FourthSalesSpecificationProductGroupCode as MaterialGroup4: String,
+    salesspec.FifthSalesSpecificationProductGroupCode as MaterialGroup5: String,
+    salesspectxtsaptln.SAPScriptLineText as CommercialName: String,
+	qtyconversion.Quantity as PackFactor: Double,
+	qtyconversion.UnitCode,
+	qtyconversion.CorrespondingQuantityUnitCode 
+}group by material.ID,
+	gtin.ProductStandardID,
+	gtin.ProductStandardVariantID,
+    ProductInternalID,
+    ProductHierarchyInternalID,
+    ItemCategoryGroupCode,
+    material.ProductSalesProcessUsabilityProfileCode,
+    prddesc.Description,
+    salesspec.SalesMeasureUnitCode,
+    salesspec.FirstSalesSpecificationProductGroupCode,
+    salesspec.FourthSalesSpecificationProductGroupCode,
+    salesspec.FifthSalesSpecificationProductGroupCode,
+    salesspectxtsaptln.SAPScriptLineText,
+	qtyconversion.Quantity,
+	qtyconversion.UnitCode,
+	qtyconversion.CorrespondingQuantityUnitCode,
+	material.createdAt,
+	material.createdBy,
+	material.modifiedAt,
+	material.modifiedBy;

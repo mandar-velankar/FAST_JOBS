@@ -1102,8 +1102,10 @@ entity RetailArticle: cuid{
 
 @cds.persistence.exists
 entity QtyConversion: cuid {
+    UnitCode: String;
 	Quantity: Double;
 	CorrespondingQuantity: Double;
+    CorrespondingQuantityUnitCode: String;
 	parent: Association to FASTCoreMaterial;
 }
 
