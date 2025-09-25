@@ -1185,6 +1185,7 @@ entity INTERIM_SPAINMATERIALS : cuid, managed {
     MaterialStatus         : String;
     Status                 : String;
     Comments               : String;
+	FASTCoreMaterialID	   : String;
 }
 
 @cds.persistence.exists
