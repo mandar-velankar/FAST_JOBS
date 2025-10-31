@@ -1190,8 +1190,9 @@ entity INTERIM_SPAINMATERIALS : cuid, managed {
 
 @cds.persistence.exists
 entity INTERIM_SPAINCUSTOMERS : cuid, managed {
-    CustomerID     	   : Integer;
+    CustomerID     	   : String;
     CustomerName       : String;
+	CountryCode	   	   : String;
 	CG1_Description	   : String;
 	CG2_Description	   : String;
 	CG1_Code	       : String;
@@ -1204,4 +1205,14 @@ entity INTERIM_SPAINCUSTOMERS : cuid, managed {
     PaymentTerm        : String;
 	Status             : String;
     Comments           : String;
+}
+
+@cds.persistence.exists
+entity CustomerGroups: cuid, managed {
+	CountryCode			: String;
+	CGR1			 	: String;
+	CG1_Description  	: String;
+	CGR2			 	: String;
+	CG2_Description  	: String;
+	FastInstituteType	: String;
 }
