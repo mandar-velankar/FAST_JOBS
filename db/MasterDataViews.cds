@@ -940,3 +940,60 @@ entity FASTCoreMaterialView as select from SAP.FASTCoreMaterial as material
 	material.createdBy,
 	material.modifiedAt,
 	material.modifiedBy;
+
+@cds.persistence.exists
+entity FASTCoreCustomersView as select from SAP.FASTCoreCustomerMaster as customer
+	left join SAP.CustData as CustData
+		on CustData.parent.ID = customer.ID
+	left join SAP.CustSalesArrgmnt as CustSalesArrgmnt
+		on CustSalesArrgmnt.parentCustData.ID = CustData.ID
+	left join MasterData.CustomerGroups as customerGroup
+		on customerGroup.CGR1 = CustSalesArrgmnt.CustomerDefinedGroupCode
+		and customerGroup.CGR2 = CustSalesArrgmnt.FirstAdditionalCustomerDefinedGroupCode {
+	key customer.ID,
+    customer.InternalID,
+	customer.modifiedAt,
+	customer.modifiedBy,
+	customer.createdAt,
+	customer.createdBy,
+    CommonInfo.CustOrgnstn.CustName.FirstLineName,
+    CustData.CustAcctInfo.CashDiscountTermsCode,
+    CustData.CustAcctInfo.CreditMemosPaymentTermsCode,
+    CustSalesArrgmnt.CustomerDefinedGroupCode,
+    CustSalesArrgmnt.FirstAdditionalCustomerDefinedGroupCode,
+    AddrnfoData.Addr.PostalAddr.RegionCode,
+    AddrnfoData.Addr.PostalAddr.StreetName,
+    AddrnfoData.Addr.PostalAddr.HouseID,
+    AddrnfoData.Addr.PostalAddr.CityName,
+    AddrnfoData.Addr.PostalAddr.CountryCode,
+    AddrnfoData.Addr.PostalAddr.StreetPostalCode,
+	AddrnfoData.Addr.PostalAddr.HouseID || ',' || AddrnfoData.Addr.PostalAddr.StreetName || ',' || AddrnfoData.Addr.PostalAddr.CityName || ',' || AddrnfoData.Addr.PostalAddr.RegionCode as Address: String,
+	customerGroup.CGR1 as CG1_Code,
+	customerGroup.CG1_Description,
+	customerGroup.CGR2 as CGG2_Code,
+	customerGroup.CG2_Description,
+	customerGroup.FastInstituteType,
+}where AddrnfoData.Addr.PostalAddr.CountryCode = 'ES'
+group by 
+	customer.ID,
+	customer.InternalID,
+	customer.modifiedAt,
+	customer.modifiedBy,
+	customer.createdAt,
+	customer.createdBy,
+	CommonInfo.CustOrgnstn.CustName.FirstLineName,
+	CustData.CustAcctInfo.CashDiscountTermsCode,
+	CustData.CustAcctInfo.CreditMemosPaymentTermsCode,
+	CustSalesArrgmnt.CustomerDefinedGroupCode,
+    CustSalesArrgmnt.FirstAdditionalCustomerDefinedGroupCode,
+	AddrnfoData.Addr.PostalAddr.RegionCode,
+	AddrnfoData.Addr.PostalAddr.StreetName,
+	AddrnfoData.Addr.PostalAddr.HouseID,
+	AddrnfoData.Addr.PostalAddr.CityName,
+	AddrnfoData.Addr.PostalAddr.CountryCode,
+	AddrnfoData.Addr.PostalAddr.StreetPostalCode,
+	customerGroup.CGR1,
+	customerGroup.CGR2,
+	customerGroup.CG1_Description,
+	customerGroup.CG2_Description,
+	customerGroup.FastInstituteType;
