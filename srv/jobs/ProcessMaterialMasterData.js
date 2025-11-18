@@ -142,19 +142,9 @@ module.exports = class ProcessMaterialMasterData extends BaseJob {
         const failedIDs = [];
 
         for (const material of interimMaterials) {
-            if (!material.EAN_UPC) {
-                console.error(`Material ${material.ID} failed: Missing EAN_UPC`);
-                failedIDs.push(material.ID);
-                await this.updateInterimStatusForMaterials(
-                    [material.ID],
-                    "Failed",
-                    "Missing required EAN_UPC field"
-                );
-                continue;
-            }
-
             try {
-                await this.upsertProductPack(material, PT_TMPRDPCK, PT_TMCTPRDPCK, PT_TMSKUPRDPCK);
+                const isProductProcessed = await this.upsertProductPack(material, PT_TMPRDPCK, PT_TMCTPRDPCK, PT_TMSKUPRDPCK, failedIDs);
+                if (!isProductProcessed) continue;
                 processedIDs.push(material.ID);
                 await this.updateInterimStatusForMaterials([material.ID], "Processed");
             } catch (err) {
@@ -175,43 +165,63 @@ module.exports = class ProcessMaterialMasterData extends BaseJob {
     }
 
 
-    async upsertProductPack(material, PT_TMPRDPCK, PT_TMCTPRDPCK, PT_TMSKUPRDPCK) {
+    async upsertProductPack(material, PT_TMPRDPCK, PT_TMCTPRDPCK, PT_TMSKUPRDPCK, failedIDs) {
+        const countryCode = 'ES'; 
+        const EAN_UPC_BUFFER = !material.EAN_UP ? `${countryCode}-${material.CommercialName}` : material.EAN_UP;
         // Check existing records
-        const existingCountryPack = await SELECT.one.from(PT_TMCTPRDPCK).where({ COUNTRYCODE: 'ES', EAN: material.EAN_UPC });
+        const countryProductPacks = await SELECT.from(PT_TMCTPRDPCK).columns("*", "ProductPack.PRODUCTPACKNAME").where({ COUNTRYCODE: countryCode });
+        let existingCountryPack = countryProductPacks.find(pr => pr.EAN === EAN_UPC_BUFFER);
+        if (!existingCountryPack) existingCountryPack = countryProductPacks.find(pr => pr.ProductPack_PRODUCTPACKNAME === material.CommercialName);
         const existingProductPack = existingCountryPack ? await SELECT.one.from(PT_TMPRDPCK).where({ PRODUCTPACKID: existingCountryPack.PRODUCTPACKID }) : null;
         const existingSKU = existingCountryPack ? await SELECT.one.from(PT_TMSKUPRDPCK).where({ ProductPackID: existingCountryPack.PRODUCTPACKID, SKUCode: material.MaterialNumber, CountryCode: 'ES' }) : null;
 
+        //mapping of records
+
+        //PT_TMPRDPCK
+        const productPackId = existingProductPack ? existingProductPack.PRODUCTPACKID : ++this.lastIds.ProductPack;
+        const mappedPrdpck = existingProductPack ? this.mapToProductPack(material) : { ...this.mapToProductPack(material), PRODUCTPACKID: productPackId };
+        const isPrdpckValid = await this.validateFields(["PRODUCTPACKNAME", "UOM", "HLEVEL6_CODE", "PACKFACTOR"], "PT_TMPRDPCK", failedIDs, mappedPrdpck, material.ID);
+
+        //PT_TMCTPRDPCK
+        const countryProductPackId = existingCountryPack ? existingCountryPack.COUNTRYPRODUCTPACKID : ++this.lastIds.CountryProductPack;
+        const mappedProductPack = existingCountryPack ? this.mapToCountryProductPack(material, countryCode, EAN_UPC_BUFFER) : { ...this.mapToCountryProductPack(material, countryCode), COUNTRYPRODUCTPACKID: countryProductPackId, PRODUCTPACKID: productPackId, EAN: EAN_UPC_BUFFER };
+        const isCtPrdpckValid = await this.validateFields(["EAN"], "PT_TMCTPRDPCK", failedIDs, mappedProductPack, material.ID);
+
+        //PT_TMSKUPRDPCK
+        const skuId = existingSKU ? existingSKU.SKUCode : ++this.lastIds.SkuProductPack;
+        const mappedSKU = existingSKU ? this.mapToSkuProductPack(material, productPackId, countryCode) : { ...this.mapToSkuProductPack(material, productPackId, countryCode), COUNTRYSKUID: skuId };
+        const isSkuPrdpckValid = await this.validateFields(["SKUCode"], "PT_TMSKUPRDPCK", failedIDs, mappedSKU, material.ID);
+        
+        if (!isPrdpckValid || !isCtPrdpckValid || !isSkuPrdpckValid) return false;
+
         // ProductPack
-        let productPackId;
+        
         if (!existingProductPack) {
-            productPackId = ++this.lastIds.ProductPack;
-            const insertResult = await INSERT.into(PT_TMPRDPCK).entries({ ...this.mapToProductPack(material), PRODUCTPACKID: productPackId });
+            const insertResult = await INSERT.into(PT_TMPRDPCK).entries(mappedPrdpck);
             if (!insertResult || insertResult.length === 0) throw new Error('Failed to insert ProductPack');
         } else {
-            productPackId = existingProductPack.PRODUCTPACKID;
-            const updateResult = await UPDATE(PT_TMPRDPCK).set(this.mapToProductPack(material)).where({ PRODUCTPACKID: productPackId });
+            const updateResult = await UPDATE(PT_TMPRDPCK).set(mappedPrdpck).where({ PRODUCTPACKID: productPackId });
             if (updateResult === 0) throw new Error('No ProductPack updated');
         }
 
         // CountryProductPack
         if (!existingCountryPack) {
-            const countryProductPackId = ++this.lastIds.CountryProductPack;
-            const insertResult = await INSERT.into(PT_TMCTPRDPCK).entries({ ...this.mapToCountryProductPack(material), COUNTRYPRODUCTPACKID: countryProductPackId, PRODUCTPACKID: productPackId });
+            const insertResult = await INSERT.into(PT_TMCTPRDPCK).entries(mappedProductPack);
             if (!insertResult || insertResult.length === 0) throw new Error('Failed to insert CountryProductPack');
         } else {
-            const updateResult = await UPDATE(PT_TMCTPRDPCK).set(this.mapToCountryProductPack(material)).where({ COUNTRYPRODUCTPACKID: existingCountryPack.COUNTRYPRODUCTPACKID });
+            const updateResult = await UPDATE(PT_TMCTPRDPCK).set(mappedProductPack).where({ COUNTRYCODE: countryCode, PRODUCTPACKID: existingCountryPack.PRODUCTPACKID});
             if (updateResult === 0) throw new Error('No CountryProductPack updated');
         }
 
         // SKU ProductPack
         if (!existingSKU) {
-            const skuId = ++this.lastIds.SkuProductPack;
-            const insertResult = await INSERT.into(PT_TMSKUPRDPCK).entries({ ...this.mapToSkuProductPack(material, productPackId), COUNTRYSKUID: skuId });
+            const insertResult = await INSERT.into(PT_TMSKUPRDPCK).entries(mappedSKU);
             if (!insertResult || insertResult.length === 0) throw new Error('Failed to insert SkuProductPack');
         } else {
-            const updateResult = await UPDATE(PT_TMSKUPRDPCK).set(this.mapToSkuProductPack(material, productPackId)).where({ PRODUCTPACKID: productPackId, SKUCODE: material.MaterialNumber });
+            const updateResult = await UPDATE(PT_TMSKUPRDPCK).set(mappedSKU).where({ PRODUCTPACKID: existingSKU.PRODUCTPACKID, SKUCODE: existingSKU.SKUCODE });
             if (updateResult === 0) throw new Error('No SkuProductPack updated');
         }
+        return true;
     }
 
     // ---------- Mapping helpers ----------
@@ -268,9 +278,9 @@ module.exports = class ProcessMaterialMasterData extends BaseJob {
         };
     }
 
-    mapToCountryProductPack(material) {
+    mapToCountryProductPack(material, countryCode) {
         return {
-            COUNTRYCODE: 'ES',
+            COUNTRYCODE: countryCode,
             COUNTRYOFORIGIN: 'NA',
             SHELFLIFE: 1,
             REGISTERED: 2,
@@ -293,16 +303,15 @@ module.exports = class ProcessMaterialMasterData extends BaseJob {
             PRAF_COMMENTS: null,
             REGISTRATIONDATE: null,
             REGISTRATIONVALIDUNTIL: null,
-            PRODUCTSCOPE: null,
+            PRODUCTSCOPE: "All",
             PRODUCTGROUP: null,
-            OUTSOURCEDSTATUS: null,
-            EAN: material.EAN_UPC
+            OUTSOURCEDSTATUS: null
         };
     }
 
-    mapToSkuProductPack(material, productPackId) {
+    mapToSkuProductPack(material, productPackId, countryCode) {
         return {
-            CountryCode: 'ES',
+            CountryCode: countryCode,
             ActiveRecord: 'Yes',
             ProductPackID: productPackId,
             SKUCode: material.MaterialNumber
@@ -322,5 +331,27 @@ module.exports = class ProcessMaterialMasterData extends BaseJob {
     materialStatuses(statusCode) {
         const statuses = { '2': 'Inactive', '3': 'Active', '4': 'Active', '7': 'Inactive', '8': 'Inactive', '9': 'Active' };
         return statuses[statusCode] || "";
+    }
+
+    async validateFields(requiredFields, tableName, failedIDs, materialPayload, materialID) {
+        if (Array.isArray(requiredFields) && requiredFields.length === 0) return true;
+        const missing = requiredFields.filter(rf => {
+            const currentField = materialPayload[rf];
+            return currentField === null || currentField === undefined || (typeof currentField === 'string' && currentField.trim() === '');
+        });
+
+        if (missing.length > 0) {
+            const msg = `Missing required ${tableName} fields: ${missing.join(', ')}`;
+            // mark failed and continue with next record
+            failedIDs.push(materialID);
+            await this.updateInterimStatusForMaterials(
+                [materialID],
+                "Failed",
+                `${tableName} processing failed: ${msg}`
+            )
+            return false;
+        }
+
+        return true;
     }
 };

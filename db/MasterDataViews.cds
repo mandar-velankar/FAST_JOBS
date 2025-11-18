@@ -893,13 +893,13 @@ entity FASTCoreMaterialView as select from SAP.FASTCoreMaterial as material
 		on salesspectxtsaptln.parentSalesSpecTxt.ID = salesspectxt.ID
 	left join SAP.QtyConversion as qtyconversion
 		on qtyconversion.parent.ID = material.ID
-		and qtyconversion.UnitCode =
+		and qtyconversion.CorrespondingQuantityUnitCode =
 			case
 				when prddesc.Description like '%JIVI%' or prddesc.Description like '%KOVALTRY%'
-					then 'IU'
-				else 'UNI'
+					then 'NIU'
+				else '1'
 			end
-        and qtyconversion.CorrespondingQuantityUnitCode = 'PCE' {
+        and qtyconversion.UnitCode = 'PCE' {
 	key material.ID,
 	material.createdAt,
 	material.createdBy,
