@@ -974,6 +974,7 @@ entity FASTCoreCustomersView as select from SAP.FASTCoreCustomerMaster as custom
 	customerGroup.CG2_Description,
 	customerGroup.FastInstituteType,
 }where AddrnfoData.Addr.PostalAddr.CountryCode = 'ES'
+	and CustSalesArrgmnt.SalesOrganisationID = 'QFHC'
 group by 
 	customer.ID,
 	customer.InternalID,
