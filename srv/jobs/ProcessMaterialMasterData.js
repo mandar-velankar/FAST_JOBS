@@ -167,7 +167,7 @@ module.exports = class ProcessMaterialMasterData extends BaseJob {
 
     async upsertProductPack(material, PT_TMPRDPCK, PT_TMCTPRDPCK, PT_TMSKUPRDPCK, failedIDs) {
         const countryCode = 'ES'; 
-        const EAN_UPC_BUFFER = !material.EAN_UP ? `${countryCode}-${material.CommercialName}` : material.EAN_UP;
+        const EAN_UPC_BUFFER = !material.EAN_UPC ? `${countryCode}-${material.CommercialName}` : material.EAN_UPC;
         // Check existing records
         const countryProductPacks = await SELECT.from(PT_TMCTPRDPCK).columns("*", "ProductPack.PRODUCTPACKNAME").where({ COUNTRYCODE: countryCode });
         let existingCountryPack = countryProductPacks.find(pr => pr.EAN === EAN_UPC_BUFFER);
