@@ -34,7 +34,6 @@ module.exports = class ProcessMaterialMasterData extends BaseJob {
 
             if (successfulIDs.length > 0) {
                 await this.updateInterimStatusForMaterials(successfulIDs, 'Processed');
-                await this.clearFASTCoreMaterial();
             }
 
             console.log(`JOB (${this.jobName}): Finished Material Master Data process. 
@@ -57,16 +56,12 @@ module.exports = class ProcessMaterialMasterData extends BaseJob {
         this.lastIds.SkuProductPack = maxSkuPack?.maxId || 0;
     }
 
-    async clearFASTCoreMaterial() {
+    async clearProcessedFASTCoreMaterials(ids) {
         const { FASTCoreMaterial } = this.db.entities("com.bayer.SXTENDER.MasterData.SAP");
-        const { INTERIM_SPAINMATERIALS } = this.db.entities("com.bayer.SXTENDER.MasterData");
         console.log(`JOB (${this.jobName}): Clearing processed materials from ${FASTCoreMaterial.name} table...`);
 
-        const processedMaterials = await SELECT.from(INTERIM_SPAINMATERIALS).columns('MaterialNumber').where({ Status: 'Processed' });
-        const processedMaterialIDs = processedMaterials.map(m => m.FASTCoreMaterialID);
-
-        if (processedMaterialIDs.length > 0) {
-            await DELETE.from(FASTCoreMaterial).where({ ID: { in: processedMaterialIDs } });
+        if (ids.length > 0) {
+            await DELETE.from(FASTCoreMaterial).where({ ID: { in: ids } });
             console.log(`JOB (${this.jobName}): Processed materials cleared from ${FASTCoreMaterial.name} table.`);
         } else {
             console.log(`JOB (${this.jobName}): No processed materials to clear from ${FASTCoreMaterial.name} table.`);
@@ -123,7 +118,7 @@ module.exports = class ProcessMaterialMasterData extends BaseJob {
                 console.error(`Mapping/upsert failed for MaterialNumber ${material.MaterialNumber}:`, err.message);
             }
         }
-
+        await this.clearProcessedFASTCoreMaterials(materials.map(m => m.ID));
         console.log(`JOB (${this.jobName}): Collecting material master data finished. Processed: ${processedIDs.length}, Failed: ${failedIDs.length}`);
     }
 
@@ -167,7 +162,7 @@ module.exports = class ProcessMaterialMasterData extends BaseJob {
 
     async upsertProductPack(material, PT_TMPRDPCK, PT_TMCTPRDPCK, PT_TMSKUPRDPCK, failedIDs) {
         const countryCode = 'ES'; 
-        const EAN_UPC_BUFFER = !material.EAN_UP ? `${countryCode}-${material.CommercialName}` : material.EAN_UP;
+        const EAN_UPC_BUFFER = !material.EAN_UPC ? `${countryCode}-${material.CommercialName}` : material.EAN_UPC;
         // Check existing records
         const countryProductPacks = await SELECT.from(PT_TMCTPRDPCK).columns("*", "ProductPack.PRODUCTPACKNAME").where({ COUNTRYCODE: countryCode });
         let existingCountryPack = countryProductPacks.find(pr => pr.EAN === EAN_UPC_BUFFER);
@@ -278,7 +273,7 @@ module.exports = class ProcessMaterialMasterData extends BaseJob {
         };
     }
 
-    mapToCountryProductPack(material, countryCode) {
+    mapToCountryProductPack(material, countryCode, EAN_UPC_BUFFER) {
         return {
             COUNTRYCODE: countryCode,
             COUNTRYOFORIGIN: 'NA',
@@ -305,7 +300,8 @@ module.exports = class ProcessMaterialMasterData extends BaseJob {
             REGISTRATIONVALIDUNTIL: null,
             PRODUCTSCOPE: "All",
             PRODUCTGROUP: null,
-            OUTSOURCEDSTATUS: null
+            OUTSOURCEDSTATUS: null,
+            EAN: EAN_UPC_BUFFER
         };
     }
 

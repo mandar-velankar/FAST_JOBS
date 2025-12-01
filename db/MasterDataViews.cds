@@ -920,7 +920,8 @@ entity FASTCoreMaterialView as select from SAP.FASTCoreMaterial as material
 	qtyconversion.Quantity as PackFactor: Double,
 	qtyconversion.UnitCode,
 	qtyconversion.CorrespondingQuantityUnitCode 
-}group by material.ID,
+}where SalesSpec.SalesOrganizationID = 'QFHC'
+group by material.ID,
 	gtin.ProductStandardID,
 	gtin.ProductStandardVariantID,
     ProductInternalID,

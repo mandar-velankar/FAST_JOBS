@@ -36,7 +36,6 @@ module.exports = class ProcessCustomerMasterData extends BaseJob {
 
             if (successfulIDs.length > 0) {
                 await this.updateInterimStatusForCustomers(successfulIDs, 'Processed');
-                await this.clearFASTCoreCustomerMaster();
             }
 
             console.log(`JOB (${this.jobName}): Finished Customer Master Data process. Processed: ${successfulIDs.length}, Failed: ${failedIDs.length}`);
@@ -63,15 +62,11 @@ module.exports = class ProcessCustomerMasterData extends BaseJob {
         }
     }
 
-    async clearFASTCoreCustomerMaster() {
+    async clearProcessedFASTCoreCustomerMaster(ids) {
         const { FASTCoreCustomerMaster } = this.db.entities("com.bayer.SXTENDER.MasterData.SAP");
-        const { INTERIM_SPAINCUSTOMERS } = this.db.entities("com.bayer.SXTENDER.MasterData");
         console.log(`JOB (${this.jobName}): Clearing processed customers from ${FASTCoreCustomerMaster.name} table...`);
-        // Get processed CustomerIDs from interim table
-        const processedCustomers = await SELECT.from(INTERIM_SPAINCUSTOMERS).columns('CustomerID').where({ Status: 'Processed' });
-        const processedIDs = processedCustomers.map(c => c.CustomerID);
-        if (processedIDs.length > 0) {
-            await DELETE.from(FASTCoreCustomerMaster).where({ InternalID: { in: processedIDs } });
+        if (ids.length > 0) {
+            await DELETE.from(FASTCoreCustomerMaster).where({ ID: { in: ids } });
             console.log(`JOB (${this.jobName}): Processed customers cleared from ${FASTCoreCustomerMaster.name} table.`);
         } else {
             console.log(`JOB (${this.jobName}): No processed customers to clear from ${FASTCoreCustomerMaster.name} table.`);
@@ -123,7 +118,7 @@ module.exports = class ProcessCustomerMasterData extends BaseJob {
                 console.error(`JOB (${this.jobName}): Mapping/upsert failed for CustomerID ${id}:`, err.message || err);
             }
         }
-
+        await this.clearProcessedFASTCoreCustomerMaster(customers.map(c => c.ID));
         console.log(`JOB (${this.jobName}): Collecting customer master data finished. Processed: ${processedIDs.length}, Failed: ${failedIDs.length}`);
     }
 
