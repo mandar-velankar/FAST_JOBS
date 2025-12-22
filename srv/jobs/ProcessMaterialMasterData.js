@@ -18,9 +18,13 @@ module.exports = class ProcessMaterialMasterData extends BaseJob {
         console.log(`JOB (${this.jobName}): Processing Material Master Data started...`);
         try {
             this.db = await cds.connect.to('db');
+            this.countryCode = 'ES'; 
 
             // Initialize last IDs from DB
             await this.initializeLastIds();
+
+            // Get product information
+            await this.getProductInformation();
 
             // Collect material master data
             await this.collectMaterialMasterData();
@@ -42,6 +46,21 @@ module.exports = class ProcessMaterialMasterData extends BaseJob {
             console.error(`JOB (${this.jobName}): Error processing Material Master Data:`, error);
         }
         console.log(`JOB (${this.jobName}): Processing Material Master Data finished.`);
+    }
+
+    async getProductInformation() {
+        const { PT_TMPRDPCK, PT_TMCTPRDPCK, PT_TMSKUPRDPCK } =
+            this.db.entities("com.bayer.SXTENDER.MasterData");
+
+        const [countryProductPacks, productPacks, productSKUs] = await Promise.all([
+            SELECT.from(PT_TMCTPRDPCK).columns("*", "ProductPack.PRODUCTPACKNAME").where({ COUNTRYCODE: this.countryCode }),
+            SELECT.from(PT_TMPRDPCK),
+            SELECT.from(PT_TMSKUPRDPCK).where({ CountryCode: this.countryCode })
+        ]);
+
+        this.countryProductPacks = countryProductPacks;
+        this.productPacks = productPacks;
+        this.productSKUs = productSKUs;
     }
 
     async initializeLastIds() {
@@ -161,32 +180,30 @@ module.exports = class ProcessMaterialMasterData extends BaseJob {
 
 
     async upsertProductPack(material, PT_TMPRDPCK, PT_TMCTPRDPCK, PT_TMSKUPRDPCK, failedIDs) {
-        const countryCode = 'ES'; 
-        const EAN_UPC_BUFFER = !material.EAN_UPC ? `${countryCode}-${material.CommercialName}` : material.EAN_UPC;
+        
+        const EAN_UPC_BUFFER = !material.EAN_UPC ? `${this.countryCode}-${material.CommercialName}` : material.EAN_UPC;
         // Check existing records
-        const countryProductPacks = await SELECT.from(PT_TMCTPRDPCK).columns("*", "ProductPack.PRODUCTPACKNAME").where({ COUNTRYCODE: countryCode });
-        let existingCountryPack = countryProductPacks.find(pr => pr.EAN === EAN_UPC_BUFFER);
-        if (!existingCountryPack) existingCountryPack = countryProductPacks.find(pr => pr.ProductPack_PRODUCTPACKNAME === material.CommercialName);
-        const existingProductPack = existingCountryPack ? await SELECT.one.from(PT_TMPRDPCK).where({ PRODUCTPACKID: existingCountryPack.PRODUCTPACKID }) : null;
-        const existingSKU = existingCountryPack ? await SELECT.one.from(PT_TMSKUPRDPCK).where({ ProductPackID: existingCountryPack.PRODUCTPACKID, SKUCode: material.MaterialNumber, CountryCode: 'ES' }) : null;
-
-        //mapping of records
+        
+        let existingCountryPack = this.countryProductPacks.find(pr => pr.EAN === EAN_UPC_BUFFER);
+        if (!existingCountryPack) existingCountryPack = this.countryProductPacks.find(pr => pr.PRODUCTPACKNAME === material.CommercialName);
+        const existingProductPack = existingCountryPack ? this.productPacks.find(pr => pr.PRODUCTPACKID === existingCountryPack.PRODUCTPACKID) : null;
+        const existingSKU = existingCountryPack ? this.productSKUs.find(pr => pr.SKUCode === material.MaterialNumber && pr.ProductPackID === existingCountryPack.PRODUCTPACKID) : null;
 
         //PT_TMPRDPCK
         const productPackId = existingProductPack ? existingProductPack.PRODUCTPACKID : ++this.lastIds.ProductPack;
-        const mappedPrdpck = existingProductPack ? this.mapToProductPack(material) : { ...this.mapToProductPack(material), PRODUCTPACKID: productPackId };
-        const isPrdpckValid = await this.validateFields(["PRODUCTPACKNAME", "UOM", "HLEVEL6_CODE", "PACKFACTOR"], "PT_TMPRDPCK", failedIDs, mappedPrdpck, material.ID);
+        const mappedPrdpck = existingProductPack ? this.mapToProductPack(material, existingProductPack, "update") : { ...this.mapToProductPack(material, existingProductPack, "create"), PRODUCTPACKID: productPackId };
+        const isPrdpckValid = !existingProductPack ? await this.validateFields(["PRODUCTPACKNAME", "UOM", "HLEVEL6_CODE", "PACKFACTOR"], "PT_TMPRDPCK", failedIDs, mappedPrdpck, material.ID) : true;
 
         //PT_TMCTPRDPCK
         const countryProductPackId = existingCountryPack ? existingCountryPack.COUNTRYPRODUCTPACKID : ++this.lastIds.CountryProductPack;
-        const mappedProductPack = existingCountryPack ? this.mapToCountryProductPack(material, countryCode, EAN_UPC_BUFFER) : { ...this.mapToCountryProductPack(material, countryCode), COUNTRYPRODUCTPACKID: countryProductPackId, PRODUCTPACKID: productPackId, EAN: EAN_UPC_BUFFER };
-        const isCtPrdpckValid = await this.validateFields(["EAN"], "PT_TMCTPRDPCK", failedIDs, mappedProductPack, material.ID);
+        const mappedProductPack = existingCountryPack ? this.mapToCountryProductPack(material, this.countryCode, EAN_UPC_BUFFER, existingCountryPack, "update") : { ...this.mapToCountryProductPack(material, this.countryCode, EAN_UPC_BUFFER, existingCountryPack, "create"), COUNTRYPRODUCTPACKID: countryProductPackId, PRODUCTPACKID: productPackId, EAN: EAN_UPC_BUFFER };
+        const isCtPrdpckValid = !existingCountryPack ? await this.validateFields(["EAN"], "PT_TMCTPRDPCK", failedIDs, mappedProductPack, material.ID) : true;
 
         //PT_TMSKUPRDPCK
         const skuId = existingSKU ? existingSKU.SKUCode : ++this.lastIds.SkuProductPack;
-        const mappedSKU = existingSKU ? this.mapToSkuProductPack(material, productPackId, countryCode) : { ...this.mapToSkuProductPack(material, productPackId, countryCode), COUNTRYSKUID: skuId };
-        const isSkuPrdpckValid = await this.validateFields(["SKUCode"], "PT_TMSKUPRDPCK", failedIDs, mappedSKU, material.ID);
-        
+        const mappedSKU = existingSKU ? this.mapToSkuProductPack(material, productPackId, this.countryCode) : { ...this.mapToSkuProductPack(material, productPackId, this.countryCode), COUNTRYSKUID: skuId };
+        const isSkuPrdpckValid = !existingSKU ? await this.validateFields(["SKUCode"], "PT_TMSKUPRDPCK", failedIDs, mappedSKU, material.ID) : true;
+
         if (!isPrdpckValid || !isCtPrdpckValid || !isSkuPrdpckValid) return false;
 
         // ProductPack
@@ -204,7 +221,7 @@ module.exports = class ProcessMaterialMasterData extends BaseJob {
             const insertResult = await INSERT.into(PT_TMCTPRDPCK).entries(mappedProductPack);
             if (!insertResult || insertResult.length === 0) throw new Error('Failed to insert CountryProductPack');
         } else {
-            const updateResult = await UPDATE(PT_TMCTPRDPCK).set(mappedProductPack).where({ COUNTRYCODE: countryCode, PRODUCTPACKID: existingCountryPack.PRODUCTPACKID});
+            const updateResult = await UPDATE(PT_TMCTPRDPCK).set(mappedProductPack).where({ COUNTRYCODE: this.countryCode, PRODUCTPACKID: existingCountryPack.PRODUCTPACKID});
             if (updateResult === 0) throw new Error('No CountryProductPack updated');
         }
 
@@ -213,7 +230,7 @@ module.exports = class ProcessMaterialMasterData extends BaseJob {
             const insertResult = await INSERT.into(PT_TMSKUPRDPCK).entries(mappedSKU);
             if (!insertResult || insertResult.length === 0) throw new Error('Failed to insert SkuProductPack');
         } else {
-            const updateResult = await UPDATE(PT_TMSKUPRDPCK).set(mappedSKU).where({ PRODUCTPACKID: existingSKU.PRODUCTPACKID, SKUCODE: existingSKU.SKUCODE });
+            const updateResult = await UPDATE(PT_TMSKUPRDPCK).set(mappedSKU).where({ CountryCode: this.countryCode, PRODUCTPACKID: existingSKU.PRODUCTPACKID, SKUCODE: existingSKU.SKUCODE });
             if (updateResult === 0) throw new Error('No SkuProductPack updated');
         }
         return true;
@@ -249,60 +266,101 @@ module.exports = class ProcessMaterialMasterData extends BaseJob {
         };
     }
 
-    mapToProductPack(material) {
-        return {
-            PRODUCTPACKNAME: material.CommercialName,
-            PRESENTATION: material.Presentation,
-            UOM: material.UOM,
-            ACTIVERECORD: 'Yes',
-            HLEVEL6_CODE: material.ProductHierarchy,
-            CONCENTRATION: material.Strength,
-            PACKFACTOR: material.PackFactor,
-            PCINAME: material.CommercialName,
-            MOLECULENAME: 'NA',
-            ACTIVE_SUBSTANCE: null,
-            PRODUCTTYPE: material.ProductType,
-            PRODUCTCLASS: 'NA',
-            PRODUCTDESCRIPTION: material.CommercialName,
-            PRODUCTFULLDESCRIPTION: material.CommercialName,
-            NUCLEUS: 'NA',
-            PRODUCTGENERICNAME: material.SAPName,
-            BUNDLE: null,
-            OUTERCARTON: null,
-            CALCULATIONFACTORIRP: null
-        };
+    mapToProductPack(material, existingProductPack, mode) {
+        if (mode === 'create') {
+            return {
+                PRODUCTPACKNAME: material.CommercialName,
+                PRESENTATION: material.Presentation,
+                UOM: material.UOM,
+                ACTIVERECORD: 'Yes',
+                HLEVEL6_CODE: material.ProductHierarchy,
+                CONCENTRATION: material.Strength,
+                PACKFACTOR: material.PackFactor,
+                PCIName: material.CommercialName,
+                MoleculeName: 'NA',
+                ACTIVE_SUBSTANCE: null,
+                ProductType: material.ProductType,
+                ProductClass: 'NA',
+                ProductDescription: material.CommercialName,
+                ProductFullDescription: material.CommercialName,
+                Nucleus: 'NA',
+                ProductGenericName: material.SAPName,
+                Bundle: null,
+                OuterCarton: null,
+                CalculationFactorIRP: null
+            };
+        }else {
+            const updatedFields = {};
+            const fields = {
+                PRODUCTPACKNAME: "CommercialName",
+                PRESENTATION: "Presentation",
+                UOM: "UOM",
+                HLEVEL6_CODE: "ProductHierarchy",
+                CONCENTRATION: "Strength",
+                PACKFACTOR: "PackFactor",
+                PCIName: "CommercialName",
+                ProductType: "ProductType",
+                ProductDescription: "CommercialName",
+                ProductFullDescription: "CommercialName",
+                ProductGenericName: "SAPName"
+            };
+
+            Object.keys(fields).forEach(key => {
+                if (material[fields[key]] && material[fields[key]] !== "NA" && material[fields[key]] !== "Other" && existingProductPack[key] != material[fields[key]]) {
+                    updatedFields[key] = material[fields[key]];
+                }
+            });
+
+            return updatedFields;
+        }
+        
     }
 
-    mapToCountryProductPack(material, countryCode, EAN_UPC_BUFFER) {
-        return {
-            COUNTRYCODE: countryCode,
-            COUNTRYOFORIGIN: 'NA',
-            SHELFLIFE: 1,
-            REGISTERED: 2,
-            ACTIVERECORD: 'Yes',
-            MANUFACTURER: 'NA',
-            PRESENTATION_2: 'NA',
-            VTATAX: 0,
-            COMMENT: 'NA',
-            GOV_CODE: 'NA',
-            CODE1: 'NA',
-            CODE2: 'NA',
-            CODE3: 'NA',
-            QTY_THRESHOLD: 0,
-            BU: material.Division,
-            GPP_GOVERNED: null,
-            LAP_CURRENCY: null,
-            LAP: 0,
-            LAP_UNIT: null,
-            PRAF_ID: null,
-            PRAF_COMMENTS: null,
-            REGISTRATIONDATE: null,
-            REGISTRATIONVALIDUNTIL: null,
-            PRODUCTSCOPE: "All",
-            PRODUCTGROUP: null,
-            OUTSOURCEDSTATUS: null,
-            EAN: EAN_UPC_BUFFER
-        };
+    mapToCountryProductPack(material, countryCode, EAN_UPC_BUFFER, existingCountryPack, mode) {
+        if (mode === 'create') {
+            return {
+                COUNTRYCODE: countryCode,
+                COUNTRYOFORIGIN: 'NA',
+                SHELFLIFE: 1,
+                REGISTERED: 2,
+                ACTIVERECORD: 'Yes',
+                MANUFACTURER: 'NA',
+                Presentation_2: 'NA',
+                VTATax: 0,
+                COMMENT: 'NA',
+                GOV_CODE: 'NA',
+                CODE1: 'NA',
+                CODE2: 'NA',
+                CODE3: 'NA',
+                QTY_THRESHOLD: 0,
+                BU: material.Division,
+                GPP_GOVERNED: null,
+                LAP_CURRENCY: null,
+                LAP: 0,
+                LAP_UNIT: null,
+                PRAF_ID: null,
+                PRAF_COMMENTS: null,
+                RegistrationDate: null,
+                RegistrationValidUntil: null,
+                ProductScope: "All",
+                ProductGroup: null,
+                OutSourcedStatus: null,
+                EAN: EAN_UPC_BUFFER
+            };
+        } else {
+            const updatedFields = {};
+            const fields = {
+                BU: "Division"
+            };
+
+            Object.keys(fields).forEach(key => {
+                if (material[fields[key]] && material[fields[key]] !== "NA" && existingCountryPack[key] != material[fields[key]]) {
+                    updatedFields[key] = material[fields[key]];
+                }
+            });
+
+            return updatedFields;
+        }
     }
 
     mapToSkuProductPack(material, productPackId, countryCode) {
