@@ -103,6 +103,12 @@
           "destination": "fast-ccma-api",
           "path": "/odata/v4/condition-contract"
         }
+      },
+      "CONDITION_CONTRACT_API": {
+        "kind": "odata",
+        "credentials": {
+          "destination": "FAST_CCMA_OAUTH"
+        }
       }
     },
     "odata": {

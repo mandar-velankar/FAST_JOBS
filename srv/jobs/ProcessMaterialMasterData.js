@@ -18,7 +18,9 @@ module.exports = class ProcessMaterialMasterData extends BaseJob {
         console.log(`JOB (${this.jobName}): Processing Material Master Data started...`);
         try {
             this.db = await cds.connect.to('db');
+            this.fastCCMABackend = await cds.connect.to("CONDITION_CONTRACT_API");
             this.countryCode = 'ES'; 
+            this.today = new Date().toISOString().split('T')[0];
 
             // Initialize last IDs from DB
             await this.initializeLastIds();
@@ -52,15 +54,25 @@ module.exports = class ProcessMaterialMasterData extends BaseJob {
         const { PT_TMPRDPCK, PT_TMCTPRDPCK, PT_TMSKUPRDPCK } =
             this.db.entities("com.bayer.SXTENDER.MasterData");
 
-        const [countryProductPacks, productPacks, productSKUs] = await Promise.all([
+        const [countryProductPacks, productPacks, productSKUs, ccmContracts, ccmmaterials] = await Promise.all([
             SELECT.from(PT_TMCTPRDPCK).columns("*", "ProductPack.PRODUCTPACKNAME").where({ COUNTRYCODE: this.countryCode }),
             SELECT.from(PT_TMPRDPCK),
-            SELECT.from(PT_TMSKUPRDPCK).where({ CountryCode: this.countryCode })
+            SELECT.from(PT_TMSKUPRDPCK).where({ CountryCode: this.countryCode }),
+            this.fastCCMABackend.send({
+                method: 'GET',
+                path: `/odata/v4/condition-contract/CCMContract`,
+            }),
+            this.fastCCMABackend.send({
+                method: 'GET',
+                path: `/odata/v4/condition-contract/CCMMaterial`,
+            }),
         ]);
 
         this.countryProductPacks = countryProductPacks;
         this.productPacks = productPacks;
         this.productSKUs = productSKUs;
+        this.ccmContracts = ccmContracts || [];
+        this.ccmMaterials = ccmmaterials || [];
     }
 
     async initializeLastIds() {
@@ -200,9 +212,34 @@ module.exports = class ProcessMaterialMasterData extends BaseJob {
         const isCtPrdpckValid = !existingCountryPack ? await this.validateFields(["EAN"], "PT_TMCTPRDPCK", failedIDs, mappedProductPack, material.ID) : true;
 
         //PT_TMSKUPRDPCK
-        const skuId = existingSKU ? existingSKU.SKUCode : ++this.lastIds.SkuProductPack;
+        const skuId = existingSKU ? existingSKU.CountrySKUID : ++this.lastIds.SkuProductPack;
         const mappedSKU = existingSKU ? this.mapToSkuProductPack(material, productPackId, this.countryCode) : { ...this.mapToSkuProductPack(material, productPackId, this.countryCode), COUNTRYSKUID: skuId };
         const isSkuPrdpckValid = !existingSKU ? await this.validateFields(["SKUCode"], "PT_TMSKUPRDPCK", failedIDs, mappedSKU, material.ID) : true;
+
+
+        //CCMContract
+        let mappedFASTConditionContracts = [];
+        let mappedCCMContracts = [];
+        let mappedCCMMaterials = [];
+
+        if (existingProductPack && this.ccmContracts.length > 0 && this.ccmMaterials.length > 0) {
+            
+            const relatedCCMContracts = this.ccmContracts?.filter(cc => cc.ProductCode == productPackId);
+            console.log(`Found ${relatedCCMContracts.length} related CCMContracts for ProductPack ${productPackId}`);
+
+            for (let cc of relatedCCMContracts) {
+                const contractRelatedMaterial = this.ccmMaterials.find(ccm => ccm.CCMContract_ID == cc.ID && ccm.ProductCode == productPackId && ccm.MaterialNumber == mappedSKU.SKUCode);
+
+                if (!contractRelatedMaterial) {
+                    const { mappedFASTConditionContract, mappedCCMContract, mappedCCMMaterial } = this.mapToCCMContract(cc, mappedSKU.SKUCode, productPackId, this.countryCode);
+
+                    mappedFASTConditionContracts.push(mappedFASTConditionContract);
+                    mappedCCMContracts.push(mappedCCMContract);
+                    mappedCCMMaterials.push(mappedCCMMaterial);
+                }
+            }
+        }
+        
 
         if (!isPrdpckValid || !isCtPrdpckValid || !isSkuPrdpckValid) return false;
 
@@ -233,6 +270,37 @@ module.exports = class ProcessMaterialMasterData extends BaseJob {
             const updateResult = await UPDATE(PT_TMSKUPRDPCK).set(mappedSKU).where({ CountryCode: this.countryCode, PRODUCTPACKID: existingSKU.PRODUCTPACKID, SKUCODE: existingSKU.SKUCODE });
             if (updateResult === 0) throw new Error('No SkuProductPack updated');
         }
+
+        if (
+            mappedFASTConditionContracts.length > 0 &&
+            mappedCCMContracts.length > 0 &&
+            mappedCCMMaterials.length > 0
+        ) {
+            await Promise.all([
+                ...mappedFASTConditionContracts.map(fastContract => {
+                    return this.fastCCMABackend.send({
+                        method: 'PATCH',
+                        path: `/odata/v4/condition-contract/FastConditionContracts('${fastContract.ID}')`,
+                        data: fastContract
+                    });
+                }),
+                ...mappedCCMContracts.map(contract => {
+                    return this.fastCCMABackend.send({
+                        method: 'PATCH',
+                        path: `/odata/v4/condition-contract/CCMContract('${contract.ID}')`,
+                        data: contract
+                    });
+                }),
+                ...mappedCCMMaterials.map(material => {
+                    return this.fastCCMABackend.send({
+                        method: 'POST',
+                        path: `/odata/v4/condition-contract/CCMMaterial`,
+                        data: material
+                    });
+                })
+            ]);
+        }
+
         return true;
     }
 
@@ -369,6 +437,37 @@ module.exports = class ProcessMaterialMasterData extends BaseJob {
             ActiveRecord: 'Yes',
             ProductPackID: productPackId,
             SKUCode: material.MaterialNumber
+        };
+    }
+
+    mapToCCMContract(contract, materialNumber, productPackId, countryCode) {
+        if (!contract || !materialNumber || !productPackId) throw new Error('Invalid parameters for mapping to CCMContract');
+        const splittedMaterialNumbers = contract.NewMaterialNumber ? contract.NewMaterialNumber.split(",").filter(el => el) : [];
+        const newMaterialNumber = splittedMaterialNumbers.includes(`${materialNumber}`) ? splittedMaterialNumbers.join(",").trim() : splittedMaterialNumbers.concat(materialNumber).join(",").trim();
+
+        const mappedFASTConditionContract = {
+            ID: contract.FastConditionContracts_ID,
+            hasNewMaterialNumber: true
+        };
+        const mappedCCMContract = {
+            ID: contract.ID,
+            NewMaterialNumber: newMaterialNumber
+        };
+
+        const mappedCCMMaterial = {
+            CountryCode: countryCode,
+            ProductCode: `${productPackId}`,
+            MaterialNumber: `${materialNumber}`,
+            ActiveRecord: 1,
+            isNewMaterialNumber: true,
+            CCMContract_ID: contract.ID,
+            validFrom: this.today,
+			validTo: "9999-12-31"
+        };
+        return {
+            mappedFASTConditionContract,
+            mappedCCMContract,
+            mappedCCMMaterial
         };
     }
 
