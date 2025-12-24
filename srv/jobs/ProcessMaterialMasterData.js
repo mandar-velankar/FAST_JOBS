@@ -122,7 +122,7 @@ module.exports = class ProcessMaterialMasterData extends BaseJob {
         // Deduplicate by MaterialNumber
         const uniqueMaterials = [...new Map(materials.map(m => [m.MaterialNumber, m])).values()];
         const existingMaterials = await SELECT.from(INTERIM_SPAINMATERIALS)
-            .where({ Status: 'New' })
+            .where({ Status: 'Pending' })
             .columns(['ID', 'MaterialNumber']);
         const existingMaterialMap = new Map(existingMaterials.map(m => [m.MaterialNumber, m.ID]));
 
@@ -329,7 +329,7 @@ module.exports = class ProcessMaterialMasterData extends BaseJob {
             MaterialGroup5: material.FifthSalesSpecificationProductGroupCode || "",
             ItemCategoryGroup: material.ItemCategoryGroupCode || "",
             MaterialStatus: this.materialStatuses(material.MaterialStatus),
-            Status: "New",
+            Status: "Pending",
             FASTCoreMaterialID: material.ID
         };
     }
