@@ -88,9 +88,9 @@ module.exports = class ProcessCustomerMasterData extends BaseJob {
         // Deduplicate by InternalID / CustomerID (single dedupe)
         const uniqueCustomers = [...new Map(customers.map(c => [Number(c.InternalID || c.CustomerID), c])).values()];
 
-        // Get existing CustomerIDs in interim table (only New status)
+        // Get existing CustomerIDs in interim table (only Pending status)
         const existingInterim = await SELECT.from(INTERIM_SPAINCUSTOMERS)
-            .where({ Status: 'New' })
+            .where({ Status: 'Pending' })
             .columns(['ID', 'CustomerID']);
         const existingCustomerMap = new Map(existingInterim.map(r => [r.CustomerID, r.ID]));
 
@@ -174,7 +174,7 @@ module.exports = class ProcessCustomerMasterData extends BaseJob {
 
                 // --- Institute upsert ---
                 const existingInstitute = await SELECT.one.from(PT_TMINST).where({ CountryCode: country, CustomerID: customer.CustomerID });
-                const institutePayload = this.mapToInstitute(customer, regionRecord ? regionRecord.ID : null, provinceRecord ? provinceRecord.ID : null);
+                const institutePayload = this.mapToInstitute(customer, existingInstitute, regionRecord ? regionRecord.ID : null, provinceRecord ? provinceRecord.ID : null, mode);
 
                 // Ensure InstituteID is present for validation (set for update or assign new id for insert)
                 if (existingInstitute) {
@@ -227,46 +227,71 @@ module.exports = class ProcessCustomerMasterData extends BaseJob {
         return { processedIDs, failedIDs };
     }
 
-    mapToInstitute(customer, regionId, provinceId) {
-        return {
-            CountryCode: customer.CountryCode || null,
-            CustomerID: Number(customer.CustomerID),
-            InstituteName: customer.CustomerName || '',
-            InstituteType: customer.FastInstituteType || null,
-            Address: customer.Address || '',
-            ContactNo: null,
-            Fax: null,
-            ContactPerson: null,
-            ActiveRecord: 'Yes',
-            Comment: null,
-            City: null,
-            INSTITUTE_HIERARCHY_ID: null,
-            State: null,
-            MercadoPublicoIssuer: null,
-            RegionID: regionId || null,
-            ProvinceID: provinceId || null,
-            CifCode: 'NA',
-            RegionalHealthSystem: 'NA',
-            VatCode: 'NA',
-            TaxCode: customer.Taxcode || null,
-            CustomerGroup: customer.CG1_Code || null,
-            ApplicableTaxRate: null,
-            INCOTerms: null,
-            PaymentTerms: customer.PaymentTerm || null,
-            ForAllBrands: true,
-            DirectTender: true,
-            ContactEmail: null,
-            CNPJ: null,
-            Shortname: null,
-            KAM_Territory: null,
-            External_InstituteId: null,
-            Class: null,
-            SAPGroupId: null,
-            CG1_Description: customer.CG1_Description || null,
-            CG2_Description: customer.CG2_Description || null,
-            CG1_Code: customer.CG1_Code || null,
-            CG2_Code: customer.CG2_Code || null
-        };
+    mapToInstitute(customer, existingInstitute, regionId, provinceId, mode) {
+        if (mode === 'create') {
+            return {
+                CountryCode: customer.CountryCode || null,
+                CustomerID: Number(customer.CustomerID),
+                InstituteName: customer.CustomerName || '',
+                InstituteType: customer.FastInstituteType || null,
+                Address: customer.Address || '',
+                ContactNo: null,
+                Fax: null,
+                ContactPerson: null,
+                ActiveRecord: 'Yes',
+                Comment: null,
+                City: null,
+                INSTITUTE_HIERARCHY_ID: null,
+                State: null,
+                MercadoPublicoIssuer: null,
+                RegionID: regionId || null,
+                ProvinceID: provinceId || null,
+                CifCode: 'NA',
+                RegionalHealthSystem: 'NA',
+                VatCode: 'NA',
+                TaxCode: customer.Taxcode || null,
+                CustomerGroup: customer.CG1_Code || null,
+                ApplicableTaxRate: null,
+                INCOTerms: null,
+                PaymentTerms: customer.PaymentTerm || null,
+                ForAllBrands: true,
+                DirectTender: true,
+                ContactEmail: null,
+                CNPJ: null,
+                Shortname: null,
+                KAM_Territory: null,
+                External_InstituteId: null,
+                Class: null,
+                SAPGroupId: null,
+                CG1_Description: customer.CG1_Description || null,
+                CG2_Description: customer.CG2_Description || null,
+                CG1_Code: customer.CG1_Code || null,
+                CG2_Code: customer.CG2_Code || null
+            };
+        }else {
+            const updatedFields = {};
+            const fields = {
+                "InstituteName": "CustomerName",
+                "InstituteType": "FastInstituteType",
+                "Address": "Address",
+                "TaxCode": "Taxcode",
+                "CustomerGroup": "CG1_Code",
+                "PaymentTerms": "PaymentTerm",
+                "CG1_Description": "CG1_Description",
+                "CG2_Description": "CG2_Description",
+                "CG1_Code": "CG1_Code",
+                "CG2_Code": "CG2_Code"
+            };
+
+            Object.keys(fields).forEach(key => {
+                if (customer[fields[key]] && customer[fields[key]] !== "NA" && existingInstitute[key] != customer[fields[key]]) {
+                    updatedFields[key] = customer[fields[key]];
+                }
+            });
+
+            return updatedFields;
+        }
+        
     }
 
     mappedCustomersToInterimTable(customer) {
@@ -284,7 +309,7 @@ module.exports = class ProcessCustomerMasterData extends BaseJob {
             Taxcode: customer.CashDiscountTermsCode || "",
             PaymentTerm: customer.CreditMemosPaymentTermsCode || "",
             CountryCode: customer.CountryCode || "",
-            Status: "New"
+            Status: "Pending"
         };
     }
 };
