@@ -35,4 +35,7 @@ module.exports = (srv) => {
         else throw new Error("Wrong action");
         return JobManager.getJobs();
     });
+    srv.on('registerAllJobs', async (req) => {
+        return JobManager.registerJobs();
+    });
 };

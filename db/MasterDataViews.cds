@@ -877,3 +877,125 @@ entity ProductInActiveMaterialNumbers as select from MasterData.PT_TMSKUPRDPCK {
 	group by 
 		CountryCode,
 		ProductPackID;
+
+@cds.persistence.exists
+entity FASTCoreMaterialView as select from SAP.FASTCoreMaterial as material
+	left join SAP.GTIN as gtin
+		on gtin.parent.ID = material.ID
+		and gtin.ProductStandardVariantID = 'GT'
+	left join SAP.PrdDesc as prddesc
+		on prddesc.parent.ID = material.ID
+	left join SAP.SalesSpec as salesspec
+		on salesspec.parent.ID = material.ID
+	left join SAP.SalesSpecTxt as salesspectxt
+		on salesspectxt.parentSalesSpec.ID = salesspec.ID
+	left join SAP.SalesSpecTxtSAPScrptLn as salesspectxtsaptln
+		on salesspectxtsaptln.parentSalesSpecTxt.ID = salesspectxt.ID
+	left join SAP.QtyConversion as qtyconversion
+		on qtyconversion.parent.ID = material.ID
+		and qtyconversion.CorrespondingQuantityUnitCode =
+			case
+				when prddesc.Description like '%JIVI%' or prddesc.Description like '%KOVALTRY%'
+					then 'NIU'
+				else '1'
+			end
+        and qtyconversion.UnitCode = 'PCE' {
+	key material.ID,
+	material.createdAt,
+	material.createdBy,
+	material.modifiedAt,
+	material.modifiedBy,
+	gtin.ProductStandardID as EAN_UPC: String,
+	gtin.ProductStandardVariantID,
+    ProductInternalID as MaterialNumber: String,
+    ProductHierarchyInternalID,
+    ItemCategoryGroupCode,
+    material.ProductSalesProcessUsabilityProfileCode as MaterialStatus: String,
+    prddesc.Description as SAPName: String,
+    salesspec.SalesMeasureUnitCode,
+    salesspec.FirstSalesSpecificationProductGroupCode as MaterialGroup1: String,
+    salesspec.FourthSalesSpecificationProductGroupCode as MaterialGroup4: String,
+    salesspec.FifthSalesSpecificationProductGroupCode as MaterialGroup5: String,
+    salesspectxtsaptln.SAPScriptLineText as CommercialName: String,
+	qtyconversion.Quantity as PackFactor: Double,
+	qtyconversion.UnitCode,
+	qtyconversion.CorrespondingQuantityUnitCode 
+}where SalesSpec.SalesOrganizationID = 'QFHC'
+group by material.ID,
+	gtin.ProductStandardID,
+	gtin.ProductStandardVariantID,
+    ProductInternalID,
+    ProductHierarchyInternalID,
+    ItemCategoryGroupCode,
+    material.ProductSalesProcessUsabilityProfileCode,
+    prddesc.Description,
+    salesspec.SalesMeasureUnitCode,
+    salesspec.FirstSalesSpecificationProductGroupCode,
+    salesspec.FourthSalesSpecificationProductGroupCode,
+    salesspec.FifthSalesSpecificationProductGroupCode,
+    salesspectxtsaptln.SAPScriptLineText,
+	qtyconversion.Quantity,
+	qtyconversion.UnitCode,
+	qtyconversion.CorrespondingQuantityUnitCode,
+	material.createdAt,
+	material.createdBy,
+	material.modifiedAt,
+	material.modifiedBy;
+
+@cds.persistence.exists
+entity FASTCoreCustomersView as select from SAP.FASTCoreCustomerMaster as customer
+	left join SAP.CustData as CustData
+		on CustData.parent.ID = customer.ID
+	left join SAP.CustSalesArrgmnt as CustSalesArrgmnt
+		on CustSalesArrgmnt.parentCustData.ID = CustData.ID
+	left join MasterData.CustomerGroups as customerGroup
+		on customerGroup.CGR1 = CustSalesArrgmnt.CustomerDefinedGroupCode
+		and customerGroup.CGR2 = CustSalesArrgmnt.FirstAdditionalCustomerDefinedGroupCode {
+	key customer.ID,
+    customer.InternalID,
+	customer.modifiedAt,
+	customer.modifiedBy,
+	customer.createdAt,
+	customer.createdBy,
+    CommonInfo.CustOrgnstn.CustName.FirstLineName,
+    CustData.CustAcctInfo.CashDiscountTermsCode,
+    CustData.CustAcctInfo.CreditMemosPaymentTermsCode,
+    CustSalesArrgmnt.CustomerDefinedGroupCode,
+    CustSalesArrgmnt.FirstAdditionalCustomerDefinedGroupCode,
+    AddrnfoData.Addr.PostalAddr.RegionCode,
+    AddrnfoData.Addr.PostalAddr.StreetName,
+    AddrnfoData.Addr.PostalAddr.HouseID,
+    AddrnfoData.Addr.PostalAddr.CityName,
+    AddrnfoData.Addr.PostalAddr.CountryCode,
+    AddrnfoData.Addr.PostalAddr.StreetPostalCode,
+	AddrnfoData.Addr.PostalAddr.HouseID || ',' || AddrnfoData.Addr.PostalAddr.StreetName || ',' || AddrnfoData.Addr.PostalAddr.CityName || ',' || AddrnfoData.Addr.PostalAddr.RegionCode as Address: String,
+	customerGroup.CGR1 as CG1_Code,
+	customerGroup.CG1_Description,
+	customerGroup.CGR2 as CGG2_Code,
+	customerGroup.CG2_Description,
+	customerGroup.FastInstituteType,
+}where AddrnfoData.Addr.PostalAddr.CountryCode = 'ES'
+	and CustSalesArrgmnt.SalesOrganisationID = 'QFHC'
+group by 
+	customer.ID,
+	customer.InternalID,
+	customer.modifiedAt,
+	customer.modifiedBy,
+	customer.createdAt,
+	customer.createdBy,
+	CommonInfo.CustOrgnstn.CustName.FirstLineName,
+	CustData.CustAcctInfo.CashDiscountTermsCode,
+	CustData.CustAcctInfo.CreditMemosPaymentTermsCode,
+	CustSalesArrgmnt.CustomerDefinedGroupCode,
+    CustSalesArrgmnt.FirstAdditionalCustomerDefinedGroupCode,
+	AddrnfoData.Addr.PostalAddr.RegionCode,
+	AddrnfoData.Addr.PostalAddr.StreetName,
+	AddrnfoData.Addr.PostalAddr.HouseID,
+	AddrnfoData.Addr.PostalAddr.CityName,
+	AddrnfoData.Addr.PostalAddr.CountryCode,
+	AddrnfoData.Addr.PostalAddr.StreetPostalCode,
+	customerGroup.CGR1,
+	customerGroup.CGR2,
+	customerGroup.CG1_Description,
+	customerGroup.CG2_Description,
+	customerGroup.FastInstituteType;

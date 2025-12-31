@@ -15,11 +15,7 @@ modules:
     type: nodejs
     path: gen/srv
     parameters:
-      buildpack: nodejs_buildpack
-      readiness-health-check-type: http
-      readiness-health-check-http-endpoint: /health
-    build-parameters:
-      builder: npm
+      health-check-timeout: 120
     provides:
       - name: srv-api # required by consumers of CAP services (e.g. approuter)
         properties:
@@ -32,8 +28,6 @@ modules:
   - name: F_TNDR_CAG_FAST_JOBS-db-deployer
     type: hdb
     path: gen/db
-    parameters:
-      buildpack: nodejs_buildpack
     requires:
       - name: FAST-db-hdi-container
 
