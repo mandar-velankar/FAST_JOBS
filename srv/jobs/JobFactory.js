@@ -29,16 +29,9 @@ module.exports = class JobFactory {
             case this.jobNames.ProcessCustomersJob:
                 return new ProcessCustomers(jobName,jobTime)
                 break;
-            case this.jobNames.ProcessMaterialsBrazilJob:
-                return new ProcessMaterialsBrazil(jobName,jobTime)
-                break;
-            case this.jobNames.ProcessCustomersBrazilJob:
-                return new ProcessCustomersBrazil(jobName,jobTime)
-                break;
             case this.jobNames.PriceAgreementMailJob:
                 return new PriceAgreementMailJob(jobName,jobTime)
-                break;
-              
+                break;              
             case this.jobNames.PriceAgreementPriceConditionNotificationMailJob:
                 return new PriceAgreementPriceConditionNotificationMailJob(jobName,jobTime)
                 break;
@@ -51,29 +44,6 @@ module.exports = class JobFactory {
             case this.jobNames.ExtendPriceAgreements:
                 return new ExtendPriceAgreements(jobName,jobTime)
                 break;
-            case this.jobNames.ProcessMasterDataPrices:
-                return new ProcessMasterDataPrices(jobName,jobTime)
-                break;
-            case this.jobNames.ProcessBrazilCustomers:
-                return new ProcessBrazilCustomers(jobName,jobTime);
-                break;
-            case this.jobNames.ProcessBrazilMaterials:
-                return new ProcessBrazilMaterials(jobName,jobTime);
-                break;
-            case this.jobNames.ProcessBrazilOpportunities:
-                return new ProcessBrazilOpportunities(jobName,jobTime);
-                break;
-            case this.jobNames.ProcessEmpenho:
-                return new ProcessEmpenho(jobName,jobTime);
-                break;
-            case this.jobNames.ProcessBrazilIbizContracts:
-                return new ProcessBrazilIbizContracts(jobName,jobTime);
-                break;
-            case this.jobNames.NewIBIZTenderNotifications:
-                return new NewIBIZTenderNotifications(jobName, jobTime);
-            case this.jobNames.ProcessTenderResults:
-                return new ProcessTenderResults(jobName,jobTime);
-                break;
             case this.jobNames.ProcessSpainRappelData:
                 return new ProcessSpainRappelData(jobName,jobTime)
                 break;
@@ -84,8 +54,8 @@ module.exports = class JobFactory {
                 return new PriceConditionsQualityControlNotificationMail(jobName,jobTime)
                 break;
             case this.jobNames.PriceAgreementExpiredMailJob:
-                    return new PriceAgreementExpiredMailJob(jobName,jobTime)
-                    break;
+                return new PriceAgreementExpiredMailJob(jobName,jobTime)
+                break;
             case this.jobNames.ProcessMaterialMasterData:
                 return new ProcessMaterialMasterData(jobName,jobTime)
                 break;
@@ -111,14 +81,6 @@ module.exports = class JobFactory {
             PriceAgreementNotificationNetPriceAbovePVLJob: "PriceAgreementNotificationNetPriceAbovePVLJob",
             PriceAgreementNotificationNetPriceBelowFloorJob: "PriceAgreementNotificationNetPriceBelowFloorJob",
             ExtendPriceAgreements: "ExtendPriceAgreements",
-            ProcessMasterDataPrices:"ProcessMasterDataPrices",
-            ProcessBrazilCustomers:"ProcessBrazilCustomers",
-            ProcessBrazilMaterials:"ProcessBrazilMaterials",
-            ProcessBrazilOpportunities:"ProcessBrazilOpportunities",
-            ProcessEmpenho:"ProcessEmpenho",
-            ProcessBrazilIbizContracts:"ProcessBrazilIbizContracts",
-            NewIBIZTenderNotifications:"NewIBIZTenderNotifications",
-            ProcessTenderResults:"ProcessTenderResults",
             ProcessSpainRappelData: "ProcessSpainRappelData",
             PriceConditionQualityControl: "PriceConditionQualityControl",
             PriceAgreementExpiredMailJob :"PriceAgreementExpiredMailJob",
