@@ -31,11 +31,11 @@ module.exports = class PriceConditionsQualityControlNotificationMail extends Bas
             this.numberOfRecords = failedCustomerPricesQC.length;
 
             // split data
-            const customerPricesQC_ES = failedCustomerPricesQC.filter(c => c.CountryCode === "ES");
+            // const customerPricesQC_ES = failedCustomerPricesQC.filter(c => c.CountryCode === "ES");
             const customerPricesQC_IT = failedCustomerPricesQC.filter(c => c.CountryCode === "IT");
 
             // Process data
-            await this.processCustomerPricesQC(customerPricesQC_ES, "ES");
+            //await this.processCustomerPricesQC(customerPricesQC_ES, "ES");
             await this.processCustomerPricesQC(customerPricesQC_IT, "IT");
 
             // log finish
