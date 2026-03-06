@@ -68,7 +68,7 @@ module.exports = class PriceAgreementPriceConditionNotificationMailJob extends B
 
     mapDataToMail = (template,mail,syncDate) => data => {
         const appEnv = cfenv.getAppEnv();
-        const fastUIAppHost = appEnv.url.replace('fast-srv','fastui-app');
+        const fastUIAppHost = appEnv.url.replace('f-tndr-cag-fast-jobs-srv','fastui-app');
         let outbox = [];
         // add/change some fields in the data array
         data.forEach(d => {
