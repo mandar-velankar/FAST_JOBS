@@ -48,7 +48,7 @@ class PriceAgreementExpiredMailJob extends BaseJob {
         console.log(`Fetching Cancelled Price Agreements with expiry date: ${expiryDate}`);
         const { PriceAgreements } = this.db.entities("com.bayer.SXTENDER.PriceAgreementData");
         const appEnv = cfenv.getAppEnv();
-        const fastUIAppHost = appEnv.url.replace('fast-srv','fastui-app');
+        const fastUIAppHost = appEnv.url.replace('f-tndr-cag-fast-jobs-srv','fastui-app');
         // const { PT_TMUSER,PT_TMTEND } = this.db.entities("com.bayer.SXTENDER.AdminData");
         const tx = this.db.tx();
             let pas = await tx.run(SELECT.from(PriceAgreements,pa => {          
