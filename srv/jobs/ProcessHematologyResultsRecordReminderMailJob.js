@@ -151,7 +151,7 @@ module.exports = class ProcessHematologyResultsRecordReminderMail extends BaseJo
 
     mapDataToMail = function (template, data) {
         const appEnv = cfenv.getAppEnv();
-        const fastUIAppHost = appEnv.url.replace('fast-srv','fastui-app');
+        const fastUIAppHost = appEnv.url.replace('f-tndr-cag-fast-jobs-srv','fastui-app');
         const CountryCode = data.offer.CountryCode;
         const TenderID = data.offer.TenderID;
         const OfferID = data.offer.OfferID;

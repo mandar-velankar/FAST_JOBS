@@ -150,7 +150,7 @@ module.exports = class PriceConditionsQualityControlNotificationMail extends Bas
 
     mapDataToMail = (template,templateId) => data => {
         const appEnv = cfenv.getAppEnv();
-        const fastUIAppHost = appEnv.url.replace('fast-srv','fastui-app');
+        const fastUIAppHost = appEnv.url.replace('f-tndr-cag-fast-jobs-srv','fastui-app');
         let outbox = [];
         const recipients = new Set();
 
