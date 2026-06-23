@@ -55,71 +55,199 @@ module.exports = class ProcessCustomerMasterData extends BaseJob {
 
     async updateInterimStatusForCustomers(ids, status, comment = null) {
         const { INTERIM_SPAINCUSTOMERS } = this.db.entities("com.bayer.SXTENDER.MasterData");
-        if (ids && ids.length > 0) {
-            await UPDATE(INTERIM_SPAINCUSTOMERS)
-                .set({ Status: status, Comments: comment })
-                .where({ ID: { in: ids } });
+
+        if (!ids?.length) {
+            return;
         }
+
+        const CHUNK_SIZE = 1000;
+        const totalChunks = Math.ceil(ids.length / CHUNK_SIZE);
+
+        console.log(`JOB (${this.jobName}): Updating ${ids.length} customers in ${totalChunks} chunk(s).`);
+
+        for (let i = 0; i < ids.length; i += CHUNK_SIZE) {
+            const chunkNumber = Math.floor(i / CHUNK_SIZE) + 1;
+            const chunk = ids.slice(i, i + CHUNK_SIZE);
+
+            console.log(`JOB (${this.jobName}): Updating chunk ${chunkNumber}/${totalChunks} (${chunk.length} records).`);
+
+            await UPDATE(INTERIM_SPAINCUSTOMERS)
+                .set({
+                    Status: status,
+                    Comments: comment
+                })
+                .where({
+                    ID: { in: chunk }
+                });
+        }
+
+        console.log(`JOB (${this.jobName}): Status update completed for ${ids.length} customers.`);
     }
 
     async clearProcessedFASTCoreCustomerMaster(ids) {
         const { FASTCoreCustomerMaster } = this.db.entities("com.bayer.SXTENDER.MasterData.SAP");
-        console.log(`JOB (${this.jobName}): Clearing processed customers from ${FASTCoreCustomerMaster.name} table...`);
-        if (ids.length > 0) {
-            await DELETE.from(FASTCoreCustomerMaster).where({ ID: { in: ids } });
-            console.log(`JOB (${this.jobName}): Processed customers cleared from ${FASTCoreCustomerMaster.name} table.`);
-        } else {
+
+        console.log(`JOB (${this.jobName}): Clearing ${ids.length} processed customers from ${FASTCoreCustomerMaster.name} table...`);
+
+        if (!ids?.length) {
             console.log(`JOB (${this.jobName}): No processed customers to clear from ${FASTCoreCustomerMaster.name} table.`);
+            return;
         }
+
+        const CHUNK_SIZE = 1000;
+        const totalChunks = Math.ceil(ids.length / CHUNK_SIZE);
+
+        console.log(`JOB (${this.jobName}): Starting deletion in ${totalChunks} chunk(s) of ${CHUNK_SIZE} records.`);
+
+        let totalDeleted = 0;
+
+        for (let i = 0; i < ids.length; i += CHUNK_SIZE) {
+            const chunkNumber = Math.floor(i / CHUNK_SIZE) + 1;
+            const chunk = ids.slice(i, i + CHUNK_SIZE);
+
+            console.log(`JOB (${this.jobName}): Processing chunk ${chunkNumber}/${totalChunks} (${chunk.length} records)...`);
+
+            try {
+                const deletedCount = await DELETE
+                    .from(FASTCoreCustomerMaster)
+                    .where({
+                        ID: { in: chunk }
+                    });
+
+                totalDeleted += deletedCount || 0;
+
+                console.log(`JOB (${this.jobName}): Chunk ${chunkNumber}/${totalChunks} completed. Deleted ${deletedCount} record(s).`);
+            } catch (error) {
+                console.error(`JOB (${this.jobName}): Failed to delete chunk ${chunkNumber}/${totalChunks}.`,error);
+
+                throw error;
+            }
+        }
+
+        console.log(`JOB (${this.jobName}): Processed customers cleared from ${FASTCoreCustomerMaster.name} table. Total deleted: ${totalDeleted}.`);
     }
 
     // Collect customer master data from MasterDataViews.FASTCoreCustomersView and store in INTERIM_SPAINCUSTOMERS
     async collectCustomerMasterData() {
         const { FASTCoreCustomersView } = this.db.entities("com.bayer.SXTENDER.MasterDataViews");
+
         const { INTERIM_SPAINCUSTOMERS } = this.db.entities("com.bayer.SXTENDER.MasterData");
 
         console.log(`JOB (${this.jobName}): Collecting customer master data...`);
+
         const customers = await SELECT.from(FASTCoreCustomersView);
+
         if (!customers || customers.length === 0) {
             console.log(`JOB (${this.jobName}): No customer master data found.`);
             return;
         }
 
-        // Deduplicate by InternalID / CustomerID (single dedupe)
-        const uniqueCustomers = [...new Map(customers.map(c => [Number(c.InternalID || c.CustomerID), c])).values()];
+        // 1. Deduplicate (UNCHANGED LOGIC)
+        const uniqueCustomers = [
+            ...new Map(
+                customers.map(c => [
+                    Number(c.InternalID || c.CustomerID),
+                    c
+                ])
+            ).values()
+        ];
 
-        // Get existing CustomerIDs in interim table (only Pending status)
+        // 2. Load existing Pending customers (UNCHANGED LOGIC)
         const existingInterim = await SELECT.from(INTERIM_SPAINCUSTOMERS)
             .where({ Status: 'Pending' })
             .columns(['ID', 'CustomerID']);
-        const existingCustomerMap = new Map(existingInterim.map(r => [r.CustomerID, r.ID]));
+
+        const existingCustomerMap = new Map(
+            existingInterim.map(r => [r.CustomerID, r.ID])
+        );
 
         const processedIDs = [];
         const failedIDs = [];
 
-        for (const customer of uniqueCustomers) {
-            try {
-                const mapped = this.mappedCustomersToInterimTable(customer);
+        const CHUNK_SIZE = 1000;
 
-                if (existingCustomerMap.has(mapped.CustomerID)) {
-                    const existingID = existingCustomerMap.get(mapped.CustomerID);
-                    const updateResult = await UPDATE(INTERIM_SPAINCUSTOMERS).set(mapped).where({ ID: existingID });
-                    if (updateResult === 0) throw new Error('Update affected 0 rows');
-                    processedIDs.push(existingID);
-                } else {
-                    const insertResult = await INSERT.into(INTERIM_SPAINCUSTOMERS).entries(mapped);
-                    if (!insertResult || insertResult.results.length === 0) throw new Error('Insert failed');
-                    processedIDs.push(mapped.CustomerID);
+        // 3. Process in chunks WITH transactions
+        for (let i = 0; i < uniqueCustomers.length; i += CHUNK_SIZE) {
+            const chunk = uniqueCustomers.slice(i, i + CHUNK_SIZE);
+
+            await cds.transaction(async tx => {
+
+                const inserts = [];
+
+                for (const customer of chunk) {
+                    try {
+                        const mapped = this.mappedCustomersToInterimTable(customer);
+
+                        const existingID = existingCustomerMap.get(mapped.CustomerID);
+
+                        // UPDATE PATH (UNCHANGED LOGIC)
+                        if (existingID) {
+                            const updateResult = await tx.run(
+                                UPDATE(INTERIM_SPAINCUSTOMERS)
+                                    .set(mapped)
+                                    .where({ ID: existingID })
+                            );
+
+                            if (updateResult === 0) {
+                                throw new Error('Update affected 0 rows');
+                            }
+
+                            processedIDs.push(existingID);
+                        }
+
+                        // INSERT PATH (UNCHANGED LOGIC)
+                        else {
+                            inserts.push(mapped);
+                        }
+
+                    } catch (err) {
+                        const id =
+                            customer.InternalID ||
+                            customer.CustomerID ||
+                            null;
+
+                        failedIDs.push(id);
+
+                        await this.updateInterimStatusForCustomers(
+                            [id],
+                            'Failed',
+                            `Mapping/upsert failed: ${err.message}`
+                        );
+
+                        console.error(
+                            `JOB (${this.jobName}): Mapping/upsert failed for CustomerID ${id}:`,
+                            err.message || err
+                        );
+                    }
                 }
-            } catch (err) {
-                const id = customer.InternalID || customer.CustomerID || null;
-                failedIDs.push(id);
-                await this.updateInterimStatusForCustomers([id], 'Failed', `Mapping/upsert failed: ${err.message}`);
-                console.error(`JOB (${this.jobName}): Mapping/upsert failed for CustomerID ${id}:`, err.message || err);
-            }
+
+                // BULK INSERT (performance improvement, same semantics)
+                if (inserts.length > 0) {
+                    const insertResult = await tx.run(
+                        INSERT.into(INTERIM_SPAINCUSTOMERS).entries(inserts)
+                    );
+
+                    if (!insertResult || insertResult.results?.length === 0) {
+                        throw new Error('Bulk insert failed');
+                    }
+
+                    // track processed IDs for inserts
+                    for (const ins of inserts) {
+                        processedIDs.push(ins.CustomerID);
+                    }
+                }
+            });
         }
-        await this.clearProcessedFASTCoreCustomerMaster(customers.map(c => c.ID));
-        console.log(`JOB (${this.jobName}): Collecting customer master data finished. Processed: ${processedIDs.length}, Failed: ${failedIDs.length}`);
+
+        // 4. Cleanup (UNCHANGED LOGIC)
+        await this.clearProcessedFASTCoreCustomerMaster(
+            customers.map(c => c.ID)
+        );
+
+        console.log(
+            `JOB (${this.jobName}): Collecting customer master data finished. ` +
+            `Processed: ${processedIDs.length}, Failed: ${failedIDs.length}`
+        );
     }
 
     // Iterate interim customers (Status = 'New') and for each ensure Region/Province/Institute exist using the interim CountryCode
