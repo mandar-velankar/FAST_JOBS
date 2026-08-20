@@ -882,7 +882,7 @@ entity ProductInActiveMaterialNumbers as select from MasterData.PT_TMSKUPRDPCK {
 entity FASTCoreMaterialBase as select from SAP.FASTCoreMaterial as material
     left join SAP.GTIN as gtin
     	on gtin.parent.ID = material.ID
-       	and gtin.ProductStandardVariantID = 'GT'
+       	and gtin.MeasureUnitCode = 'PCE'
     left join SAP.PrdDesc as prddesc
         on prddesc.parent.ID = material.ID
     left join SAP.SalesSpec as salesspec
