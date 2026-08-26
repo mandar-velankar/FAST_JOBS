@@ -1,0 +1,14 @@
+{
+  "name": "deploy",
+  "engines": {
+    "node": "^22.22.3"
+  },
+  "scripts": {
+    "start": "node node_modules/@sap/hdi-deploy/deploy.js",
+    "start:hana": "node node_modules/@sap/hdi-deploy/deploy.js --exit"
+  },
+  "devDependencies": {},
+  "dependencies": {
+    "@sap/hdi-deploy": "4.8.0"
+  }
+}
