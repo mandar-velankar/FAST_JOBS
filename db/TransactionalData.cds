@@ -67,6 +67,15 @@ entity PT_TMOFRS { //Offers
         AffiliateOffer         : Boolean default false; 
         QuotationInstituteID   : Integer;
         DifferentAwardPriceParentOfferID : String(30); // Is applicable for Taiwan Different award price Copying option
+        PreviousApprovalHasAddedProduct: Boolean default false; //MEA specific
+        PreviousApprovalHasDeletedProduct: Boolean default false; //MEA specific
+        PreviousApprovalHasDeclinedProduct: Boolean default false; //MEA specific
+        PreviousApprovalHas_Deleted_DeclinedProduct: Boolean default false; //MEA specific
+        PreviousApprovalHas_Deleted_Products_PTL: String; //MEA specific
+        ApprovalHasDeletedProduct_Previous_State: Boolean default false; //MEA specific
+        ApprovalHasDeclinedProduct_Previous_State: Boolean default false; //MEA specific
+        ApprovalHas_Deleted_DeclinedProduct_Previous_State: Boolean default false; //MEA specific
+        ApprovalHas_Deleted_Products_PTL_Previous_State: String; //MEA specific
         Custom                 : Custom; // Custom attributes for templates usage
         //Associations
         Tender                : Association to PT_TMTEND
@@ -309,6 +318,13 @@ entity PT_TMDLVTR {
         //EHEEX-OTT - 105262-Adding new 3 fields for delivery tracking tab
     key LotID                  : Integer default 1;
         Custom                 : Custom; // Custom attributes for templates usage
+        InvoiceValue           : Double;
+        BatchNumber            : String;
+        DeliveryItemBatch      : String;
+        SLED_BBD               : Date;
+        MFG                    : Date;
+        TenderReferenceNo      : String;
+        CCReference            : String;
     //Associations
         Institute              : Association to MasterData.PT_TMINST on Institute.InstituteID = InstituteID;
 }
@@ -345,6 +361,7 @@ entity PT_TMOFPR {
         DEFAULT_COMMISSION_RATE  : Double;
         SUPPLY_UPDATE            : Integer;
         PAYMENT_UPDATE           : Integer;
+        VOLUME_UOM_UPDATE        : Integer;
         Line                     : String;
         DeliveryConditions       : String;
         MinInvoiceAmount         : Double;
@@ -356,6 +373,11 @@ entity PT_TMOFPR {
     key LotID                    : Integer default 1;
         WorkflowProductID        : Integer;
         IbizWorkflowID           : Integer;
+        MEAApprovalUpdatedFields : MEAApprovalUpdatedFields;
+        MEAApprovalLatestUpdatedField: String;
+        MEAApprovalLatestUpdatedFieldPreviousState: String;
+        hasUpdatedSupplyPaymentPriceValues : Boolean default false;
+        IsProductAddedForPreviousApproval : Boolean default false;
         Custom                   : Custom; // Custom attributes for templates usage
         //Associations
         Offer                    : Association to PT_TMOFRS
@@ -495,6 +517,7 @@ entity FreeGoodsOther: cuid, managed {
     PotentialGeneratedSavings           : Decimal;
     RoyalDecree                         : String;
     ADD_INCLUDE                         : String;
+    FreeGoodsOther_STP_FOC_Percentage   : Double; // Applciable for PACAWI countries
     PriceCondition                      : Association to PriceCondition;
 }
 
@@ -661,6 +684,7 @@ entity PT_TMQUTO {
         I_Q_2             : String(255);
         I_Q_3             : String(255);
         Comment           : String;
+        PLComment         : LargeString;
         UPDATED           : Integer;
         EffectiveDate     : Date;
         ExpiryDate        : Date;
@@ -729,6 +753,7 @@ entity PT_TMTEND: managed {
         EffectiveDate     : Date;
         ExpiryDate        : Date;
         OfferValidity      :Date;
+        Remarks              : LargeString;
 
         Custom               : Custom; // Custom attributes for templates usage
         //Associations
@@ -955,10 +980,12 @@ entity OfferProductOfferStatus {
             ApproverList        : Association to many MasterData.CountryApprovers
                                       on  ApproverList.CountryCode  = CountryCode
                                       and ApproverList.ApproverType = ApproverType
-                                      and ApproverList.Division     = Division;
+                                      and ApproverList.Division     = Division
+                                      and ApproverList.Enabled      = true;
             ApproverTypes       : Association to many MasterData.ApproverTypes
                                       on  ApproverTypes.CountryCode  = CountryCode
-                                      and ApproverTypes.ApproverType = ApproverType;
+                                      and ApproverTypes.ApproverType = ApproverType
+                                      and ApproverTypes.Enabled      = true;
 };
 
 @cds.persistence.exists
@@ -1019,6 +1046,15 @@ entity THQuotationDelevery : cuid {
 }
 
 @cds.persistence.exists
+type MEAApprovalUpdatedFields {
+    Volume      : Integer default 0;
+    UOM         : Integer default 0;
+    FOC         : Integer default 0;
+    Price       : Integer default 0;
+    Deductions  : Integer default 0;
+}
+
+@cds.persistence.exists
 entity CCMPriceCondition: cuid, managed{
     CountryCode                         : String;
     OfferID                             : String;
@@ -1049,4 +1085,5 @@ entity CCMPriceCondition: cuid, managed{
     NETPRICEWITHOUTTAX                  : Decimal;
     NETPRICEWITHTAX                     : Decimal;
     ConditionType                       : String;
+    IsYP11WithoutRD                     : Boolean default false;
 }
