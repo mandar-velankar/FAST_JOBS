@@ -572,7 +572,9 @@ entity PriceCondition: cuid, managed {
     PriceAgreement                      : Association to PriceAgreementData.PriceAgreements;
     Settlement                          : Association to MasterData.Settlements;
     IsPricingUnlocked                   : Boolean default false;
-    NLPriceConditionType                : Array of NLConditions;
+    NLPriceConditionType_1              : NLConditions;
+    NLPriceConditionType_2              : NLConditions;
+    NLPriceConditionType_3              : NLConditions;
     CurrentBasePrice                    : Decimal;
     CurrentInvoicePrice                 : Decimal;
     CurrentGeneralDiscount              : Double;
@@ -590,11 +592,13 @@ entity PriceCondition: cuid, managed {
     CurrentTotalDiscountInvoice         : Double;
     ConfidentialDiscount                : Double;
     RoyalDecreePercentage_1             : Double;
-    MarketIncentiveID                  : String;    
+    MarketIncentiveID                   : String;
+    QuotationPriceConditionCode         : String;
+    IsYP11WithoutRD                     : Boolean default false;
     RoyalDecreePercentage               : Association to MasterData.RoyalDecree on  RoyalDecreePercentage.ProductPackID = ProductCode
                                                                                 and RoyalDecreePercentage.ValidTo = '9999-12-31 00:00:00.000000000';
     CapBrazil                           : Association to MasterDataViews.MostRecentCapView on CapBrazil.ValidTo = '9999-12-31 00:00:00.000000000';
-    NLPriceConditions                   : Association to many NLPriceConditions on NLPriceConditions.PriceCondition = $self;
+    NLPriceConditions                   : Composition of many NLPriceConditions on NLPriceConditions.PriceCondition = $self;
 }
 
 //EHQUT-INC18178128-FAST - Error decimals discounts
