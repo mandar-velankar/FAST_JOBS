@@ -1445,6 +1445,11 @@ left outer join MasterData.NLPPP as nlppp
 left outer join TransactionalDataViews.PriceConditionCurrentSectionTaiwanView as curentSection
 	on curentSection.INSTITUTE_ID = tender.InstituteID
 	and curentSection.ProductCode = product.ProductCode
+left outer join MasterData.PricingPolicy as pricingPolicy 
+    on  pricingPolicy.CountryCode = product.CountryCode
+    and pricingPolicy.ProductPackID = product.ProductCode
+    and pricingPolicy.InstituteID =  tender.InstituteID
+    and pricingPolicy.DistributorID = offer.DistributorID
 {
     tender.CountryCode,
     tender.Country.Region,
@@ -1492,10 +1497,15 @@ left outer join TransactionalDataViews.PriceConditionCurrentSectionTaiwanView as
     @Core.Computed: false
     ifnull(priceCondition.Level1Discount1, 0) as Discount:Double,
     @Core.Computed: false
-    case   
-        when priceCondition.Level2Discount1 is null
-            then ifnull(offer.Distributor.CommissionRate,0) / 100
-        else priceCondition.Level2Discount1
+    case
+        when tender.CountryCode = 'ES' 
+            then 0
+                else 
+                    case   
+                        when priceCondition.Level2Discount1 is null
+                            then ifnull(offer.Distributor.CommissionRate,0) / 100
+                            else priceCondition.Level2Discount1
+                    end
     end as Deductions:Double,
     @Core.Computed: false
     ifnull(priceCondition.Price2, 0) as NetPrice:Decimal, 
@@ -1567,7 +1577,9 @@ left outer join TransactionalDataViews.PriceConditionCurrentSectionTaiwanView as
     ifnull(priceCondition.FreeGoods_Amount,0) as FreeGoods_Amount:Double,
      @Core.Computed: false
     ifnull(priceCondition.FreeGoods_Percentage,0) as FreeGoods_Percentage:Double,
-    priceCondition.NLPriceConditionType,
+    priceCondition.NLPriceConditionType_1,
+    priceCondition.NLPriceConditionType_2,
+    priceCondition.NLPriceConditionType_3,
     @Core.Computed: false
     ifnull(priceCondition.CurrentBasePrice, curentSection.Price0) as TWCurrentBasePrice: Decimal,
     @Core.Computed: false
@@ -1620,7 +1632,15 @@ left outer join TransactionalDataViews.PriceConditionCurrentSectionTaiwanView as
     priceCondition.RoyalDecreePercentage_1,
     priceCondition.MonthlyRentPerUnit,
     priceCondition.AnnualValue,
-    priceCondition.MarketIncentiveID
+    priceCondition.MarketIncentiveID,
+    priceCondition.QuotationPriceConditionCode,
+    priceCondition.IsYP11WithoutRD,
+    @Core.Computed: false
+    case 
+        when product.UnitPerPack = 'Unit'
+            then  pricingPolicy.Value / product.SKU.PACKFACTOR
+        else ifnull(pricingPolicy.Value, 0)
+    end as PricingPolicyValue: Double
 }where tender.Active = 1;
 //CR2
 @cds.persistence.exists
